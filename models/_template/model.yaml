@@ -1,0 +1,23 @@
+# Model card. Every field is required unless marked optional.
+
+name: My Model                  # display name on the leaderboard
+version: "1.0"                  # one folder per version: my-model-1.0, my-model-2.0
+family: foundation-model        # foundation-model | tree-based | neural-network | linear | other
+handles_strings: false          # true = reads raw strings itself (end-to-end)
+access: open-source             # open-source | closed-source | api
+tasks: [regression, binary, multiclass]
+
+package: my-model==1.0.0        # the code: exact pip version
+checkpoint:                     # the weights, or null if the model has none
+  repo: my-org/my-model         # Hugging Face repository
+  revision: 0123456789abcdef    # commit hash, never a branch name
+  files: [my-model-regressor.ckpt, my-model-classifier.ckpt]
+
+hardware: gpu                   # gpu | cpu
+min_gpu_memory_gb: 24           # optional
+licence: Apache-2.0             # licence of the code and weights
+code: https://github.com/my-org/my-model     # optional
+paper: https://arxiv.org/abs/0000.00000      # optional
+
+# Was the model trained, pre-trained or tuned on any STRABLE table? List them, or [] for none.
+trained_on_strable: []

@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.DS_Store
+# local data and run outputs never go into git
+data/
+results/raw/
+*.ckpt
+*.safetensors

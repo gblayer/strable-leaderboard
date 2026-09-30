@@ -1,0 +1,50 @@
+name: Smoke test
+
+# Runs the contributor's code on GitHub's machines, with a read-only token and no secrets.
+on:
+  pull_request:
+    paths:
+      - "models/**"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Find the model folders this pull request changes
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          folders=$(git diff --name-only "$BASE_SHA" HEAD -- models/ | cut -d/ -f2 | sort -u \
+            | grep -E '^[a-z0-9][a-z0-9.-]*$' | grep -v '^_template$' || true)
+          echo "folders=$(echo $folders)" >> "$GITHUB_OUTPUT"
+          echo "Changed model folders: ${folders:-none}"
+
+      - name: Run the smoke test on each changed model
+        if: steps.changed.outputs.folders != ''
+        env:
+          FOLDERS: ${{ steps.changed.outputs.folders }}
+          HF_HUB_DISABLE_PROGRESS_BARS: "1"
+        run: |
+          status=0
+          for f in $FOLDERS; do
+            [ -d "models/$f" ] || continue
+            echo "::group::$f"
+            python -m venv "/tmp/env-$f"
+            "/tmp/env-$f/bin/pip" install --quiet -e ".[smoke]" -r "models/$f/requirements.txt"
+            "/tmp/env-$f/bin/python" -m strable_leaderboard.smoke "models/$f" || status=1
+            echo "::endgroup::"
+          done
+          exit $status

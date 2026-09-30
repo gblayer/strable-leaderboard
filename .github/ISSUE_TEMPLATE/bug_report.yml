@@ -1,0 +1,25 @@
+name: Report a problem
+description: A bug, a wrong score or metric, or a problem with a table.
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of problem?
+      options:
+        - A bug in the code or the site
+        - A wrong score, time or metric
+        - A problem with a table, such as a wrong label or a leak
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Which table, model or page?
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true

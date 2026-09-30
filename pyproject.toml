@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "strable-leaderboard"
+version = "0.0.1"
+description = "Protocol, cross-validation splits, metrics and model contract of the STRABLE leaderboard"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "pandas",
+  "pyarrow",
+  "scikit-learn>=1.6",
+  "huggingface_hub",
+  "pyyaml",
+]
+
+[project.optional-dependencies]
+smoke = ["skrub>=0.6"]
+dev = ["pytest", "skrub>=0.6"]
+
+[tool.setuptools]
+packages = ["strable_leaderboard"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

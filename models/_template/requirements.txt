@@ -1,0 +1,2 @@
+# Exact versions only (==). The runner builds one environment per model from this file.
+my-model==1.0.0

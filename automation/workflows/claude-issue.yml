@@ -1,0 +1,38 @@
+name: Claude works on an issue
+
+# Template. To enable: copy to .github/workflows/, add the CLAUDE_CODE_OAUTH_TOKEN secret and
+# create the label `claude`. Only people with write access can add labels, so a maintainer
+# decides which issues Claude takes.
+# Claude pushes a branch and links a pull request, which then goes through normal review.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  work:
+    if: github.event.label.name == 'claude'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            ISSUE NUMBER: ${{ github.event.issue.number }}
+
+            A maintainer asked you to work on this issue. Read it with `gh issue view`.
+            Read docs/plan.md and docs/decisions.md first, and respect every decision there.
+            Make the smallest change that resolves the issue, run `pytest`, push a branch,
+            and comment on the issue with a summary and the link to open the pull request.
+            If the issue is unclear or conflicts with a decision, comment with a question instead.
