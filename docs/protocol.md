@@ -103,7 +103,9 @@ Each result records where it ran. The reference node type is Margaret's margpu01
 
 One row per pipeline, table and fold:
 
-`pipeline, model, model_version, encoder, table, task, fold, score, fit_s, predict_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
+`pipeline, model, model_version, variant, encoder, table, task, fold, score, fit_s, predict_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
+
+`variant` is `default` for now. It leaves room for `tuned` and `tuned-ensembled` later.
 
 ## Differences from the paper
 
