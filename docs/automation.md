@@ -35,13 +35,22 @@ Why the review never runs the code: it is triggered by `pull_request_target`, wh
 
 ## 3. Runner
 
-The runner is a script on a machine inside the compute cluster, run under a dedicated account where possible. The cluster has a login node with internet and compute nodes without, scheduled by SLURM.
+The runner is the scripts below, run on the compute cluster under the maintainer's account (a dedicated account where the cluster allows one). The cluster has a login node with internet and compute nodes without, scheduled by SLURM. One task = one model, one encoder, one table, one outer fold. `STRABLE_CACHE` is a shared folder for the dataset, checkpoints, embeddings and environments.
 
-1. **Login node:** pull the repository, list merged pipelines without results, build each model's pinned environment, and download its checkpoint and the encoders' checkpoints into a shared cache.
-2. **Compute nodes:** a job array, one task per pipeline, table and outer fold, run offline. Each task writes one result row and a log. Preempted or failed tasks are requeued; finished tasks are skipped on restart.
-3. **Login node:** gather the rows into `results/<model>.csv` and open a results pull request with a fine-grained token that can only open pull requests on this repository.
+```
+git pull                                                   # on the login node, after a merge
+python scripts/prepare.py models/tabpfn-2.5 --cache-dir $STRABLE_CACHE   # dataset, checkpoints, environment
+python scripts/make_tasks.py models/tabpfn-2.5 > tasks.txt # the (encoder, table, fold) tasks without a result: 972
+sbatch --array=0-$(( $(wc -l < tasks.txt) - 1 ))%16 scripts/run_array.sh tasks.txt
+                                                           # each task: python -m strable_leaderboard.run ...
+python scripts/gather_results.py runs results              # rows -> results/tabpfn-2.5.csv
+python -m strable_leaderboard.check_results results/tabpfn-2.5.csv
+git checkout -b results/tabpfn-2.5 && git add results && git commit -m "Results: TabPFN-2.5" && git push -u origin HEAD
+```
 
-Trigger: a cron job on the login node if allowed, otherwise one command after each merge.
+`strable_leaderboard/run.py` is the task: it reads the fold from `splits/`, encodes the strings (Tf-Idf, or the cached language-model embeddings of the table), runs an untimed warm-up, then times fit and predict and writes one JSON row. Finished tasks are skipped, so the same `sbatch` line resubmits after a preemption. The pull request is opened from the `results/<model>` branch, by hand or with a fine-grained token that can only open pull requests here. The paper's own command, `num-str_tabvec_tabpfn`, corresponds to `models/tabpfn-2.5 --encoder tfidf`.
+
+Trigger: a cron job on the login node if allowed, otherwise the lines above after each merge.
 
 **Hardware.** GPU rows run on one GPU, 32 CPU cores and 128 GB of RAM; the GPU type is fixed at launch and shown on the site. CPU rows use the same cores without the GPU. Models too large for that node run elsewhere, and the row says so.
 
@@ -49,7 +58,9 @@ Trigger: a cron job on the login node if allowed, otherwise one command after ea
 
 ## 4. After a results merge
 
-`results/<model>.csv` is the memory of every run: one row per encoder, table and fold, readable in the pull request diff and enough for anyone to recompute the board. A GitHub Action turns all the files into `site/results.json`, deploys the site to GitHub Pages, bumps the patch version and adds a line to the version history. Rankings and the Pareto front are computed in the browser from that file, so nothing is re-run and no ranking is stored. The Refresh button under the table re-reads `results.json`.
+`results/<model>.csv` is the memory of every run: one row per encoder, table and fold, readable in the pull request diff and enough for anyone to recompute the board. `python scripts/build_site_data.py` turns all the files, the model cards and `results/versions.yaml` into `site/results.json`; the Pages workflow deploys it. Rankings and the Pareto front are computed in the browser from that file, so nothing is re-run and no ranking is stored. The page reads `results.json` when it opens and when Refresh is clicked; deployment is a separate thing that happens on push.
+
+A new version is one line added to `results/versions.yaml` by the results pull request, for example `v0.1.3 · Added TabPFN-2.5`.
 
 ## 5. Suggestions and issues
 

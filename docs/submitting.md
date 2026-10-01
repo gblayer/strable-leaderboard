@@ -35,7 +35,7 @@ flowchart TD
 
 1. `cp -r models/_template models/<name>` and fill the three files. The folder name carries the version: `tabpfn-2.5`.
 2. Test: `pip install -e ".[dev]" -r models/<name>/requirements.txt && python -m strable_leaderboard.smoke models/<name>`
-3. Open the pull request, title `Add <Name> <version>`.
+3. Push a branch `add-<name>` (in a fork if you have no write access) and open the pull request, title `Add <Name> <version>`.
 
 Or clone the repository and tell your coding agent: *"Add my model to the STRABLE leaderboard, test it, and open a pull request."* It follows `.claude/skills/add-model/SKILL.md`.
 

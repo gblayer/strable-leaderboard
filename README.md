@@ -42,7 +42,9 @@ You submit code, not results. After the merge we run the model on all 108 tables
 | [docs/decisions.md](docs/decisions.md) | Every decision, with its date |
 | [docs/research.md](docs/research.md) | Notes on TabArena, the paper and other leaderboards |
 | [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
-| [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, model contract, smoke test, results check |
+| [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, model contract, smoke test, one run (`run.py`), results check |
+| [scripts/](scripts/) | Runner: prepare, make_tasks, run_array, gather_results, check; import_paper_results; build_site_data |
+| [results/](results/) | One CSV per model, one row per encoder, table and fold, plus `versions.yaml` |
 | [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a working example |
 | [site/index.html](site/index.html) | The page served at https://gblayer.github.io/strable-leaderboard/ |
 | [.github/workflows/](.github/workflows/) | Checks, Claude review, Claude on issues, Pages deployment |
@@ -53,6 +55,7 @@ You submit code, not results. After the merge we run the model on all 108 tables
 pip install -e ".[dev]"
 pytest
 python -m strable_leaderboard.smoke models/ridge
+python -m strable_leaderboard.run models/ridge --encoder tfidf --table drug-ndc --fold 0 --device cpu
 ```
 
 ## Contact

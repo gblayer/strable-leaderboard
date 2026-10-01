@@ -41,9 +41,7 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 
 **Ticker:** top score, fastest pipeline on the front, size of the front, version.
 
-**Controls:** Task (Both, Regression · R², Classification · AUC), Time (Both, Fit, Predict) and Sort (★ Pareto, Score, Time). No filters: tags on the rows carry the rest.
-
-**Key:** one line each for score, fit time, predict time, modular, end-to-end and hardware.
+**Controls:** Task (Both, Regression · R², Classification · AUC), Time (Both, Fit, Predict) and Sort (★ Pareto, Score, Time). No filters and no key: the paper defines the numbers, tags on the rows carry the rest.
 
 **Table:** rank, pipeline, score, fit, predict, at a fixed height with its own scrollbar, so every pipeline is always in it. Tags for end-to-end, anonymous and closed rows. A star marks Pareto-optimal rows, and one red frame surrounds the top three rows of the current order.
 
@@ -51,4 +49,6 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 
 **Version history**, then a low **suggestion panel** on Pine Grove: a free-text box and an optional email, posted to a Tally form, with a link to open a GitHub issue instead. No footer.
 
-**Demo:** eight steps that show where things are: the three controls, the key, the table, the plot, the version history and refresh, and how to add a model. The key, not the demo, explains how the numbers are computed.
+**Demo:** a button in the navigation, seven steps that show where things are: the three controls, the table, the plot, the version history and refresh, and how to add a model. The theme follows the system (or `#dark` / `#light` in the address).
+
+**Data:** the page reads `results.json` next to it when it opens and when Refresh is clicked. Until that file exists it shows placeholder rows and says so under the table.

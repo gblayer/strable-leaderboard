@@ -19,10 +19,9 @@
 })();
 </script>
 <style>
-/* Layout: a slim sticky preview bar (theme, demo), then the leaderboard page in one column:
-   nav, hero (name, pronunciation, spreadsheet art), ticker, controls with a definitions key, the board
-   (table beside the Pareto plot), version history, a Pine Grove suggestion panel, footer.
-   Everything stacks to one column under 1000px. */
+/* Layout, one column: nav, hero (name, pronunciation, spreadsheet art), ticker, controls, the board
+   (table beside the Pareto plot), version history, a Pine Grove suggestion panel.
+   Everything stacks under 1000px. The theme follows the system, or #dark / #light in the URL. */
 :root {
   --f-display: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -76,16 +75,6 @@ a { color: inherit; }
 .title { font-family: var(--f-display); font-weight: 700; font-size: 28px; letter-spacing: -0.02em; line-height: 1.15; margin: 0; text-wrap: balance; }
 section { scroll-margin-top: 76px; }
 
-/* ---------- preview bar (not part of the design) ---------- */
-.pv {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
-  padding-inline: clamp(16px, 3vw, 32px); padding-block: 9px;
-  background: var(--surface); border-bottom: 1px solid var(--line);
-  font-family: var(--f-mono);
-}
-.pv-label { font: 600 10px/1.3 var(--f-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
-.pv-spacer { flex: 1 1 auto; }
 .seg { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); }
 .seg button {
   appearance: none; border: 0; background: transparent; color: var(--ink-2); cursor: pointer;
@@ -94,10 +83,10 @@ section { scroll-margin-top: 76px; }
 }
 .seg button:hover { color: var(--ink); background: var(--surface-2); }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.demo-btn { appearance: none; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); font: 600 12px/1 var(--f-mono); padding: 10px 14px; border-radius: 999px; min-height: 36px; letter-spacing: 0.04em; }
-.demo-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.demo-btn { appearance: none; cursor: pointer; border: 1px solid var(--ink); background: transparent; color: var(--ink); font: 600 13px/1 var(--f-mono); padding: 8px 12px; border-radius: 999px; min-height: 34px; letter-spacing: 0.04em; }
+.demo-btn:hover { background: var(--ink); color: var(--bg); }
 
-/* ---------- mock site ---------- */
+/* ---------- page ---------- */
 .site { max-width: 1440px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 0 56px; }
 
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 20px; }
@@ -183,16 +172,9 @@ section { scroll-margin-top: 76px; }
 @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
 
 /* ---------- board ---------- */
-.board-head { display: grid; gap: 14px; margin-bottom: 18px; }
+.board-head { margin-bottom: 18px; }
 .controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
 .ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-radius: 999px; }
-.key { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 28px; margin: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-@media (max-width: 1000px) { .key { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 620px) { .key { grid-template-columns: 1fr; } }
-.key div { min-width: 0; }
-.key dt { font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 3px; }
-.key dd { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
-.key dd b { color: var(--ink); font-weight: 600; }
 .board { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 1000px) { .board { grid-template-columns: 1fr; } }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); min-width: 0; }
@@ -313,17 +295,6 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 <style>[hidden]{display:none!important}</style>
 </head>
 <body>
-<div class="pv" role="region" aria-label="Preview controls">
-  <span class="pv-label">Design preview</span>
-  <div class="seg" role="group" aria-label="Theme">
-    <button type="button" id="th-auto" data-th="auto" aria-pressed="true">Auto</button>
-    <button type="button" id="th-light" data-th="light" aria-pressed="false">Light</button>
-    <button type="button" id="th-dark" data-th="dark" aria-pressed="false">Dark</button>
-  </div>
-  <span class="pv-spacer"></span>
-  <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
-</div>
-
 <div class="site" id="top">
   <header class="nav">
     <a class="logo" href="#top" aria-label="STRABLE home">
@@ -342,6 +313,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
         <a href="https://huggingface.co/datasets/inria-soda/STRABLE-benchmark">Datasets</a>
         <a href="https://github.com/soda-inria/strable">Benchmark code</a>
         <a href="https://arxiv.org/abs/2605.12292">Paper</a>
+        <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
       </nav>
       <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-new-model">Submit a pipeline</a>
     </div>
@@ -455,20 +427,12 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
           </div>
         </div>
       </div>
-      <dl class="key" id="key">
-        <div><dt>Score</dt><dd id="key-score"></dd></div>
-        <div><dt>Fit time</dt><dd>String embedding + training, seconds per 1K training rows.</dd></div>
-        <div><dt>Predict time</dt><dd>String embedding + prediction, seconds per 1K rows.</dd></div>
-        <div><dt>Modular</dt><dd>Each string column becomes 30 numbers: Tf-Idf with SVD, or the first 30 embedding dimensions of MiniLM-L6-v2 or LLaMA-3.1-8B. Then a tabular learner fits.</dd></div>
-        <div><dt>End-to-end</dt><dd>The model reads the raw strings itself. Anonymous models appear under a codename.</dd></div>
-        <div><dt>Hardware</dt><dd>One node for every row: 1 NVIDIA [GPU model], 32 CPU cores, 128 GB RAM. Hover a row to see whether it used the GPU.</dd></div>
-      </dl>
     </div>
 
     <div class="board">
       <div class="card" id="tbl-card">
         <div class="tbl-wrap">
-          <table class="hs" aria-describedby="key-score">
+          <table class="hs">
             <thead>
               <tr>
                 <th scope="col">Rank</th>
@@ -481,7 +445,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
             <tbody id="rows"></tbody>
           </table>
         </div>
-        <div class="tbl-foot">
+        <div class="tbl-foot" id="tbl-foot">
           <p class="note">Placeholder numbers: the pipeline names come from the paper, the scores and times do not.</p>
         </div>
       </div>
@@ -506,10 +470,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
       <h2 class="title" id="history-title">Version history</h2>
       <p class="history-sub">What changed in each version of the leaderboard.</p>
     </div>
-    <ol>
-      <li><b>v0.1.1</b><span>Re-ran CatBoost on 3 tables after a timing fix. Other scores unchanged. Example entry.</span></li>
-      <li><b>v0.1.0</b><span>First public version: 13 pipelines on 108 tables, default configs. Example entry.</span></li>
-    </ol>
+    <ol id="history-list"></ol>
   </section>
 
   <section class="ask" id="ideas" aria-labelledby="ideas-title">
@@ -571,14 +532,17 @@ let DATA = [
   { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', hw: 'GPU', reg: [0.668, 46, 2.8], clf: [0.873, 42, 2.5] },
   { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.5, 0.25], clf: [0.868, 8.6, 0.22] }
 ];
-let VERSION = 'v0.1.1', BUILT = '2026-10-01';
+let VERSION = 'v0.1.1', BUILT = '2026-10-01', PLACEHOLDER = true;
+let HISTORY = [
+  { version: 'v0.1.1', note: 'Re-ran CatBoost on 3 tables after a timing fix. Other scores unchanged. Example entry.' },
+  { version: 'v0.1.0', note: 'First public version: 13 pipelines on 108 tables, default configs. Example entry.' }
+];
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-model';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TASKS = {
-  both: { metric: 'Score', colSub: 'R² and AUC, mean', axis: 'Mean score, R² and AUC',
-    key: 'R² on the ' + N_REG + ' regression tables and AUC on the ' + N_CLF + ' classification tables, averaged over all ' + N_ALL + '. Each table counts once, and an R² below zero counts as zero.' },
-  reg: { metric: 'R²', colSub: 'mean', axis: 'Mean R²', key: 'Mean R² over the ' + N_REG + ' regression tables. An R² below zero counts as zero.' },
-  clf: { metric: 'AUC', colSub: 'mean', axis: 'Mean AUC', key: 'Mean AUC over the ' + N_CLF + ' classification tables.' }
+  both: { metric: 'Score', colSub: 'R² and AUC, mean', axis: 'Mean score, R² and AUC' },
+  reg: { metric: 'R²', colSub: 'mean', axis: 'Mean R²' },
+  clf: { metric: 'AUC', colSub: 'mean', axis: 'Mean AUC' }
 };
 const TIMES = {
   both: { name: 'Fit + predict', title: 'Score vs fit + predict time', axis: 'Fit + predict time, s per 1K rows, log scale', fastest: 'FASTEST ON THE FRONT ' },
@@ -593,32 +557,38 @@ const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls)
 const SVGNS = 'http://www.w3.org/2000/svg';
 const sv = (tag, attrs) => { const n = document.createElementNS(SVGNS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
+/* One row per pipeline for the chosen task. A pipeline without results for that task is left out.
+   A missing time (null) means the pipeline was imported from the paper with a total time only:
+   it is shown as "—" and takes no part in the Pareto front of that time. */
+const num = (v) => (v == null || Number.isNaN(v) ? NaN : v);
 function items(task, time) {
-  return DATA.map((d) => {
-    let s, fit, pred;
-    if (task === 'both') {
-      s = (N_REG * d.reg[0] + N_CLF * d.clf[0]) / N_ALL;
-      fit = (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL;
-      pred = (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL;
-    } else { s = d[task][0]; fit = d[task][1]; pred = d[task][2]; }
-    return { id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, s: s, fit: fit, pred: pred, t: time === 'fit' ? fit : time === 'pred' ? pred : fit + pred };
-  });
+  const rows = [];
+  for (const d of DATA) {
+    let v = d[task];
+    if (task === 'both' && !v && d.reg && d.clf) v = [(N_REG * d.reg[0] + N_CLF * d.clf[0]) / N_ALL, (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL, (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL];
+    if (!v) continue;
+    const s = v[0], fit = num(v[1]), pred = num(v[2]);
+    const total = v.length > 3 && v[3] != null ? v[3] : fit + pred;  // paper rows carry a total only
+    rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, s: s, fit: fit, pred: pred, t: time === 'fit' ? fit : time === 'pred' ? pred : total });
+  }
+  return rows;
 }
 function paretoSet(list) {
-  const byTime = [...list].sort((a, b) => a.t - b.t || b.s - a.s);
+  const byTime = list.filter((d) => !Number.isNaN(d.t)).sort((a, b) => a.t - b.t || b.s - a.s);
   const ids = new Set(); let best = -Infinity;
   for (const it of byTime) { if (it.s > best + 1e-12) { ids.add(it.id); best = it.s; } }
   return ids;
 }
 function ordered(list, sort, front) {
-  const byScore = (a, b) => b.s - a.s || a.t - b.t;
+  const nan = (v) => (Number.isNaN(v) ? Infinity : v);
+  const byScore = (a, b) => b.s - a.s || nan(a.t) - nan(b.t);
   if (sort === 'score') return [...list].sort(byScore);
-  if (sort === 'time') return [...list].sort((a, b) => a.t - b.t || b.s - a.s);
+  if (sort === 'time') return [...list].sort((a, b) => nan(a.t) - nan(b.t) || b.s - a.s);
   return list.filter((d) => front.has(d.id)).sort(byScore).concat(list.filter((d) => !front.has(d.id)).sort(byScore));
 }
 function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 const fmtS = (v) => v.toFixed(3);
-function fmtN(t) { if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
+function fmtN(t) { if (Number.isNaN(t)) return '—'; if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
 const fmtT = (t) => fmtN(t) + ' s';
 function pipeName(d) { return d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn; }
 
@@ -681,6 +651,7 @@ function renderPlot(list, front, top) {
   const H = Math.round(Math.max(300, Math.min(440, W * 0.8)));
   const m = { l: 56, r: 18, t: 14, b: 50 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  list = list.filter((d) => !Number.isNaN(d.t));
   if (!list.length) return;
   const T = TASKS[state.task], TM = TIMES[state.time];
   const tMin = Math.min(...list.map((d) => d.t)), tMax = Math.max(...list.map((d) => d.t));
@@ -826,7 +797,6 @@ function render() {
   renderTicker(list, front);
   $('stat-n').textContent = String(list.length);
   $('ver-chip').textContent = VERSION;
-  $('key-score').textContent = TASKS[state.task].key;
   $('plot-title').textContent = TIMES[state.time].title;
   ['both', 'reg', 'clf'].forEach((k) => $('task-' + k).setAttribute('aria-pressed', String(state.task === k)));
   ['both', 'fit', 'pred'].forEach((k) => $('time-' + k).setAttribute('aria-pressed', String(state.time === k)));
@@ -837,29 +807,33 @@ document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('clic
 document.querySelectorAll('[data-time]').forEach((b) => b.addEventListener('click', () => { state.time = b.dataset.time; render(); }));
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
 
-/* Refresh: fetch results.json next to the page and re-render. On the real site a results merge
-   rebuilds that file, so the board updates without a page reload. The preview has no results.json
-   and keeps its placeholder rows. */
+/* results.json, built from results/ after each merge, sits next to this page. It is read at start
+   and whenever Refresh is clicked, so the board updates without a page reload. Without it, the
+   placeholder rows above stay. */
 function setUpdated(text) { $('updated').textContent = text; }
-async function refresh() {
-  const btn = $('refresh'); btn.disabled = true; btn.textContent = 'Refreshing…';
+async function loadResults() {
   try {
     const r = await fetch('results.json', { cache: 'no-store' });
-    if (r.ok) { const j = await r.json(); DATA = j.pipelines; VERSION = j.version; BUILT = j.built; }
-  } catch (e) { /* no results.json: keep the current rows */ }
-  render();
+    if (!r.ok) return false;
+    const j = await r.json();
+    DATA = j.pipelines; VERSION = j.version; BUILT = j.built; HISTORY = j.history || []; PLACEHOLDER = false;
+    return true;
+  } catch (e) { return false; }
+}
+function renderHistory() {
+  const ol = $('history-list'); ol.textContent = '';
+  for (const h of HISTORY) { const li = el('li'); li.appendChild(el('b', null, h.version)); li.appendChild(el('span', null, h.note)); ol.appendChild(li); }
+  $('tbl-foot').hidden = !PLACEHOLDER;
+}
+async function refresh() {
+  const btn = $('refresh'); btn.disabled = true; btn.textContent = 'Refreshing…';
+  await loadResults();
+  render(); renderHistory();
   setUpdated('Updated ' + BUILT + ', checked ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
   btn.disabled = false; btn.textContent = '↻ Refresh';
 }
 $('refresh').addEventListener('click', refresh);
 
-function currentTheme() { const t = document.documentElement.getAttribute('data-theme'); return t === 'light' || t === 'dark' ? t : 'auto'; }
-function setTheme(t) {
-  const r = document.documentElement;
-  if (t === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', t);
-  ['auto', 'light', 'dark'].forEach((k) => $('th-' + k).setAttribute('aria-pressed', String(k === t)));
-}
-document.querySelectorAll('[data-th]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.th)));
 
 /* In-page links scroll inside the page instead of navigating the frame. */
 document.addEventListener('click', (ev) => {
@@ -891,8 +865,6 @@ const TOUR = [
     text: 'Time. Pick which time the plot and the Pareto order use: fit plus predict, or either alone. The underlined column is the one in use.' },
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of any order get a red frame, here and in the plot.' },
-  { sel: '#key', block: 'center',
-    text: 'The key says how each number is computed: the score, the two times, and what modular, end-to-end and the hardware mean.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
     text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, anonymous and closed rows, a star marks the Pareto front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf-tabpfn',
@@ -968,7 +940,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 (function init() {
-  setTheme(currentTheme());
   const toks = (location.hash || '').replace('#', '').split('.');
   if (toks.indexOf('reg') >= 0) state.task = 'reg';
   if (toks.indexOf('clf') >= 0) state.task = 'clf';
@@ -976,8 +947,9 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('predict') >= 0) state.time = 'pred';
   if (toks.indexOf('score') >= 0) state.sort = 'score';
   if (toks.indexOf('time') >= 0) state.sort = 'time';
-  render();
+  render(); renderHistory();
   setUpdated('Updated ' + BUILT);
+  loadResults().then((ok) => { if (ok) { render(); renderHistory(); setUpdated('Updated ' + BUILT); } });
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();
 let rz = null;

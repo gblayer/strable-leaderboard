@@ -68,7 +68,7 @@ Two times, both in seconds per 1,000 rows, and their sum:
 - Embeddings are computed once per table, encoder and fold, then reused by every model. Their time is measured once and added to every pipeline that uses them, split between fit and predict by the rows embedded.
 - An untimed warm-up runs first: imports, CUDA start-up and weight loading are not counted.
 - Per table: the mean over folds. Per pipeline: the median over tables.
-- The board's default time is fit plus predict, the total cost of a pipeline per 1,000 rows. Fit or predict alone can be selected.
+- The board's default time is the total: fit plus predict seconds, divided by all rows of the table, as in the paper's Pareto plot. Fit or predict alone can be selected. Rows imported from the paper have only the total, since the paper timed fit and predict together.
 
 ## Pareto front
 
@@ -105,9 +105,12 @@ Each result records what it ran on. GPU rows: one GPU of the reference type, fix
 
 `results/<model>.csv`, one row per encoder, table and outer fold:
 
-`model, encoder, table, task, fold, score, fit_s, predict_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
+`model, encoder, table, task, fold, score, fit_s, predict_s, total_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
 
-`encoder` is `none` for end-to-end models. Rows are default configurations; a `variant` column is added when tuned runs come. `python -m strable_leaderboard.check_results` validates a file.
+- `encoder` is `none` for end-to-end models. `score` is the raw fold score; flooring happens when the board aggregates.
+- Runs by the runner fill `fit_s` and `predict_s`; `hardware` is the GPU model or `cpu`.
+- Rows imported from the paper (`scripts/import_paper_results.py`) fill `total_s` only, with `hardware: paper`, since the paper timed fit and predict together on mixed hardware. They may name encoders outside the three above.
+- Rows are default configurations; a `variant` column is added when tuned runs come. `python -m strable_leaderboard.check_results` validates a file.
 
 ## Differences from the paper
 

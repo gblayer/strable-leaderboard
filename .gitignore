@@ -10,3 +10,6 @@ data/
 results/raw/
 *.ckpt
 *.safetensors
+runs/
+logs/
+tasks.txt

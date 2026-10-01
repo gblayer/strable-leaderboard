@@ -5,23 +5,27 @@
 One row per (encoder, table, outer fold). Prints the problems found and the coverage per
 view, and exits non-zero on any problem. The Checks workflow runs it on every results
 pull request, and the Claude review reads its output.
+
+A row carries either ``fit_s`` and ``predict_s`` (runs by the runner) or only ``total_s``
+(rows imported from the paper, which timed fit and predict together).
 """
 
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
 import pandas as pd
 
 from .data import MANIFEST
-from .encoders import ENCODERS
 from .metrics import VIEWS
 
-COLUMNS = ["model", "encoder", "table", "task", "fold", "score", "fit_s", "predict_s", "n_train", "n_test",
+COLUMNS = ["model", "encoder", "table", "task", "fold", "score", "fit_s", "predict_s", "total_s", "n_train", "n_test",
            "hardware", "package", "checkpoint_revision", "protocol_version", "date"]
 FOLDS = 3
+ENCODER_ID = re.compile(r"^[a-z0-9][a-z0-9.+-]*$")
 
 
 def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
@@ -38,9 +42,9 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
     unknown = sorted(set(df["table"]) - set(tables))
     if unknown:
         problems.append(f"unknown tables {unknown[:5]}")
-    bad_enc = sorted(set(df["encoder"]) - set(ENCODERS) - {"none"})
+    bad_enc = sorted(e for e in set(df["encoder"].astype(str)) if not ENCODER_ID.match(e))
     if bad_enc:
-        problems.append(f"unknown encoders {bad_enc}")
+        problems.append(f"encoder ids must be lowercase slugs, found {bad_enc}")
     dup = df.duplicated(["encoder", "table", "fold"]).sum()
     if dup:
         problems.append(f"{dup} duplicate (encoder, table, fold) rows")
@@ -49,8 +53,11 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
     for col in ["hardware", "package", "protocol_version", "date"]:
         if df[col].isna().any() or (df[col].astype(str).str.strip() == "").any():
             problems.append(f"empty values in {col}")
-    if (df[["fit_s", "predict_s"]] <= 0).any().any():
-        problems.append("fit_s and predict_s must be positive")
+    split = df["fit_s"].notna() & df["predict_s"].notna()
+    if not (split | df["total_s"].notna()).all():
+        problems.append("each row needs fit_s and predict_s, or total_s")
+    if (df.loc[split, ["fit_s", "predict_s"]] <= 0).any().any() or (df["total_s"].dropna() <= 0).any():
+        problems.append("times must be positive")
 
     known = df[df["table"].isin(tables)]
     task = known["table"].map(lambda t: tables[t]["task"])
