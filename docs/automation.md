@@ -53,7 +53,7 @@ Trigger: a cron job on the login node if allowed, otherwise one command after ea
 
 ## 5. Suggestions and issues
 
-- The form on strable.ai posts to a free [Tally](https://tally.so) form that emails each suggestion to the maintainer.
+- The form on the page posts to a free [Tally](https://tally.so) form that emails each suggestion to the maintainer.
 - GitHub issue forms for bugs and feature ideas.
 - A maintainer adds the label `claude` to an issue: `.github/workflows/claude-issue.yml` asks Claude to implement it on a branch and link a pull request, which goes through the normal review.
 

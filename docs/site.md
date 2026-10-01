@@ -2,20 +2,20 @@
 
 ## Where people open it
 
-The leaderboard is one web page. GitHub Pages serves it from this repository at https://gblayer.github.io/strable-leaderboard/ as soon as the repository is public and Pages is switched on (Settings → Pages → Source: GitHub Actions; `.github/workflows/pages.yml` deploys `site/` on every push). With the domain strable.ai bought from a registrar and pointed at GitHub (four A records to 185.199.108.153, .109.153, .110.153, .111.153, a CNAME from `www` to `gblayer.github.io`, then Settings → Pages → Custom domain, which writes `site/CNAME`), the same page answers at https://strable.ai. Until then, "strable.ai" on the page is the planned address.
+The leaderboard is one web page, served free by GitHub Pages from this repository at https://gblayer.github.io/strable-leaderboard/. Pages is switched on (Settings → Pages → Source: GitHub Actions) and `.github/workflows/pages.yml` deploys `site/` on every push that touches it. The repository can stay private: only the published page is public. No domain is needed; a custom one could be added later under Settings → Pages.
 
-**Visits.** GitHub's Insights → Traffic counts visits to the repository, not to the page. For the page, add [GoatCounter](https://www.goatcounter.com), free for non-commercial use, no cookies, no banner needed: one `<script data-goatcounter="https://strable.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>` in `site/index.html` once the account exists.
+**Visits.** GitHub's Insights → Traffic counts visits to the repository, not to the page. For the page, [GoatCounter](https://www.goatcounter.com) is free for non-commercial use, needs no cookies and no banner. The script tag is already in `site/index.html`, commented out: create the account with the code `strable`, then remove the comment marks.
 
 ## Hosting: GitHub Pages
 
-One HTML page plus `results.json`, served by GitHub Pages. The page computes rankings and the Pareto front in the browser.
+One HTML page plus `results.json`. The page computes rankings and the Pareto front in the browser.
 
 | | GitHub Pages | Hugging Face Space |
 |---|---|---|
 | What is served | Static files from a CDN | Static Space: static files. Gradio Space: a Python server that renders every view |
 | First load | Tens of milliseconds for the HTML, then one JSON | Static: similar. Gradio: seconds, and a cold start of up to a minute after the free hardware sleeps |
 | Interaction | In the browser, instant | Gradio: a round trip to the server per click |
-| Custom domain | Free | Paid plan |
+| Custom domain, if ever wanted | Free | Paid plan |
 | Discoverability | Search engines, the paper, the repository | The Hugging Face catalogue and the dataset page |
 | Cost | Free | Free tier |
 
@@ -37,7 +37,7 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 
 **Type:** Balimo for headlines and text, a paid licence of about $24; the preview uses Outfit, a free look-alike. IBM Plex Mono for numbers and code.
 
-**Header:** STRABLE, then STRing-tABLE, /ˈstreɪ.bəl/ and *stray-buhl*. The version chip and the Version history link at the top. One line: accepted to the NeurIPS 2026 Evaluation and Datasets track, and the board does not list the paper's ~445 pipelines. The art is a spreadsheet with a string column dropping into a table and a selected cell holding "str".
+**Header:** STRABLE, then STRing-tABLE, /ˈstreɪ.bəl/ and *stray-buhl*. At the top: the version chip, the Version history link, the build date and the Refresh button, which re-reads `results.json` without reloading the page. Navigation: Datasets, Benchmark code, Paper, and the Submit a pipeline button to this repository. One line: accepted to the NeurIPS 2026 Evaluation and Datasets track, and the board does not list the paper's ~445 pipelines. The art is a spreadsheet with a string column dropping into a table and a selected cell holding "str".
 
 **Ticker:** top score, fastest pipeline on the front, size of the front, version.
 
@@ -45,10 +45,10 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 
 **Key:** one line each for score, fit time, predict time, modular, end-to-end and hardware.
 
-**Table:** rank, pipeline, score, fit, predict. Tags for end-to-end, anonymous, closed and API. A star marks Pareto-optimal rows, and the top three rows of the current order carry a red border. Under the table: the build date, a Refresh button that re-reads `results.json`, and Show all.
+**Table:** rank, pipeline, score, fit, predict, at a fixed height with its own scrollbar, so every pipeline is always in it. Tags for end-to-end, anonymous and closed rows. A star marks Pareto-optimal rows, and one red frame surrounds the top three rows of the current order.
 
-**Plot:** score against time on a log scale, a "Better" arrow towards the top-left corner, the front as a staircase, API models as hollow squares, a ring around the top three.
+**Plot:** score against time on a log scale, a "Better" arrow towards the top-left corner, the front as a staircase from the x axis to the right edge, labels on the front, a ring around the top three.
 
-**Version history**, then the **suggestion panel** on Pine Grove: a free-text box and an optional email, posted to a Tally form, with a link to open a GitHub issue instead.
+**Version history**, then a low **suggestion panel** on Pine Grove: a free-text box and an optional email, posted to a Tally form, with a link to open a GitHub issue instead. No footer.
 
-**Links:** Submit a pipeline → this repository's README. Paper → arXiv. Footer: repository, benchmark code, data, paper.
+**Demo:** eight steps that show where things are: the three controls, the key, the table, the plot, the version history and refresh, and how to add a model. The key, not the demo, explains how the numbers are computed.

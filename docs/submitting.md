@@ -23,7 +23,7 @@ flowchart TD
   G --> H[Claude review 2/2: agrees or not, label]
   F --> I{Maintainer merges}
   H --> I
-  B -- "no: closed, anonymous or API" --> P[Private Hugging Face repo shared with the runner account, card by email]
+  B -- "no: closed or anonymous" --> P[Private Hugging Face repo shared with the runner account, card by email]
   P --> Q[Private repository, codename if anonymous]
   Q --> R
   I --> R[Runner: 108 tables x 3 folds on our hardware]
@@ -60,7 +60,7 @@ version: "2.5"
 handles_strings: false          # false: three encoder rows. true: end-to-end
 tasks: [regression, binary, multiclass]
 variant: default                # default now; tuned and tuned-ensembled later
-access: open                    # open | closed | api
+access: open                    # open | closed
 hardware: gpu                   # gpu | cpu
 gpu_memory_gb: 24               # optional
 
@@ -80,12 +80,14 @@ What the board derives from it:
 | Field | On the board |
 |---|---|
 | `handles_strings` | The end-to-end tag, or one row per encoder |
-| `access` | `api`: an API tag and no place on the Pareto front. `closed`: a closed tag |
+| `access` | `closed`: a closed tag |
 | `hardware` | Whether the row used the GPU, shown when hovering the row |
 | `variant` | Nothing yet: only `default` is accepted. Tuned and tuned-ensembled rows come later, each from its own folder |
 | `trained_on_strable` | A contamination note on the row |
 
-Why `access` matters: *open* means anyone can rerun the row; *closed* means we ran it but only we could; *api* means the vendor's servers ran it, so the time is not comparable with the other rows and the row stays off the Pareto front. The front itself is computed from the results, so a closed model is on it only if nothing beats it.
+Why `access` matters: *open* means any reader can rerun the row, since the code, the weights, the folder and the folds are all public; *closed* means we ran it on our hardware with weights shared privately, so the numbers are comparable but only we could produce them. The Pareto front is computed from the results, so a closed model is on it only if nothing beats it.
+
+Models reachable only through a vendor's API are not on the board: they would run on the vendor's servers, so neither the time nor the hardware would be comparable. A vendor who wants a row shares the weights privately and the model runs as closed.
 
 Why a commit hash in `checkpoint.revision`: a Hugging Face repository is a git repository, and vendors update weights in place. The hash pins the exact weights that were benchmarked, so the row can be reproduced later; a branch name like `main` would silently point to newer weights.
 
@@ -101,19 +103,18 @@ There is no family field. Whether a model is a tree ensemble or a foundation mod
 
 Each version is its own folder and its own row, forever: `models/tabpfn-2.5/`, `models/tabpfn-3/`, `models/tabpfn-3.5/`. Each pins its own package version and checkpoint hash, so a new release never changes an older row. If a new checkpoint loads with the same package, the new folder can copy `model.py` and change only `model.yaml`. The runner computes only what is missing.
 
-## Open, closed, anonymous, API
+## Open, closed, anonymous
 
 | | Code and weights | Runs on | Eligible for the front | How to submit |
 |---|---|---|---|---|
 | Open | Public | Our hardware | Yes | Public pull request |
 | Closed | Private, shared with us | Our hardware | Yes, with a *closed* tag | Private channel |
 | Anonymous | Private, shared with us | Our hardware | Yes, under a codename with an *anonymous* tag | Private channel |
-| API | Never leave the vendor | The vendor's servers | No: the time includes the network | Private channel |
 
-Closed and anonymous are the same case; anonymous also hides the name. Closed, anonymous and API models do not fit a public pull request. Instead:
+Closed and anonymous are the same case; anonymous also hides the name. Neither fits a public pull request. Instead:
 
 1. The submitter creates a repository on huggingface.co, sets it to private (Settings → *Make private*: only the owner and the people listed under Settings → *Collaborators* can see or download it), uploads the package and the weights, and adds our runner account as a read collaborator. Our runner account is a Hugging Face user that exists only to download submissions.
-2. The submitter emails the model card and `model.py` to the maintainer. For an API model, the card says how the runner authenticates, the vendor pays for the calls and agrees not to train on the data, and the API version is pinned.
+2. The submitter emails the model card and `model.py` to the maintainer.
 3. The maintainer puts the folder into the private GitHub repository `strable-leaderboard-private`, same layout as `models/`. Anonymous entries get a codename from `strable_leaderboard.codenames` and `anonymous: true` in the card; the codename-to-model mapping never leaves that repository.
 4. The runner, a script on the cluster login node using the runner account's token, downloads the private repository, runs the model like any other, and the results are published here under the name or the codename. The weights never become public.
 
@@ -128,5 +129,3 @@ Closed and anonymous are the same case; anonymous also hides the name. Closed, a
 **Open, end-to-end: a model that reads strings itself.** Same steps with `handles_strings = True`; `fit` receives the raw DataFrame with its string, numeric and datetime columns. The board shows one row with an end-to-end tag.
 
 **Closed or anonymous.** The private channel above. On the board the row looks like any other, plus its tag.
-
-**API.** The private channel above. The row shows approximate times, and the plot draws it as a hollow square, off the front.

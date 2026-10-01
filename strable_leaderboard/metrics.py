@@ -78,7 +78,7 @@ def pareto_front(board: pd.DataFrame, time_col: str = "fit_per_1k", exclude=()) 
     """Pipelines that no other pipeline beats on both score and time.
 
     Sort by time, then keep a pipeline when its score is strictly higher than every faster
-    one. ``exclude`` removes pipelines from the front, such as API models.
+    one. ``exclude`` removes pipelines from the front, if ever needed.
     """
     ordered = board.drop(index=[p for p in exclude if p in board.index])
     ordered = ordered.sort_values([time_col, "score"], ascending=[True, False])

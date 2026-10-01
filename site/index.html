@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Visit counter: create a free account at https://www.goatcounter.com with the code "strable",
+     then remove the comment marks around the next line. No cookies, no banner needed. -->
+<!-- <script data-goatcounter="https://strable.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script> -->
 <title>STRABLE Leaderboard Preview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +19,7 @@
 })();
 </script>
 <style>
-/* Layout: a slim sticky preview bar (theme, demo), then the mock strable.ai site in one column:
+/* Layout: a slim sticky preview bar (theme, demo), then the leaderboard page in one column:
    nav, hero (name, pronunciation, spreadsheet art), ticker, controls with a definitions key, the board
    (table beside the Pareto plot), version history, a Pine Grove suggestion panel, footer.
    Everything stacks to one column under 1000px. */
@@ -62,13 +65,13 @@
 html { background: var(--bg); }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
-  font-family: var(--f-body); font-size: 15.5px; line-height: 1.55;
+  font-family: var(--f-body); font-size: 17px; line-height: 1.55;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.cap { font-family: var(--f-body); font-size: 11px; font-weight: 600; line-height: 1.2; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+.cap { font-family: var(--f-body); font-size: 12px; font-weight: 600; line-height: 1.2; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
 .label { font-family: var(--f-body); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; line-height: 1.6; }
 .title { font-family: var(--f-display); font-weight: 700; font-size: 28px; letter-spacing: -0.02em; line-height: 1.15; margin: 0; text-wrap: balance; }
 section { scroll-margin-top: 76px; }
@@ -86,7 +89,7 @@ section { scroll-margin-top: 76px; }
 .seg { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); }
 .seg button {
   appearance: none; border: 0; background: transparent; color: var(--ink-2); cursor: pointer;
-  font: 500 12px/1 var(--f-mono); padding: 8px 12px; border-radius: 999px; min-height: 34px;
+  font: 500 13.5px/1 var(--f-mono); padding: 8px 12px; border-radius: 999px; min-height: 34px;
   display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
 }
 .seg button:hover { color: var(--ink); background: var(--surface-2); }
@@ -95,14 +98,14 @@ section { scroll-margin-top: 76px; }
 .demo-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
 /* ---------- mock site ---------- */
-.site { max-width: 1240px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 0 56px; }
+.site { max-width: 1440px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 0 56px; }
 
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 20px; }
 .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); border-radius: 6px; }
 .logo-mark { width: 34px; height: 34px; display: block; flex: none; }
 .lm-h { fill: var(--ink); } .lm-c { fill: var(--surface); stroke: var(--line); stroke-width: 1; } .lm-s { fill: var(--accent); }
 .nav-right { display: flex; align-items: center; gap: 24px; }
-.nav-links { display: flex; gap: 22px; font-size: 15px; color: var(--ink-2); }
+.nav-links { display: flex; gap: 24px; font-size: 16.5px; color: var(--ink-2); }
 .nav-links a { text-decoration: none; }
 .nav-links a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 760px) { .nav-links { display: none; } }
@@ -120,6 +123,7 @@ section { scroll-margin-top: 76px; }
 
 .hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 28px 44px; align-items: center; padding-block: 14px 8px; }
 .eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0; color: var(--accent-2); }
+.updated { font: 500 13px/1 var(--f-mono); color: var(--ink-3); }
 .ver { font: 600 12.5px/1 var(--f-mono); color: var(--accent-ink); background: var(--accent); padding: 6px 9px; border-radius: 999px; }
 .ver-link { font-size: 14px; color: var(--ink-2); text-underline-offset: 3px; }
 .ver-link:hover { color: var(--ink); }
@@ -132,10 +136,10 @@ section { scroll-margin-top: 76px; }
 .expand .xp b { color: var(--head); font-weight: 800; }
 .expand .ipa { font-family: var(--f-mono); font-size: 17px; color: var(--ink-2); }
 .expand .say { font-style: italic; }
-.lede { font-size: 18px; line-height: 1.55; color: var(--ink-2); max-width: 34em; margin: 0 0 22px; }
+.lede { font-size: 19.5px; line-height: 1.55; color: var(--ink-2); max-width: 34em; margin: 0 0 22px; }
 .lede a { color: var(--ink); text-underline-offset: 3px; }
 .stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.stats li { font: 500 13px/1 var(--f-mono); color: var(--ink-2); border: 1px solid var(--line); background: var(--surface); padding: 8px 12px; border-radius: 999px; }
+.stats li { font: 500 14px/1 var(--f-mono); color: var(--ink-2); border: 1px solid var(--line); background: var(--surface); padding: 8px 12px; border-radius: 999px; }
 .stats b { color: var(--ink); font-weight: 600; }
 .art-wrap { justify-self: end; width: 100%; max-width: 480px; }
 .sheet { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); }
@@ -172,7 +176,7 @@ section { scroll-margin-top: 76px; }
 
 .ticker { overflow: hidden; border-block: 1px solid var(--line); margin-block: 26px 28px; white-space: nowrap; }
 .ticker-track { display: inline-flex; gap: 44px; padding-block: 10px; padding-inline-start: 44px; animation: tick 56s linear infinite; }
-.ticker span { font: 500 12px/1.2 var(--f-mono); color: var(--ink-2); letter-spacing: 0.04em; }
+.ticker span { font: 500 13.5px/1.2 var(--f-mono); color: var(--ink-2); letter-spacing: 0.04em; }
 .ticker span b { color: var(--ink); font-weight: 600; }
 .ticker:hover .ticker-track { animation-play-state: paused; }
 @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -186,46 +190,47 @@ section { scroll-margin-top: 76px; }
 @media (max-width: 1000px) { .key { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .key { grid-template-columns: 1fr; } }
 .key div { min-width: 0; }
-.key dt { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 3px; }
-.key dd { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); }
+.key dt { font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 3px; }
+.key dd { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
 .key dd b { color: var(--ink); font-weight: 600; }
 .board { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 1000px) { .board { grid-template-columns: 1fr; } }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); min-width: 0; }
 
-.tbl-wrap { overflow-x: auto; border-radius: var(--r-card) var(--r-card) 0 0; }
-table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
-.hs th { font: 600 10.5px/1.2 var(--f-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); text-align: left; padding: 14px 10px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: bottom; }
-.hs th small { display: block; font: 500 10px/1.2 var(--f-body); letter-spacing: 0.02em; text-transform: none; margin-top: 3px; }
+.tbl-wrap { height: 640px; overflow: auto; border-radius: var(--r-card) var(--r-card) 0 0; }
+.hs thead th { position: sticky; top: 0; background: var(--surface); z-index: 2; }
+table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.hs th { font: 700 13px/1.2 var(--f-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); text-align: left; padding: 16px 12px 11px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: bottom; }
+.hs th small { display: block; font: 500 12px/1.2 var(--f-body); color: var(--ink-3); letter-spacing: 0.02em; text-transform: none; margin-top: 3px; }
 .hs th.on { color: var(--ink); }
 .hs th.on span { text-decoration: underline; text-decoration-color: var(--mark); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .hs th.num, .hs td.num { text-align: right; }
-.hs td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.hs td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .hs tbody tr:last-child td { border-bottom: 0; }
 .hs tr.row:hover, .hs tr.row.is-hot { background: var(--surface-2); }
 .hs tr.row:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -2px; }
-.hs tr.top { border: 2px solid var(--mark); }
-.rank { font: 700 12.5px/1 var(--f-body); color: var(--ink-3); white-space: nowrap; width: 1%; letter-spacing: 0.03em; }
+.hs tr.top td:first-child { border-left: 2px solid var(--mark); }
+.hs tr.top td:last-child { border-right: 2px solid var(--mark); }
+.hs tr.top-first td { border-top: 2px solid var(--mark); }
+.hs tr.top-last td { border-bottom: 2px solid var(--mark); }
+.rank { font: 700 14px/1 var(--f-body); color: var(--ink-3); white-space: nowrap; width: 1%; letter-spacing: 0.03em; }
 .pipe { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; min-width: 0; }
 .enc { color: var(--ink-2); white-space: nowrap; }
 .join { color: var(--ink-3); font-size: 11px; }
 .lrn { color: var(--ink); font-weight: 600; white-space: nowrap; }
-.tag { font: 600 9px/1 var(--f-mono); letter-spacing: 0.1em; color: var(--ink-3); border: 1px solid var(--line); padding: 3px 5px; border-radius: 999px; white-space: nowrap; }
+.tag { font: 600 10px/1 var(--f-mono); letter-spacing: 0.1em; color: var(--ink-3); border: 1px solid var(--line); padding: 3px 5px; border-radius: 999px; white-space: nowrap; }
 .tag.e2e { color: var(--accent-2); border-color: var(--accent-2); }
 .tag.anon { color: var(--mark); border-color: var(--mark); }
 .tag.closed { color: var(--ink-2); border-color: var(--ink-3); }
-.tag.api { color: var(--ink-3); border-style: dashed; }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
 .star path { fill: var(--mark); }
 .score { color: var(--ink); font-weight: 600; }
 .time { color: var(--ink-2); white-space: nowrap; }
 .time.on { color: var(--ink); font-weight: 600; }
-.time.api { color: var(--ink-3); font-weight: 400; }
 .hw { font: 600 10px/1 var(--f-mono); letter-spacing: 0.08em; color: var(--ink-3); white-space: nowrap; }
-.group td { font: 600 11px/1.3 var(--f-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); padding: 16px 10px 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
-.tbl-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 12px; border-top: 1px solid var(--line); }
-.tbl-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.group td { font: 700 12.5px/1.3 var(--f-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); padding: 16px 10px 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.tbl-foot { padding: 10px 14px; border-top: 1px solid var(--line); }
 .linkbtn { appearance: none; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: 500 12.5px/1 var(--f-mono); padding: 9px 14px; border-radius: 999px; cursor: pointer; min-height: 36px; }
 .linkbtn:hover { border-color: var(--ink-3); }
 .linkbtn:disabled { opacity: 0.6; cursor: default; }
@@ -233,48 +238,45 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 
 .plot-card { padding: 16px 16px 14px; position: relative; }
 .plot-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: baseline; }
-.card-title { font-family: var(--f-display); font-weight: 700; font-size: 17px; letter-spacing: -0.01em; line-height: 1.3; margin: 0; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--ink-2); margin: 0; padding: 0; list-style: none; }
+.card-title { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; line-height: 1.3; margin: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14.5px; color: var(--ink-2); margin: 0; padding: 0; list-style: none; }
 .legend li { display: inline-flex; align-items: center; gap: 7px; }
 .sw { width: 10px; height: 10px; display: inline-block; }
 .sw-on { background: var(--mark); }
 .sw-off { background: var(--mark-muted); }
-.sw-api { background: var(--surface); box-shadow: inset 0 0 0 2px var(--mark-muted); }
 .sw-top { background: transparent; box-shadow: 0 0 0 2px var(--mark); width: 8px; height: 8px; margin: 1px; }
 .sw-line { width: 16px; height: 2px; background: var(--mark); }
 #plot { position: relative; margin-top: 10px; touch-action: pan-y; }
 #plot svg { display: block; width: 100%; height: auto; }
-.ax text { fill: var(--ink-3); font: 11px var(--f-mono); }
-.ax .ttl { fill: var(--ink-2); font: 500 11.5px var(--f-mono); }
+.ax text { fill: var(--ink-2); font: 13px var(--f-mono); }
+.ax .ttl { fill: var(--ink); font: 600 14px var(--f-mono); }
 .grid-l { stroke: var(--line); stroke-width: 1; shape-rendering: crispEdges; }
 .frontier { fill: none; stroke: var(--mark); stroke-width: 2; stroke-linejoin: round; stroke-linecap: square; }
 .pt { fill: var(--mark-muted); stroke: var(--surface); stroke-width: 2; }
 .pt.on { fill: var(--mark); }
-.pt.api { fill: var(--surface); stroke: var(--mark-muted); stroke-width: 2; }
 .pt.hot { stroke: var(--ink); stroke-width: 2.5; }
 .top-ring { fill: none; stroke: var(--mark); stroke-width: 2; pointer-events: none; }
-.plabel { fill: var(--ink-2); font: 500 11px var(--f-mono); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.plabel { fill: var(--ink); font: 600 13.5px var(--f-mono); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
 .better { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
 .better-head { fill: var(--ink-3); }
-.better-t { fill: var(--ink-2); font: 600 11.5px var(--f-body); letter-spacing: 0.04em; }
-.tip { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 5; background: var(--ink); color: var(--bg); font: 12px/1.5 var(--f-mono); padding: 8px 12px; border-radius: 10px; white-space: nowrap; }
+.better-t { fill: var(--ink); font: 700 15px var(--f-body); letter-spacing: 0.04em; }
+.tip { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 5; background: var(--ink); color: var(--bg); font: 13.5px/1.5 var(--f-mono); padding: 8px 12px; border-radius: 10px; white-space: nowrap; }
 .tip b { font-weight: 600; font-size: 13px; }
 .tip .muted { opacity: 0.8; }
-.plot-foot { margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
 
 /* ---------- version history ---------- */
 .history { margin-top: 44px; display: grid; gap: 14px; }
 .history-sub { margin: 6px 0 0; color: var(--ink-3); font-size: 14.5px; }
 .history ol { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); }
-.history li { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 15px; color: var(--ink-2); }
+.history li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 16px; color: var(--ink-2); }
 .history li:last-child { border-bottom: 0; }
-.history li b { font: 600 13px/1.7 var(--f-mono); color: var(--ink); }
+.history li b { font: 600 14px/1.7 var(--f-mono); color: var(--ink); }
 
 /* ---------- suggestion panel (Pine Grove in both themes) ---------- */
-.ask { margin-top: 44px; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 24px 44px; padding: 32px; border-radius: var(--r-card); background: var(--pine); color: var(--pine-ink); border: 1px solid var(--pine-line); }
+.ask { margin-top: 44px; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 16px 44px; padding: 22px 28px; border-radius: var(--r-card); background: var(--pine); color: var(--pine-ink); border: 1px solid var(--pine-line); }
 @media (max-width: 860px) { .ask { grid-template-columns: 1fr; padding: 24px 18px; } }
 .ask .label { color: var(--pine-ink-2); margin: 0; }
-.ask h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 3.2vw, 38px); letter-spacing: -0.02em; line-height: 1.1; margin: 12px 0 14px; text-wrap: balance; }
+.ask h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(24px, 2.6vw, 32px); letter-spacing: -0.02em; line-height: 1.1; margin: 10px 0 0; text-wrap: balance; }
 .ask > div > p { margin: 0; color: var(--pine-ink-2); max-width: 30em; }
 .ask .cap { color: var(--pine-ink-2); }
 .ask :focus-visible { outline-color: var(--pine-ink); }
@@ -284,17 +286,14 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .ask .form-msg { color: var(--pine-ink); }
 .ask .fine { color: var(--pine-ink-2); }
 .ask .fine a { color: var(--pine-ink); text-underline-offset: 3px; }
-.form { display: grid; gap: 16px; align-content: start; min-width: 0; }
-.field { display: grid; gap: 8px; min-width: 0; }
+.form { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.field { display: grid; gap: 6px; min-width: 0; }
 .input { font: 15px var(--f-mono); padding: 12px 14px; border: 1.5px solid var(--ink-3); background: var(--bg); color: var(--ink); border-radius: 12px; width: 100%; min-height: 46px; }
-textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-family: var(--f-body); font-size: 16px; }
+textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-family: var(--f-body); font-size: 16px; }
 .form-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
 .form-msg { font: 500 13px/1.4 var(--f-mono); margin: 0; min-height: 1.4em; }
 .fine { font-size: 13px; margin: 0; }
 
-.foot { margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; color: var(--ink-3); font-size: 13.5px; }
-.foot a { color: var(--ink-2); }
-.foot p { margin: 0; max-width: 60em; }
 
 /* ---------- demo tour ---------- */
 .tour { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(660px, calc(100% - 32px)); z-index: 60; background: var(--ink); color: var(--bg); border-radius: 14px; box-shadow: 0 0 0 3px var(--mark); padding: 14px 16px 12px; display: grid; gap: 10px; }
@@ -315,7 +314,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
 </head>
 <body>
 <div class="pv" role="region" aria-label="Preview controls">
-  <span class="pv-label">Design preview · strable.ai</span>
+  <span class="pv-label">Design preview</span>
   <div class="seg" role="group" aria-label="Theme">
     <button type="button" id="th-auto" data-th="auto" aria-pressed="true">Auto</button>
     <button type="button" id="th-light" data-th="light" aria-pressed="false">Light</button>
@@ -340,8 +339,8 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
     </a>
     <div class="nav-right">
       <nav class="nav-links" aria-label="Main">
-        <a href="#board">Leaderboard</a>
         <a href="https://huggingface.co/datasets/inria-soda/STRABLE-benchmark">Datasets</a>
+        <a href="https://github.com/soda-inria/strable">Benchmark code</a>
         <a href="https://arxiv.org/abs/2605.12292">Paper</a>
       </nav>
       <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-new-model">Submit a pipeline</a>
@@ -350,7 +349,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
 
   <section class="hero" aria-labelledby="hero-title">
     <div>
-      <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip">v0.1.3</span><a class="ver-link" href="#history">Version history</a></p>
+      <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip">v0.1.1</span><a class="ver-link" href="#history">Version history</a><span class="updated" id="updated"></span><button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button></p>
       <h1 id="hero-title">STRABLE</h1>
       <p class="expand"><span class="xp"><b>STR</b>ing-t<b>ABLE</b></span><span class="ipa">/ˈstreɪ.bəl/</span><span class="say">stray-buhl</span></p>
       <p class="lede">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. New models come out all the time, so the board does not list all ~445 pipelines from <a href="https://arxiv.org/abs/2605.12292">the paper</a>.</p>
@@ -462,7 +461,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
         <div><dt>Predict time</dt><dd>String embedding + prediction, seconds per 1K rows.</dd></div>
         <div><dt>Modular</dt><dd>Each string column becomes 30 numbers: Tf-Idf with SVD, or the first 30 embedding dimensions of MiniLM-L6-v2 or LLaMA-3.1-8B. Then a tabular learner fits.</dd></div>
         <div><dt>End-to-end</dt><dd>The model reads the raw strings itself. Anonymous models appear under a codename.</dd></div>
-        <div><dt>Hardware</dt><dd>One node for every row: 1 NVIDIA [GPU model], 32 CPU cores, 128 GB RAM. Hover a row to see whether it used the GPU. API rows ran on the vendor's servers.</dd></div>
+        <div><dt>Hardware</dt><dd>One node for every row: 1 NVIDIA [GPU model], 32 CPU cores, 128 GB RAM. Hover a row to see whether it used the GPU.</dd></div>
       </dl>
     </div>
 
@@ -483,11 +482,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
           </table>
         </div>
         <div class="tbl-foot">
-          <p class="note"><span id="updated"></span> · Placeholder numbers: the pipeline names come from the paper, the scores and times do not.</p>
-          <div class="tbl-btns">
-            <button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button>
-            <button type="button" class="linkbtn" id="toggle-all">Show all</button>
-          </div>
+          <p class="note">Placeholder numbers: the pipeline names come from the paper, the scores and times do not.</p>
         </div>
       </div>
 
@@ -497,13 +492,11 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
           <ul class="legend">
             <li><span class="sw sw-on"></span>Pareto-optimal</li>
             <li><span class="sw sw-off"></span>Not on the front</li>
-            <li><span class="sw sw-api"></span>API model</li>
             <li><span class="sw sw-top"></span>Top 3 in this order</li>
             <li><span class="sw sw-line"></span>Pareto front</li>
           </ul>
         </div>
         <div id="plot"></div>
-        <p class="plot-foot">API models are shown but kept off the front: their time includes the network.</p>
       </div>
     </div>
   </section>
@@ -514,7 +507,6 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
       <p class="history-sub">What changed in each version of the leaderboard.</p>
     </div>
     <ol>
-      <li><b>v0.1.2</b><span>Added Embedding API + TabPFN-2.5, an API model. Example entry.</span></li>
       <li><b>v0.1.1</b><span>Re-ran CatBoost on 3 tables after a timing fix. Other scores unchanged. Example entry.</span></li>
       <li><b>v0.1.0</b><span>First public version: 13 pipelines on 108 tables, default configs. Example entry.</span></li>
     </ol>
@@ -524,12 +516,11 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
     <div>
       <p class="label">Help us improve STRABLE</p>
       <h2 id="ideas-title">Which feature would you like to see on STRABLE?</h2>
-      <p>Tell us in your own words. Every suggestion is read, and the most requested ones shape the next versions.</p>
     </div>
     <form class="form" id="ideas-form" novalidate>
       <div class="field">
         <label class="cap" for="ideas-text">Your suggestion</label>
-        <textarea class="input" id="ideas-text" name="text" rows="4" placeholder="For example: show results for tables that are mostly free text"></textarea>
+        <textarea class="input" id="ideas-text" name="text" rows="2" placeholder="For example: show results for tables that are mostly free text"></textarea>
       </div>
       <div class="field">
         <label class="cap" for="ideas-email">Your email, optional</label>
@@ -539,14 +530,10 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
         <button class="btn" type="submit">Send suggestion</button>
         <p class="form-msg" id="ideas-msg" role="status"></p>
       </div>
-      <p class="fine">Suggestions go to gioia.blayer@inria.fr through a free Tally form. Prefer GitHub? <a href="https://github.com/gblayer/strable-leaderboard/issues/new/choose">Open an issue</a>. In this preview, nothing is sent.</p>
+      <p class="fine">Suggestions go to gioia.blayer@inria.fr. Prefer GitHub? <a href="https://github.com/gblayer/strable-leaderboard/issues/new/choose">Open an issue</a>.</p>
     </form>
   </section>
 
-  <footer class="foot">
-    <p>strable.ai</p>
-    <p><a href="https://github.com/gblayer/strable-leaderboard">Leaderboard repository</a> · <a href="https://github.com/soda-inria/strable">Benchmark code</a> · <a href="https://huggingface.co/datasets/inria-soda/STRABLE-benchmark">Data</a> · <a href="https://arxiv.org/abs/2605.12292">Paper</a></p>
-  </footer>
 </div>
 
 <div class="tour" id="tour" role="dialog" aria-live="polite" aria-label="Demo tour" hidden>
@@ -566,7 +553,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
 
 <script>
 /* Placeholder pipelines. Per task: [score, fit seconds per 1K training rows, predict seconds per 1K rows].
-   kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU", "CPU" or "API" (shown in the tooltip; API rows get a tag).
+   kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU" or "CPU", shown in the tooltip.
    Optional flags: anon (codename, name never revealed), closed (named, weights not public).
    The real site loads the same records from results.json, see refresh(). */
 let DATA = [
@@ -582,10 +569,9 @@ let DATA = [
   { id: 'llama-tabpfn', enc: 'LLaMA-3.1-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.741, 145, 156], clf: [0.895, 130, 139] },
   { id: 'contexttab', enc: '', lrn: 'ConTextTab', kind: 'e2e', hw: 'GPU', reg: [0.722, 0.6, 24], clf: [0.884, 0.55, 21] },
   { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', hw: 'GPU', reg: [0.668, 46, 2.8], clf: [0.873, 42, 2.5] },
-  { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.5, 0.25], clf: [0.868, 8.6, 0.22] },
-  { id: 'api-tabpfn', enc: 'Embedding API', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'API', reg: [0.741, 32, 36], clf: [0.903, 29, 32] }
+  { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.5, 0.25], clf: [0.868, 8.6, 0.22] }
 ];
-let VERSION = 'v0.1.2', BUILT = '2026-10-01';
+let VERSION = 'v0.1.1', BUILT = '2026-10-01';
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-model';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TASKS = {
@@ -599,8 +585,7 @@ const TIMES = {
   fit: { name: 'Fit', title: 'Score vs fit time', axis: 'Fit time: embedding + training, s per 1K rows, log scale', fastest: 'FASTEST TO FIT ON THE FRONT ' },
   pred: { name: 'Predict', title: 'Score vs predict time', axis: 'Predict time: embedding + prediction, s per 1K rows, log scale', fastest: 'FASTEST TO PREDICT ON THE FRONT ' }
 };
-const LIMIT = 12;
-const state = { task: 'both', time: 'both', sort: 'pareto', showAll: false, hot: null };
+const state = { task: 'both', time: 'both', sort: 'pareto', hot: null };
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -616,11 +601,11 @@ function items(task, time) {
       fit = (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL;
       pred = (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL;
     } else { s = d[task][0]; fit = d[task][1]; pred = d[task][2]; }
-    return { id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, api: d.hw === 'API', s: s, fit: fit, pred: pred, t: time === 'fit' ? fit : time === 'pred' ? pred : fit + pred };
+    return { id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, s: s, fit: fit, pred: pred, t: time === 'fit' ? fit : time === 'pred' ? pred : fit + pred };
   });
 }
 function paretoSet(list) {
-  const byTime = list.filter((d) => !d.api).sort((a, b) => a.t - b.t || b.s - a.s);
+  const byTime = [...list].sort((a, b) => a.t - b.t || b.s - a.s);
   const ids = new Set(); let best = -Infinity;
   for (const it of byTime) { if (it.s > best + 1e-12) { ids.add(it.id); best = it.s; } }
   return ids;
@@ -650,10 +635,9 @@ function renderTable(list, front, rows) {
   $('th-fit').classList.toggle('on', state.time !== 'pred');
   $('th-pred').classList.toggle('on', state.time !== 'fit');
   const nOn = rows.filter((d) => front.has(d.id)).length;
-  const base = Math.max(LIMIT, state.sort === 'pareto' ? nOn + 4 : LIMIT);
-  const limit = state.showAll ? rows.length : base;
+  const nTop = state.sort === 'pareto' ? Math.min(3, nOn) : 3;  // one red frame around the first rows
   let group = null;
-  rows.slice(0, limit).forEach((d, i) => {
+  rows.forEach((d, i) => {
     if (state.sort === 'pareto') {
       const g = front.has(d.id) ? 'on' : 'off';
       if (g !== group) {
@@ -664,7 +648,7 @@ function renderTable(list, front, rows) {
         gr.appendChild(td); tbody.appendChild(gr);
       }
     }
-    const tr = el('tr', 'row' + (i < 3 ? ' top' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
+    const tr = el('tr', 'row' + (i < nTop ? ' top' : '') + (i === 0 ? ' top-first' : '') + (i === nTop - 1 ? ' top-last' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
     tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', fit ' + fmtT(d.fit) + ', predict ' + fmtT(d.pred) + ' per 1K rows, runs on ' + d.hw + (front.has(d.id) ? ', Pareto-optimal' : ''));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
@@ -672,23 +656,18 @@ function renderTable(list, front, rows) {
     else { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); p.appendChild(el('span', 'lrn', d.lrn)); }
     if (d.anon) p.appendChild(el('span', 'tag anon', 'ANONYMOUS'));
     else if (d.closed) p.appendChild(el('span', 'tag closed', 'CLOSED'));
-    if (d.api) p.appendChild(el('span', 'tag api', 'API'));
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
     tr.appendChild(el('td', 'num score', fmtS(d.s)));
-    const approx = d.api ? '≈ ' : '';
-    tr.appendChild(el('td', 'num time' + (state.time !== 'pred' ? ' on' : '') + (d.api ? ' api' : ''), approx + fmtN(d.fit)));
-    tr.appendChild(el('td', 'num time' + (state.time !== 'fit' ? ' on' : '') + (d.api ? ' api' : ''), approx + fmtN(d.pred)));
+    tr.appendChild(el('td', 'num time' + (state.time !== 'pred' ? ' on' : ''), fmtN(d.fit)));
+    tr.appendChild(el('td', 'num time' + (state.time !== 'fit' ? ' on' : ''), fmtN(d.pred)));
     tr.addEventListener('pointerenter', () => setHot(d.id));
     tr.addEventListener('pointerleave', () => setHot(null));
     tr.addEventListener('focus', () => setHot(d.id));
     tr.addEventListener('blur', () => setHot(null));
     tbody.appendChild(tr);
   });
-  const btn = $('toggle-all');
-  btn.hidden = rows.length <= base;
-  btn.textContent = state.showAll ? 'Show top ' + base : 'Show all ' + rows.length + ' pipelines';
 }
 
 let plotGeom = null;
@@ -700,7 +679,7 @@ function renderPlot(list, front, top) {
   const host = $('plot'); host.textContent = '';
   const W = Math.max(280, host.clientWidth || 520);
   const H = Math.round(Math.max(300, Math.min(440, W * 0.8)));
-  const m = { l: 50, r: 16, t: 14, b: 46 };
+  const m = { l: 56, r: 18, t: 14, b: 50 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   if (!list.length) return;
   const T = TASKS[state.task], TM = TIMES[state.time];
@@ -730,7 +709,7 @@ function renderPlot(list, front, top) {
     const x = Math.round(X(Math.pow(10, k))) + 0.5;
     ax.appendChild(sv('line', { class: 'grid-l', x1: x, x2: x, y1: m.t, y2: H - m.b }));
     const v = Math.pow(10, k);
-    const tx = sv('text', { x: x, y: H - m.b + 18, 'text-anchor': 'middle' });
+    const tx = sv('text', { x: x, y: H - m.b + 18, 'text-anchor': k === x1 ? 'end' : k === x0 ? 'start' : 'middle' });
     tx.textContent = (v >= 1 ? v.toLocaleString('en-US') : String(v)) + ' s'; ax.appendChild(tx);
   }
   const xt = sv('text', { class: 'ttl', x: m.l + iw / 2, y: H - 6, 'text-anchor': 'middle' }); xt.textContent = TM.axis; ax.appendChild(xt);
@@ -742,30 +721,30 @@ function renderPlot(list, front, top) {
   const tipX = m.l + 12, tipY = m.t + 10, tailX = m.l + 62, tailY = m.t + 52;
   svg.appendChild(sv('line', { class: 'better', x1: tailX, y1: tailY, x2: tipX, y2: tipY, 'marker-end': 'url(#better-head)' }));
   const bt = sv('text', { class: 'better-t', x: tailX + 5, y: tailY + 13 }); bt.textContent = 'Better'; svg.appendChild(bt);
-  const boxes = [{ x: m.l, y: m.t, w: 124, h: 72 }];
+  const boxes = [{ x: m.l, y: m.t, w: 140, h: 76 }];
 
   if (fr.length) {
-    let d = 'M' + X(fr[0].t) + ' ' + Y(fr[0].s);
+    let d = 'M' + X(fr[0].t) + ' ' + (H - m.b) + ' V' + Y(fr[0].s);  // from the x axis up to the fastest point
     for (let i = 1; i < fr.length; i++) d += ' H' + X(fr[i].t) + ' V' + Y(fr[i].s);
     d += ' H' + (W - m.r);
     svg.appendChild(sv('path', { class: 'frontier', d: d }));
   }
   const pts = sv('g', {});
   const geo = [];
-  const rankOf = (d) => (front.has(d.id) ? 2 : d.api ? 1 : 0);
+  const rankOf = (d) => (front.has(d.id) ? 1 : 0);
   const draw = [...list].sort((a, b) => rankOf(a) - rankOf(b));
   for (const d of draw) {
     const on = front.has(d.id), sz = on ? 10 : 8, cx = X(d.t), cy = Y(d.s);
-    const r = sv('rect', { class: 'pt' + (on ? ' on' : '') + (d.api ? ' api' : ''), x: cx - sz / 2, y: cy - sz / 2, width: sz, height: sz });
+    const r = sv('rect', { class: 'pt' + (on ? ' on' : ''), x: cx - sz / 2, y: cy - sz / 2, width: sz, height: sz });
     pts.appendChild(r); geo.push({ d, cx, cy, node: r, on });
     if (top && top.has(d.id)) pts.appendChild(sv('rect', { class: 'top-ring', x: cx - sz / 2 - 4, y: cy - sz / 2 - 4, width: sz + 8, height: sz + 8 }));
   }
   svg.appendChild(pts);
 
   const labels = sv('g', {});
-  const charW = 6.7;
+  const charW = 8.2;
   [...fr].sort((a, b) => b.s - a.s).forEach((d) => {
-    const txt = pipeName(d), w = txt.length * charW, h = 13;
+    const txt = pipeName(d), w = txt.length * charW, h = 16;
     const cx = X(d.t), cy = Y(d.s);
     const cands = [[cx + 9, cy + 16, 'start'], [cx - 9, cy - 9, 'end'], [cx + 9, cy - 9, 'start'], [cx - 9, cy + 16, 'end']];
     for (const [lx, ly, anchor] of cands) {
@@ -802,9 +781,8 @@ function showTip(id) {
   tip.textContent = '';
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
   tip.appendChild(l1);
-  const approx = g.d.api ? '≈ ' : '';
-  tip.appendChild(el('div', null, 'fit ' + approx + fmtT(g.d.fit) + '  ·  predict ' + approx + fmtT(g.d.pred) + ' per 1K rows'));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + ' · runs on ' + g.d.hw + (g.on ? ' · ★ Pareto-optimal' : g.d.api ? ' · time includes the network' : '')));
+  tip.appendChild(el('div', null, 'fit ' + fmtT(g.d.fit) + '  ·  predict ' + fmtT(g.d.pred) + ' per 1K rows'));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + ' · runs on ' + g.d.hw + (g.on ? ' · ★ Pareto-optimal' : '')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -844,9 +822,9 @@ function render() {
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
-  renderPlot(list, front, new Set(rows.slice(0, 3).map((d) => d.id)));
+  renderPlot(list, front, new Set(rows.slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id)));
   renderTicker(list, front);
-  $('stat-n').textContent = String(DATA.length);
+  $('stat-n').textContent = String(list.length);
   $('ver-chip').textContent = VERSION;
   $('key-score').textContent = TASKS[state.task].key;
   $('plot-title').textContent = TIMES[state.time].title;
@@ -855,10 +833,9 @@ function render() {
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
 }
 
-document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; state.showAll = false; render(); }));
+document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; render(); }));
 document.querySelectorAll('[data-time]').forEach((b) => b.addEventListener('click', () => { state.time = b.dataset.time; render(); }));
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
-$('toggle-all').addEventListener('click', () => { state.showAll = !state.showAll; render(); });
 
 /* Refresh: fetch results.json next to the page and re-render. On the real site a results merge
    rebuilds that file, so the board updates without a page reload. The preview has no results.json
@@ -908,18 +885,22 @@ $('ideas-form').addEventListener('submit', (ev) => {
 
 /* ---------- demo tour: task, sort, time, model types, Pareto plot, adding a model ---------- */
 const TOUR = [
-  { sel: '#ctl-task', block: 'center', task: 'both',
-    text: 'Task. Both averages R² on the 76 regression tables and AUC on the 32 classification tables. Regression or Classification shows one task alone.' },
-  { sel: '#ctl-sort', block: 'center', sort: 'score',
-    text: 'Sort. ★ Pareto puts the best trade-offs between score and time first, and is the default. Score ranks by accuracy, Time by speed.' },
+  { sel: '#ctl-task', block: 'center', task: 'reg',
+    text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
   { sel: '#ctl-time', block: 'center', time: 'pred',
-    text: 'Time. Both is fit plus predict per 1K rows. Fit counts string embedding and training; Predict counts embedding and prediction on new rows. The plot and the Pareto order follow this choice.' },
+    text: 'Time. Pick which time the plot and the Pareto order use: fit plus predict, or either alone. The underlined column is the one in use.' },
+  { sel: '#ctl-sort', block: 'center', sort: 'score',
+    text: 'Sort. Pareto first, or by score or time. The top three rows of any order get a red frame, here and in the plot.' },
+  { sel: '#key', block: 'center',
+    text: 'The key says how each number is computed: the score, the two times, and what modular, end-to-end and the hardware mean.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
-    text: 'Two kinds of pipelines. Modular ones pair a string encoder with a tabular learner. End-to-end models read raw strings themselves and carry a tag. Anonymous models appear under a codename.' },
+    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, anonymous and closed rows, a star marks the Pareto front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf-tabpfn',
-    text: 'The plot. Each square is a pipeline: higher is more accurate, further left is faster. The arrow points to the ideal corner. The line joins the Pareto-optimal pipelines, which no other pipeline beats on both.' },
+    text: 'The plot: score against time, log scale. The line is the Pareto front and the arrow points to the ideal corner. Hover a point for its numbers.' },
+  { sel: '#history', block: 'center',
+    text: 'Version history lists what changed in each version. The version chip at the top shows the current one, and Refresh fetches the latest results.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
-    text: 'Adding a model. Open a pull request on the leaderboard repository. We run it on our hardware, and the board refreshes with the results.' }
+    text: 'Adding a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
 ];
 let tour = null;
 function clearFocus() { document.querySelectorAll('.tour-focus').forEach((n) => n.classList.remove('tour-focus')); }
@@ -929,7 +910,7 @@ function startBar() {
 }
 function applyStep(s) {
   state.task = s.task || 'both'; state.time = s.time || 'both'; state.sort = s.sort || 'pareto';
-  state.showAll = false; state.hot = s.hot || null;
+  state.hot = s.hot || null;
   render();
 }
 function showStep() {
@@ -1000,7 +981,7 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();
 let rz = null;
-new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task, state.time); if (list.length) { const front = paretoSet(list); renderPlot(list, front, new Set(ordered(list, state.sort, front).slice(0, 3).map((d) => d.id))); } }); }).observe($('plot'));
+new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task, state.time); if (list.length) { const front = paretoSet(list); renderPlot(list, front, new Set(ordered(list, state.sort, front).slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id))); } }); }).observe($('plot'));
 </script>
 
 </body>

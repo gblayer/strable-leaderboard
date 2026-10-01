@@ -33,7 +33,7 @@ SMOKE_TABLES = {
 REQUIRED = ["name", "version", "handles_strings", "tasks", "variant", "access", "hardware", "package", "checkpoint",
             "licence", "trained_on_strable"]
 VARIANTS = {"default"}  # tuned and tuned-ensembled come later
-ACCESS = {"open", "closed", "api"}
+ACCESS = {"open", "closed"}
 HARDWARE = {"gpu", "cpu"}
 TASKS = {"regression", "binary", "multiclass"}
 

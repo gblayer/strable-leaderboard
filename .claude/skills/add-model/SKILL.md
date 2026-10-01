@@ -18,7 +18,7 @@ Take them from the user's repository, package docs or model card; ask only for w
 - Tasks, gpu or cpu, GPU memory, licence, code and paper links.
 - STRABLE tables in its pre-training or tuning data, for `trained_on_strable`.
 
-Closed, anonymous or API model: stop here and point the user to `docs/submitting.md`, section "Open, closed, anonymous, API". They do not go through a public pull request.
+Closed or anonymous model, or a model only reachable through an API: stop here and point the user to `docs/submitting.md`, section "Open, closed, anonymous". They do not go through a public pull request.
 
 ## 2. Folder
 

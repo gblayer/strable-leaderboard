@@ -23,20 +23,22 @@ OUT = ROOT / "docs"
 URLS = {
     "Outfit.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/outfit/Outfit%5Bwght%5D.ttf",
     "IBMPlexMono-Medium.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexmono/IBMPlexMono-Medium.ttf",
+    "NotoSansMono.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth%2Cwght%5D.ttf",
 }
 
 _cache = {}
 
 
-def font(name, wght=None):
-    key = (name, wght)
+def font(name, wght=None, wdth=None):
+    key = (name, wght, wdth)
     if key not in _cache:
         FONTS.mkdir(exist_ok=True)
         if not (FONTS / name).exists():
             urllib.request.urlretrieve(URLS[name], FONTS / name)
         f = TTFont(FONTS / name)
         if wght is not None and "fvar" in f:
-            f = instantiateVariableFont(f, {"wght": wght})
+            axes = {"wght": wght, **({"wdth": wdth} if wdth is not None else {})}
+            f = instantiateVariableFont(f, axes)
         _cache[key] = f
     return _cache[key]
 
@@ -124,29 +126,22 @@ def sheet(c, ox, oy):
 def banner(c):
     black = font("Outfit.ttf", 800)
     medium = font("Outfit.ttf", 500)
-    bold = font("Outfit.ttf", 700)
-    mono = font("IBMPlexMono-Medium.ttf")
-    out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="STRABLE leaderboard">',
+    ipa = font("NotoSansMono.ttf", 500, 100)  # Plex Mono lacks the IPA glyphs
+    out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="STRABLE, STRing-tABLE, pronounced stray-buhl: the living leaderboard of 108 real-world tables with raw strings">',
            f'<rect width="{W}" height="{H}" rx="18" fill="{c["bg"]}"/>']
-    # eyebrow: LEADERBOARD chip + line
-    d, end = text_path(bold, "LEADERBOARD", 12.5, 64, 70, tracking=0.16)
-    out.append(f'<path d="{d}" fill="{c["accent2"]}"/>')
-    d, end2 = text_path(mono, "strable.ai", 13, end + 18, 70)
-    out.append(f'<path d="{d}" fill="{c["ink2"]}"/>')
-    # wordmark
-    d, end = text_path(black, "STRABLE", 124, 60, 188, tracking=-0.03)
+    d, _ = text_path(black, "STRABLE", 124, 60, 158, tracking=-0.03)
     out.append(f'<path d="{d}" fill="{c["head"]}"/>')
-    # expansion line: STRing-tABLE with bold STR and ABLE, then the pronunciation
     x = 64
     for t, f, col in [("STR", black, c["head"]), ("ing-t", medium, c["ink2"]), ("ABLE", black, c["head"])]:
-        d, x = text_path(f, t, 24, x, 232, tracking=0.01)
+        d, x = text_path(f, t, 26, x, 206, tracking=0.01)
         out.append(f'<path d="{d}" fill="{col}"/>')
-    # no IPA here: Plex Mono lacks the glyphs for it
-    d, x = text_path(medium, "stray-buhl", 22, x + 18, 232)
-    out.append(f'<path d="{d}" fill="{c["ink3"]}"/>')
-    # tagline
-    d, _ = text_path(medium, "The living leaderboard of 108 real-world tables with raw strings.", 17.5, 64, 276)
+    d, x = text_path(ipa, "/\u02c8stre\u026a.b\u0259l/", 21, x + 18, 206)
     out.append(f'<path d="{d}" fill="{c["ink2"]}"/>')
+    d, x = text_path(medium, "stray-buhl", 24, x + 18, 206)
+    out.append(f'<path d="{d}" fill="{c["ink3"]}"/>')
+    for line, y in [("The living leaderboard of 108 real-world", 262), ("tables with raw strings.", 294)]:
+        d, _ = text_path(medium, line, 23, 64, y)
+        out.append(f'<path d="{d}" fill="{c["ink2"]}"/>')
     out.append(sheet(c, W - 420 - 56, 36))
     out.append("</svg>")
     return "\n".join(out)

@@ -16,7 +16,7 @@ Read the pull request with `gh pr view`, `gh pr diff` and `gh pr checks`. Never 
 **Card**
 - Every required field of `models/_template/model.yaml`, with allowed values for `access`, `hardware` and `tasks`. `variant` is `default`: other variants are not accepted yet.
 - `checkpoint.revision` is a commit hash, or `checkpoint` is null for a model without weights.
-- `access` is `open`: closed, anonymous and API models never come through a public pull request.
+- `access` is `open`: closed and anonymous models never come through a public pull request.
 - `trained_on_strable` is filled in; mention any listed table in the verdict.
 
 **Pins**
