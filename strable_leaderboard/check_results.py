@@ -1,0 +1,98 @@
+"""Check a results file before it reaches the board.
+
+    python -m strable_leaderboard.check_results results/<model>.csv
+
+One row per (encoder, table, outer fold). Prints the problems found and the coverage per
+view, and exits non-zero on any problem. The Checks workflow runs it on every results
+pull request, and the Claude review reads its output.
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+from .data import MANIFEST
+from .encoders import ENCODERS
+from .metrics import VIEWS
+
+COLUMNS = ["model", "encoder", "table", "task", "fold", "score", "fit_s", "predict_s", "n_train", "n_test",
+           "hardware", "package", "checkpoint_revision", "protocol_version", "date"]
+FOLDS = 3
+
+
+def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
+    """Return (problems, coverage lines) for one results file."""
+    problems: list[str] = []
+    tables = manifest["tables"]
+    df = pd.read_csv(path)
+
+    missing = [c for c in COLUMNS if c not in df.columns]
+    if missing:
+        return [f"missing columns {missing}"], []
+    if set(df["model"]) != {path.stem}:
+        problems.append(f"model must be {path.stem!r} on every row, found {sorted(set(df['model']))}")
+    unknown = sorted(set(df["table"]) - set(tables))
+    if unknown:
+        problems.append(f"unknown tables {unknown[:5]}")
+    bad_enc = sorted(set(df["encoder"]) - set(ENCODERS) - {"none"})
+    if bad_enc:
+        problems.append(f"unknown encoders {bad_enc}")
+    dup = df.duplicated(["encoder", "table", "fold"]).sum()
+    if dup:
+        problems.append(f"{dup} duplicate (encoder, table, fold) rows")
+    if not df["fold"].isin(range(FOLDS)).all():
+        problems.append("fold must be 0, 1 or 2")
+    for col in ["hardware", "package", "protocol_version", "date"]:
+        if df[col].isna().any() or (df[col].astype(str).str.strip() == "").any():
+            problems.append(f"empty values in {col}")
+    if (df[["fit_s", "predict_s"]] <= 0).any().any():
+        problems.append("fit_s and predict_s must be positive")
+
+    known = df[df["table"].isin(tables)]
+    task = known["table"].map(lambda t: tables[t]["task"])
+    if (known["task"] != task).any():
+        problems.append("task does not match the manifest")
+    clf = known[task != "regression"]
+    if ((clf["score"] < 0) | (clf["score"] > 1)).any():
+        problems.append("classification scores must be within [0, 1]")
+    if (known[task == "regression"]["score"] > 1).any():
+        problems.append("R² cannot exceed 1")
+    n_test = [tables[t]["test_rows_per_outer_fold"][f] for t, f in zip(known["table"], known["fold"])]
+    n_rows = known["table"].map(lambda t: tables[t]["n_rows"])
+    if (known["n_test"] != n_test).any() or (known["n_train"] != n_rows - known["n_test"]).any():
+        problems.append("n_train or n_test disagree with the manifest's folds")
+
+    coverage = []
+    for encoder, g in known.groupby("encoder"):
+        done = g.groupby("table")["fold"].nunique()
+        for view, view_tasks in VIEWS.items():
+            wanted = [t for t, m in tables.items() if m["task"] in view_tasks]
+            complete = sum(1 for t in wanted if done.get(t, 0) == FOLDS)
+            coverage.append(f"{encoder:<14} {view:<15} {complete}/{len(wanted)} tables complete")
+    return problems, coverage
+
+
+def main(argv=None) -> int:
+    paths = [Path(p) for p in (argv if argv is not None else sys.argv[1:])]
+    if not paths:
+        print(__doc__)
+        return 2
+    manifest = json.loads(Path(MANIFEST).read_text())
+    status = 0
+    for path in paths:
+        problems, coverage = check(path, manifest)
+        print(path)
+        for line in coverage:
+            print("  ", line)
+        for p in problems:
+            print("   PROBLEM", p)
+        status |= bool(problems)
+    return status
+
+
+if __name__ == "__main__":
+    sys.exit(main())

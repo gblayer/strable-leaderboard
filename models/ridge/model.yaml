@@ -1,15 +1,13 @@
 name: Ridge
 version: "sklearn-1.9"
-family: linear
 handles_strings: false
-access: open-source
 tasks: [regression, binary, multiclass]
+access: open
+hardware: cpu
 
 package: scikit-learn==1.9.1
 checkpoint: null
-
-hardware: cpu
 licence: BSD-3-Clause
-code: https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification
-
 trained_on_strable: []
+
+code: https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification

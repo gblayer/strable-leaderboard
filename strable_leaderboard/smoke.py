@@ -30,20 +30,30 @@ SMOKE_TABLES = {
     "binary": "animalandveterinary-event",  # 1,345 rows
     "multiclass": "drug-ndc",  # 583 rows, 4 classes
 }
-REQUIRED = ["name", "version", "family", "handles_strings", "access", "package", "tasks", "hardware", "licence"]
-FAMILIES = {"foundation-model", "tree-based", "neural-network", "linear", "other"}
-ACCESS = {"open-source", "closed-source", "api"}
+REQUIRED = ["name", "version", "handles_strings", "tasks", "access", "hardware", "package", "checkpoint", "licence",
+            "trained_on_strable"]
+ACCESS = {"open", "closed", "api"}
+HARDWARE = {"gpu", "cpu"}
+TASKS = {"regression", "binary", "multiclass"}
 
 
 def load_card(folder: Path) -> dict:
+    """Read and validate model.yaml."""
     card = yaml.safe_load((folder / "model.yaml").read_text())
     missing = [k for k in REQUIRED if k not in card]
     if missing:
         raise ValueError(f"model.yaml misses {missing}")
-    if card["family"] not in FAMILIES:
-        raise ValueError(f"family must be one of {sorted(FAMILIES)}")
     if card["access"] not in ACCESS:
         raise ValueError(f"access must be one of {sorted(ACCESS)}")
+    if card["hardware"] not in HARDWARE:
+        raise ValueError(f"hardware must be one of {sorted(HARDWARE)}")
+    if not card["tasks"] or not set(card["tasks"]) <= TASKS:
+        raise ValueError(f"tasks must be a non-empty subset of {sorted(TASKS)}")
+    ckpt = card["checkpoint"]
+    if ckpt is not None:
+        rev = str(ckpt.get("revision", ""))
+        if not ckpt.get("repo") or len(rev) < 7 or any(c not in "0123456789abcdef" for c in rev.lower()):
+            raise ValueError("checkpoint needs a repo and a commit hash as revision")
     return card
 
 

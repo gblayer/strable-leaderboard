@@ -53,7 +53,7 @@ The folds are exactly the paper's. The code is in `strable_leaderboard/splits.py
 
 There is no per-table normalization, so a pipeline's score never changes when other pipelines join. A pipeline must cover every table and fold of a view to be ranked in it.
 
-Elo and improvability are relative to the field: they change whenever a model joins. They are planned as extra columns, recomputed for each version.
+This is the only score on the board. Elo, improvability and normalized scores are relative to the field and change whenever a model joins, so they are not shown.
 
 ## Time
 
@@ -97,19 +97,19 @@ Default configurations only: every model runs with the hyperparameters it ships 
 
 ## Hardware
 
-Each result records where it ran. The reference node type is Margaret's margpu014 to margpu016: one NVIDIA Ampere GPU (exact model to be confirmed), 32 CPU cores and 128 GB of RAM per run. CPU pipelines run on the same node type without the GPU. Models too large for these nodes may run on Jean Zay, and the leaderboard says so.
+Each result records what it ran on. GPU rows: one GPU of the reference type, fixed at launch, with 32 CPU cores and 128 GB of RAM. CPU rows: the same node without the GPU. API rows: the vendor's servers. A model too large for the reference node runs on a larger one, and the row says so.
 
 ## Result records
 
-One row per pipeline, table and fold:
+`results/<model>.csv`, one row per encoder, table and outer fold:
 
-`pipeline, model, model_version, variant, encoder, table, task, fold, score, fit_s, predict_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
+`model, encoder, table, task, fold, score, fit_s, predict_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
 
-`variant` is `default` for now. It leaves room for `tuned` and `tuned-ensembled` later.
+`encoder` is `none` for end-to-end models. Rows are default configurations; a `variant` column is added when tuned runs come. `python -m strable_leaderboard.check_results` validates a file.
 
 ## Differences from the paper
 
 - The paper times one total per fold, with the embedding time measured once per table and added to every fold. The leaderboard splits fit and predict.
 - The paper reports raw R² averages. The leaderboard floors R² at 0 per table.
-- The paper evaluates about 445 pipelines. The leaderboard starts from a launch set, chosen around mid-November 2026, and grows.
+- The paper evaluates about 445 pipelines. The leaderboard opens with a launch set, chosen around mid-November 2026, and grows.
 - Still to decide: for multiclass tasks, the paper re-applies a softmax to `predict_proba` before computing AUC. The leaderboard plans to use the probabilities as returned.

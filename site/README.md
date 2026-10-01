@@ -1,7 +1,5 @@
-# strable.ai design preview
+# strable.ai
 
-`index.html` is the current design of the leaderboard page: open it in a browser. The **Demo** button in the top bar walks through the task options, sorting, the two times, modular versus end-to-end models, how to read the Pareto plot, and how to add a model.
+`index.html` is the design of the leaderboard page: open it in a browser. The **Demo** button walks through the board. The top bar with the theme switch and the demo is part of the preview, not of the final page, and all scores and times are placeholders.
 
-All scores and times are placeholders. The top bar with the theme switch and the demo is part of the preview, not the final page.
-
-The final site will be the same page reading a `results.json` built from `results/`, deployed to GitHub Pages at strable.ai. See [docs/site.md](../docs/site.md).
+The final page is the same file reading `results.json`, built from `results/` after each merge and deployed to GitHub Pages. The Refresh button under the table re-reads that file. See [docs/site.md](../docs/site.md).

@@ -132,8 +132,7 @@ section { scroll-margin-top: 76px; }
 .expand .xp b { color: var(--head); font-weight: 800; }
 .expand .ipa { font-family: var(--f-mono); font-size: 17px; color: var(--ink-2); }
 .expand .say { font-style: italic; }
-.lede { font-size: 18px; line-height: 1.55; color: var(--ink-2); max-width: 34em; margin: 0 0 12px; }
-.lede.small { font-size: 15.5px; color: var(--ink-3); margin-bottom: 22px; }
+.lede { font-size: 18px; line-height: 1.55; color: var(--ink-2); max-width: 34em; margin: 0 0 22px; }
 .lede a { color: var(--ink); text-underline-offset: 3px; }
 .stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .stats li { font: 500 13px/1 var(--f-mono); color: var(--ink-2); border: 1px solid var(--line); background: var(--surface); padding: 8px 12px; border-radius: 999px; }
@@ -183,9 +182,6 @@ section { scroll-margin-top: 76px; }
 .board-head { display: grid; gap: 14px; margin-bottom: 18px; }
 .controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
 .ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-radius: 999px; }
-.select { appearance: none; -webkit-appearance: none; font: 500 12px/1 var(--f-mono); color: var(--ink); background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234C5767'/%3E%3C/svg%3E") no-repeat right 12px center; border: 1px solid var(--line); border-radius: 999px; padding: 10px 30px 10px 12px; min-height: 40px; cursor: pointer; }
-.select:hover { border-color: var(--ink-3); }
-#ctl-filter .cap:not(:first-child) { margin-left: 6px; }
 .key { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 28px; margin: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 @media (max-width: 1000px) { .key { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .key { grid-template-columns: 1fr; } }
@@ -216,6 +212,7 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .tag { font: 600 9px/1 var(--f-mono); letter-spacing: 0.1em; color: var(--ink-3); border: 1px solid var(--line); padding: 3px 5px; border-radius: 999px; white-space: nowrap; }
 .tag.e2e { color: var(--accent-2); border-color: var(--accent-2); }
 .tag.anon { color: var(--mark); border-color: var(--mark); }
+.tag.closed { color: var(--ink-2); border-color: var(--ink-3); }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
 .star path { fill: var(--mark); }
@@ -226,8 +223,10 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .hw { font: 600 10px/1 var(--f-mono); letter-spacing: 0.08em; color: var(--ink-3); white-space: nowrap; }
 .group td { font: 600 11px/1.3 var(--f-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); padding: 16px 10px 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
 .tbl-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 12px; border-top: 1px solid var(--line); }
+.tbl-btns { display: flex; flex-wrap: wrap; gap: 8px; }
 .linkbtn { appearance: none; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: 500 12.5px/1 var(--f-mono); padding: 9px 14px; border-radius: 999px; cursor: pointer; min-height: 36px; }
 .linkbtn:hover { border-color: var(--ink-3); }
+.linkbtn:disabled { opacity: 0.6; cursor: default; }
 .note { font-size: 13px; color: var(--ink-3); margin: 0; max-width: 40em; }
 
 .plot-card { padding: 16px 16px 14px; position: relative; }
@@ -350,8 +349,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
       <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip">v0.1.3</span><a class="ver-link" href="#history">Version history</a></p>
       <h1 id="hero-title">STRABLE</h1>
       <p class="expand"><span class="xp"><b>STR</b>ing-t<b>ABLE</b></span><span class="ipa">/ˈstreɪ.bəl/</span><span class="say">stray-buhl</span></p>
-      <p class="lede">Which pipeline handles real tables with raw strings best? Names, codes, free text and dates, across 108 public tables from health, economy, infrastructure and more. The leaderboard refreshes each time a new model or pipeline is added.</p>
-      <p class="lede small">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. New models come out all the time, so the board does not list all ~445 pipelines from <a href="https://arxiv.org/abs/2605.12292">the paper</a>. It starts from the strongest ones and grows with each new model.</p>
+      <p class="lede">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. New models come out all the time, so the board does not list all ~445 pipelines from <a href="https://arxiv.org/abs/2605.12292">the paper</a>.</p>
       <ul class="stats">
         <li><b>108</b> tables</li>
         <li><b>76</b> regression</li>
@@ -452,32 +450,14 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
             <button type="button" id="sort-time" data-sort="time" aria-pressed="false">Time</button>
           </div>
         </div>
-        <div class="ctl" id="ctl-filter">
-          <label class="cap" for="f-family">Family</label>
-          <select class="select" id="f-family">
-            <option value="all">All</option>
-            <option value="Foundation model">Foundation model</option>
-            <option value="Tree-based">Tree-based</option>
-            <option value="Neural network">Neural network</option>
-            <option value="Linear">Linear</option>
-            <option value="Other">Other</option>
-          </select>
-          <label class="cap" for="f-access">Access</label>
-          <select class="select" id="f-access">
-            <option value="all">All</option>
-            <option value="Open source">Open source</option>
-            <option value="Closed source">Closed source</option>
-            <option value="API">API</option>
-          </select>
-        </div>
       </div>
       <dl class="key" id="key">
         <div><dt>Score</dt><dd id="key-score"></dd></div>
-        <div><dt>Fit time</dt><dd>String embedding plus training, in seconds per 1K training rows. For in-context learners, this is mostly storing the context.</dd></div>
-        <div><dt>Predict time</dt><dd>String embedding plus prediction, in seconds per 1K new rows. For in-context learners, the full forward pass happens here.</dd></div>
-        <div><dt>Modular</dt><dd>A string encoder turns each string column into 30 numbers, then a tabular learner fits: SVD for Tf-Idf, PCA for E5 and MiniLM, the first 30 dimensions for LLaMA and Qwen.</dd></div>
-        <div><dt>End-to-end</dt><dd>The model reads raw strings itself. These rows carry an <b>end-to-end</b> tag. Anonymous models keep a codename and an <b>anonymous</b> tag.</dd></div>
-        <div><dt>Hardware</dt><dd>Each row shows where it ran. GPU runs use 1 NVIDIA [GPU model] GPU, 32 CPU cores and 128 GB RAM on Inria's Margaret cluster. CPU runs use the same node without the GPU.</dd></div>
+        <div><dt>Fit time</dt><dd>String embedding + training, seconds per 1K training rows.</dd></div>
+        <div><dt>Predict time</dt><dd>String embedding + prediction, seconds per 1K rows.</dd></div>
+        <div><dt>Modular</dt><dd>Each string column becomes 30 numbers (SVD for Tf-Idf, PCA for E5 and MiniLM, the first 30 dimensions for LLaMA and Qwen), then a tabular learner fits.</dd></div>
+        <div><dt>End-to-end</dt><dd>The model reads the raw strings itself. Anonymous models appear under a codename.</dd></div>
+        <div><dt>Runs on</dt><dd>GPU rows: 1 NVIDIA [GPU model], 32 CPU cores, 128 GB RAM. CPU rows: the same node without the GPU. API rows: the vendor's servers, time includes the network.</dd></div>
       </dl>
     </div>
 
@@ -499,8 +479,11 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
           </table>
         </div>
         <div class="tbl-foot">
-          <p class="note">Placeholder numbers for this design preview. Pipeline names come from the STRABLE paper, the scores and times do not.</p>
-          <button type="button" class="linkbtn" id="toggle-all">Show all</button>
+          <p class="note"><span id="updated"></span> · Placeholder numbers: the pipeline names come from the paper, the scores and times do not.</p>
+          <div class="tbl-btns">
+            <button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button>
+            <button type="button" class="linkbtn" id="toggle-all">Show all</button>
+          </div>
         </div>
       </div>
 
@@ -515,7 +498,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
           </ul>
         </div>
         <div id="plot"></div>
-        <p class="plot-foot">A pipeline is Pareto-optimal when no other pipeline is both faster and more accurate. The arrow points to the ideal corner: high score, little time. API models are shown but kept off the front, since their time includes the network.</p>
+        <p class="plot-foot">API models are shown but kept off the front: their time includes the network.</p>
       </div>
     </div>
   </section>
@@ -526,10 +509,9 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
       <p class="history-sub">What changed in each version of the leaderboard.</p>
     </div>
     <ol>
-      <li><b>v0.1.3</b><span>Added jumping-carrot, an anonymous end-to-end model. Example entry.</span></li>
-      <li><b>v0.1.2</b><span>Added Embedding API + TabPFN-2.5, tagged as an API model. Example entry.</span></li>
+      <li><b>v0.1.2</b><span>Added Embedding API + TabPFN-2.5, an API model. Example entry.</span></li>
       <li><b>v0.1.1</b><span>Re-ran CatBoost on 3 tables after a timing fix. Other scores unchanged. Example entry.</span></li>
-      <li><b>v0.1.0</b><span>First public version: 17 pipelines on 108 tables, default configs, starting from the paper's strongest pipelines. Example entry.</span></li>
+      <li><b>v0.1.0</b><span>First public version: 17 pipelines on 108 tables, default configs. Example entry.</span></li>
     </ol>
   </section>
 
@@ -557,7 +539,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
   </section>
 
   <footer class="foot">
-    <p>strable.ai · The leaderboard refreshes each time a new model or pipeline is added.</p>
+    <p>strable.ai</p>
     <p><a href="https://github.com/gblayer/strable-leaderboard">Leaderboard repository</a> · <a href="https://github.com/soda-inria/strable">Benchmark code</a> · <a href="https://huggingface.co/datasets/inria-soda/STRABLE-benchmark">Data</a> · <a href="https://arxiv.org/abs/2605.12292">Paper</a></p>
   </footer>
 </div>
@@ -579,29 +561,30 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
 
 <script>
 /* Placeholder pipelines. Per task: [score, fit seconds per 1K training rows, predict seconds per 1K rows].
-   kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU", "CPU" or "API". */
-const DATA = [
-  { id: 'te-ridge', enc: 'TargetEncoder', lrn: 'Ridge', kind: 'modular', fam: 'Linear', acc: 'Open source', hw: 'CPU', reg: [0.612, 0.06, 0.01], clf: [0.842, 0.05, 0.01] },
-  { id: 'te-et', enc: 'TargetEncoder', lrn: 'ExtraTrees', kind: 'modular', fam: 'Tree-based', acc: 'Open source', hw: 'CPU', reg: [0.684, 0.16, 0.03], clf: [0.871, 0.14, 0.03] },
-  { id: 'tfidf-et', enc: 'Tf-Idf', lrn: 'ExtraTrees', kind: 'modular', fam: 'Tree-based', acc: 'Open source', hw: 'CPU', reg: [0.697, 0.85, 0.20], clf: [0.879, 0.75, 0.18] },
-  { id: 'tfidf-xgb', enc: 'Tf-Idf', lrn: 'XGBoost', kind: 'modular', fam: 'Tree-based', acc: 'Open source', hw: 'CPU', reg: [0.689, 3.6, 0.15], clf: [0.883, 3.2, 0.14] },
-  { id: 'tfidf-tabicl', enc: 'Tf-Idf', lrn: 'TabICLv2', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.733, 0.40, 4.2], clf: [0.902, 0.36, 3.8] },
-  { id: 'tfidf-tabpfn', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.744, 0.45, 9.5], clf: [0.906, 0.40, 8.4] },
-  { id: 'minilm-tabicl', enc: 'MiniLM-L6-v2', lrn: 'TabICLv2', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.722, 1.9, 5.4], clf: [0.893, 1.7, 4.9] },
-  { id: 'minilm-tabpfn', enc: 'MiniLM-L6-v2', lrn: 'TabPFN-2.5', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.733, 1.9, 10.8], clf: [0.897, 1.7, 9.6] },
-  { id: 'e5-tabicl', enc: 'E5-small-v2', lrn: 'TabICLv2', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.727, 2.6, 6.1], clf: [0.896, 2.3, 5.5] },
-  { id: 'e5-tabpfn', enc: 'E5-small-v2', lrn: 'TabPFN-2.5', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.738, 2.6, 11.5], clf: [0.901, 2.3, 10.2] },
-  { id: 'llama-tabicl', enc: 'LLaMA-3.1-8B', lrn: 'TabICLv2', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.736, 145, 150], clf: [0.892, 130, 134] },
-  { id: 'llama-tabpfn', enc: 'LLaMA-3.1-8B', lrn: 'TabPFN-2.5', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.741, 145, 156], clf: [0.895, 130, 139] },
-  { id: 'qwen-tabicl', enc: 'Qwen-3-8B', lrn: 'TabICLv2', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.739, 158, 163], clf: [0.894, 140, 145] },
-  { id: 'qwen-tabpfn', enc: 'Qwen-3-8B', lrn: 'TabPFN-2.5', kind: 'modular', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.747, 158, 169], clf: [0.898, 140, 150] },
-  { id: 'contexttab', enc: '', lrn: 'ConTextTab', kind: 'e2e', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.722, 0.6, 24], clf: [0.884, 0.55, 21] },
-  { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', fam: 'Foundation model', acc: 'Open source', hw: 'GPU', reg: [0.668, 46, 2.8], clf: [0.873, 42, 2.5] },
-  { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', fam: 'Tree-based', acc: 'Open source', hw: 'CPU', reg: [0.671, 9.5, 0.25], clf: [0.868, 8.6, 0.22] },
-  { id: 'anon-jumping-carrot', enc: '', lrn: 'jumping-carrot', kind: 'e2e', anon: true, fam: 'Foundation model', acc: 'Closed source', hw: 'GPU', reg: [0.751, 0.8, 12], clf: [0.909, 0.7, 10.8] },
-  { id: 'api-tabpfn', enc: 'Embedding API', lrn: 'TabPFN-2.5', kind: 'modular', fam: 'Foundation model', acc: 'API', hw: 'API', reg: [0.741, 32, 36], clf: [0.903, 29, 32] }
+   kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU", "CPU" or "API".
+   Optional flags: anon (codename, name never revealed), closed (named, weights not public).
+   The real site loads the same records from results.json, see refresh(). */
+let DATA = [
+  { id: 'te-ridge', enc: 'TargetEncoder', lrn: 'Ridge', kind: 'modular', hw: 'CPU', reg: [0.612, 0.06, 0.01], clf: [0.842, 0.05, 0.01] },
+  { id: 'te-et', enc: 'TargetEncoder', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.684, 0.16, 0.03], clf: [0.871, 0.14, 0.03] },
+  { id: 'tfidf-et', enc: 'Tf-Idf', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.697, 0.85, 0.20], clf: [0.879, 0.75, 0.18] },
+  { id: 'tfidf-xgb', enc: 'Tf-Idf', lrn: 'XGBoost', kind: 'modular', hw: 'CPU', reg: [0.689, 3.6, 0.15], clf: [0.883, 3.2, 0.14] },
+  { id: 'tfidf-tabicl', enc: 'Tf-Idf', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.733, 0.40, 4.2], clf: [0.902, 0.36, 3.8] },
+  { id: 'tfidf-tabpfn', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.744, 0.45, 9.5], clf: [0.906, 0.40, 8.4] },
+  { id: 'minilm-tabicl', enc: 'MiniLM-L6-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.722, 1.9, 5.4], clf: [0.893, 1.7, 4.9] },
+  { id: 'minilm-tabpfn', enc: 'MiniLM-L6-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.733, 1.9, 10.8], clf: [0.897, 1.7, 9.6] },
+  { id: 'e5-tabicl', enc: 'E5-small-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.727, 2.6, 6.1], clf: [0.896, 2.3, 5.5] },
+  { id: 'e5-tabpfn', enc: 'E5-small-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.738, 2.6, 11.5], clf: [0.901, 2.3, 10.2] },
+  { id: 'llama-tabicl', enc: 'LLaMA-3.1-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.736, 145, 150], clf: [0.892, 130, 134] },
+  { id: 'llama-tabpfn', enc: 'LLaMA-3.1-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.741, 145, 156], clf: [0.895, 130, 139] },
+  { id: 'qwen-tabicl', enc: 'Qwen-3-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.739, 158, 163], clf: [0.894, 140, 145] },
+  { id: 'qwen-tabpfn', enc: 'Qwen-3-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.747, 158, 169], clf: [0.898, 140, 150] },
+  { id: 'contexttab', enc: '', lrn: 'ConTextTab', kind: 'e2e', hw: 'GPU', reg: [0.722, 0.6, 24], clf: [0.884, 0.55, 21] },
+  { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', hw: 'GPU', reg: [0.668, 46, 2.8], clf: [0.873, 42, 2.5] },
+  { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.5, 0.25], clf: [0.868, 8.6, 0.22] },
+  { id: 'api-tabpfn', enc: 'Embedding API', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'API', reg: [0.741, 32, 36], clf: [0.903, 29, 32] }
 ];
-const VERSION = 'v0.1.3';
+let VERSION = 'v0.1.2', BUILT = '2026-10-01';
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-model';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TASKS = {
@@ -615,7 +598,7 @@ const TIMES = {
   pred: { name: 'Predict', title: 'Score vs predict time', axis: 'Predict time: embedding + prediction, s per 1K rows, log scale' }
 };
 const LIMIT = 12;
-const state = { task: 'both', time: 'fit', sort: 'pareto', family: 'all', access: 'all', showAll: false, hot: null };
+const state = { task: 'both', time: 'fit', sort: 'pareto', showAll: false, hot: null };
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -632,8 +615,8 @@ function items(task, time) {
       fit = (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL;
       pred = (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL;
     } else { s = d[task][0]; fit = d[task][1]; pred = d[task][2]; }
-    return { id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, fam: d.fam, acc: d.acc, hw: d.hw, api: d.hw === 'API', s: s, fit: fit, pred: pred, t: ti === 1 ? fit : pred };
-  }).filter((d) => (state.family === 'all' || d.fam === state.family) && (state.access === 'all' || d.acc === state.access));
+    return { id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, api: d.hw === 'API', s: s, fit: fit, pred: pred, t: ti === 1 ? fit : pred };
+  });
 }
 function paretoSet(list) {
   const byTime = list.filter((d) => !d.api).sort((a, b) => a.t - b.t || b.s - a.s);
@@ -685,8 +668,9 @@ function renderTable(list, front, rows) {
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
     if (d.kind === 'e2e') { p.appendChild(el('span', 'lrn', d.lrn)); p.appendChild(el('span', 'tag e2e', 'END-TO-END')); }
-    if (d.anon) p.appendChild(el('span', 'tag anon', 'ANONYMOUS'));
     else { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); p.appendChild(el('span', 'lrn', d.lrn)); }
+    if (d.anon) p.appendChild(el('span', 'tag anon', 'ANONYMOUS'));
+    else if (d.closed) p.appendChild(el('span', 'tag closed', 'CLOSED'));
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
@@ -818,7 +802,7 @@ function showTip(id) {
   tip.appendChild(l1);
   const approx = g.d.api ? '≈ ' : '';
   tip.appendChild(el('div', null, 'fit ' + approx + fmtT(g.d.fit) + '  ·  predict ' + approx + fmtT(g.d.pred) + ' per 1K rows'));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : '') + ' · ' + g.d.fam + ' · ' + g.d.acc + ' · runs on ' + g.d.hw + (g.on ? ' · ★ Pareto-optimal' : g.d.api ? ' · time includes the network' : '')));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + ' · runs on ' + g.d.hw + (g.on ? ' · ★ Pareto-optimal' : g.d.api ? ' · time includes the network' : '')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -855,7 +839,7 @@ function renderTicker(list, front) {
 
 function render() {
   const list = items(state.task, state.time);
-  if (!list.length) { state.family = 'all'; state.access = 'all'; $('f-family').value = 'all'; $('f-access').value = 'all'; return render(); }
+  if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
   renderPlot(list, front);
@@ -872,9 +856,23 @@ function render() {
 document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; state.showAll = false; render(); }));
 document.querySelectorAll('[data-time]').forEach((b) => b.addEventListener('click', () => { state.time = b.dataset.time; render(); }));
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
-$('f-family').addEventListener('change', (e) => { state.family = e.target.value; state.showAll = false; render(); });
-$('f-access').addEventListener('change', (e) => { state.access = e.target.value; state.showAll = false; render(); });
 $('toggle-all').addEventListener('click', () => { state.showAll = !state.showAll; render(); });
+
+/* Refresh: fetch results.json next to the page and re-render. On the real site a results merge
+   rebuilds that file, so the board updates without a page reload. The preview has no results.json
+   and keeps its placeholder rows. */
+function setUpdated(text) { $('updated').textContent = text; }
+async function refresh() {
+  const btn = $('refresh'); btn.disabled = true; btn.textContent = 'Refreshing…';
+  try {
+    const r = await fetch('results.json', { cache: 'no-store' });
+    if (r.ok) { const j = await r.json(); DATA = j.pipelines; VERSION = j.version; BUILT = j.built; }
+  } catch (e) { /* no results.json: keep the current rows */ }
+  render();
+  setUpdated('Updated ' + BUILT + ', checked ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+  btn.disabled = false; btn.textContent = '↻ Refresh';
+}
+$('refresh').addEventListener('click', refresh);
 
 function currentTheme() { const t = document.documentElement.getAttribute('data-theme'); return t === 'light' || t === 'dark' ? t : 'auto'; }
 function setTheme(t) {
@@ -914,12 +912,12 @@ const TOUR = [
     text: 'Sort. ★ Pareto puts the best trade-offs between score and time first, and is the default. Score ranks by accuracy, Time by speed.' },
   { sel: '#ctl-time', block: 'center', time: 'pred',
     text: 'Time. Fit counts string embedding and training. Predict counts embedding and prediction for 1K new rows. The plot and the Pareto order follow this choice.' },
-  { sel: '#tbl-card', block: 'center', hot: 'anon-jumping-carrot',
-    text: 'Two kinds of pipelines. Modular ones pair a string encoder with a tabular learner. End-to-end models read raw strings themselves and carry a tag. jumping-carrot is an anonymous model, shown under a codename. The Family and Access filters narrow the list.' },
+  { sel: '#tbl-card', block: 'center', hot: 'contexttab',
+    text: 'Two kinds of pipelines. Modular ones pair a string encoder with a tabular learner. End-to-end models read raw strings themselves and carry a tag. Anonymous models appear under a codename.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf-tabpfn',
     text: 'The plot. Each square is a pipeline: higher is more accurate, further left is faster. The arrow points to the ideal corner. The line joins the Pareto-optimal pipelines, which no other pipeline beats on both.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
-    text: 'Adding a model. Open a pull request on the leaderboard repository. We run it on the same hardware, and the board refreshes with the new results.' }
+    text: 'Adding a model. Open a pull request on the leaderboard repository. We run it on our hardware, and the board refreshes with the results.' }
 ];
 let tour = null;
 function clearFocus() { document.querySelectorAll('.tour-focus').forEach((n) => n.classList.remove('tour-focus')); }
@@ -929,7 +927,6 @@ function startBar() {
 }
 function applyStep(s) {
   state.task = s.task || 'both'; state.time = s.time || 'fit'; state.sort = s.sort || 'pareto';
-  state.family = 'all'; state.access = 'all'; $('f-family').value = 'all'; $('f-access').value = 'all';
   state.showAll = false; state.hot = s.hot || null;
   render();
 }
@@ -996,10 +993,12 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('score') >= 0) state.sort = 'score';
   if (toks.indexOf('time') >= 0) state.sort = 'time';
   render();
+  setUpdated('Updated ' + BUILT);
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();
 let rz = null;
 new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task, state.time); if (list.length) renderPlot(list, paretoSet(list)); }); }).observe($('plot'));
 </script>
+
 </body>
 </html>

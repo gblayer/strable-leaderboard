@@ -1,74 +1,54 @@
 ---
 name: add-model
-description: Add a new model to the STRABLE leaderboard. Creates models/<name>/ from the template, wraps the model in the StrableModel contract, fills the model card, pins dependencies, runs the smoke test and opens a pull request. Use when someone asks to add, submit, integrate or benchmark a model or pipeline on the STRABLE leaderboard.
+description: Add a model to the STRABLE leaderboard. Creates models/<name>/ from the template, wraps the model in the StrableModel contract, fills the model card, pins dependencies, runs the smoke test and opens a pull request. Use when someone asks to add, submit, integrate or benchmark a model on the STRABLE leaderboard.
 ---
 
 # Add a model to the STRABLE leaderboard
 
-You are working in a clone of the strable-leaderboard repository. The goal is a pull request that adds one folder, `models/<name>/`, which passes the smoke test and the review checklist in `.claude/skills/review-submission/SKILL.md`. Read `docs/submitting.md` and `strable_leaderboard/model.py` before writing code.
+Goal: one pull request adding `models/<name>/`, passing the smoke test and `.claude/skills/review-submission/SKILL.md`. Read `docs/submitting.md` and `strable_leaderboard/model.py` first.
 
-## 1. Collect the facts
+## 1. Facts
 
-Find these in the user's repository, package docs or model card. Ask the user only for what you can't find:
+Take them from the user's repository, package docs or model card; ask only for what you cannot find.
 
-- Display name and version. Each version gets its own folder, for example `tabpfn-3.5`, not `tabpfn`.
+- Name and version. One folder per version: `tabpfn-3.5`, not `tabpfn`.
 - The pip package and its exact version.
-- Where the weights live: a Hugging Face repository and a commit hash, never a branch name. Or null if the model has no weights.
-- Whether the model reads raw string columns itself. If yes it is end-to-end, `handles_strings: true`. If it only takes numbers, the leaderboard pairs it with its five string encoders.
-- Supported tasks: regression, binary, multiclass.
-- GPU or CPU, and the GPU memory it needs.
-- Family: foundation-model, tree-based, neural-network, linear or other.
-- Access: open-source, closed-source or api.
-- Licence, code and paper links.
-- Whether it was trained or tuned on any STRABLE table. Look at the training data description, and list any overlap in `trained_on_strable`.
+- The weights: a Hugging Face repository and a commit hash, or none.
+- Does it read raw string columns itself? Yes: end-to-end, `handles_strings: true`. No: it gets numbers from the five encoders.
+- Tasks, gpu or cpu, GPU memory, licence, code and paper links.
+- STRABLE tables in its pre-training or tuning data, for `trained_on_strable`.
 
-If the model is closed-source or must stay anonymous, stop here. It doesn't go through a public pull request. Point the user to the "Anonymous models" section of `docs/submitting.md`.
+Closed, anonymous or API model: stop here and point the user to `docs/submitting.md`, section "Open, closed, anonymous, API". They do not go through a public pull request.
 
-## 2. Create the folder
+## 2. Folder
 
-```
-cp -r models/_template models/<name>
-```
+`cp -r models/_template models/<name>`. Lowercase letters, digits, dots and hyphens.
 
-Folder names use lowercase letters, digits, dots and hyphens.
+## 3. `model.py`
 
-## 3. Write `model.py`
-
-Implement `class Model(StrableModel)`:
-
+`class Model(StrableModel)`:
 - Set `handles_strings`.
-- `fit(X, y)`:
-  - Build the estimator with its **default** configuration.
-  - Pass `self.seed`, `self.device` and `self.n_jobs` through.
-  - Classification targets are integers 0..K-1. Set `self.classes_ = np.unique(y)`.
-  - If the model needs a validation set for early stopping, use `fit_idx, val_idx = self.validation_split(y)`, and nothing else.
-- `predict(X)`: values for regression, labels for classification.
-- `predict_proba(X)`: shape `(n_rows, n_classes)`, columns in the order of `self.classes_`, rows summing to 1.
-- Load weights from `self.weights_dir`. Jobs have no internet, so no downloads inside `fit` or `predict`. If the package downloads weights on first use, point its cache or path setting at `self.weights_dir`.
-- No hyperparameter search. Never read `splits/` or the tables yourself. No writes outside a temporary folder.
-- Keep it short. The wrapper translates between the contract and the package, nothing more.
+- `fit(X, y)`: the default configuration; pass `self.seed`, `self.device`, `self.n_jobs`; for classification set `self.classes_ = np.unique(y)`; early stopping only through `fit_idx, val_idx = self.validation_split(y)`.
+- `predict(X)`: values or labels. `predict_proba(X)`: shape `(n_rows, n_classes)` in the order of `self.classes_`, rows summing to 1.
+- Weights load from `self.weights_dir`. No downloads in `fit` or `predict`: point the package's cache setting at `self.weights_dir` if it downloads on first use.
+- No hyperparameter search, no reading of `splits/` or the tables, no writes outside a temporary folder.
+- Keep it short: a translation between the contract and the package.
 
-`models/ridge/model.py` is a complete example of a numeric-only model.
+`models/ridge/model.py` is a complete numeric-only example.
 
-## 4. Fill `model.yaml` and `requirements.txt`
+## 4. `model.yaml` and `requirements.txt`
 
-- Every field in `models/_template/model.yaml` is required unless marked optional.
-- `requirements.txt` pins exact versions with `==`, including the model's package. Don't list `strable-leaderboard` itself.
+Every field of `models/_template/model.yaml` unless marked optional. `requirements.txt` pins every package with `==`, the model's package included; not `strable-leaderboard` itself.
 
-## 5. Run the smoke test
+## 5. Smoke test
 
 ```
-pip install -e ".[dev]"
-pip install -r models/<name>/requirements.txt
+pip install -e ".[dev]" -r models/<name>/requirements.txt
 python -m strable_leaderboard.smoke models/<name>
 ```
 
-It runs outer fold 0 of one small table per task. Fix every FAIL line. For a GPU-only model on a machine without a GPU, say so in the pull request instead of forcing CPU.
+Fix every FAIL line. A GPU-only model on a machine without a GPU: say so in the pull request rather than forcing CPU.
 
-## 6. Open the pull request
+## 6. Pull request
 
-- Branch name: `add-<name>`. The pull request only touches `models/<name>/`.
-- Fill the template in `.github/pull_request_template.md`, and paste the smoke test output.
-- Title: `Add <display name> <version>`.
-
-After the merge, the runner computes the full results on the reference hardware and the leaderboard refreshes. The contributor doesn't run the full benchmark.
+Branch `add-<name>`, title `Add <Name> <version>`, only `models/<name>/` in the diff. Fill `.github/pull_request_template.md` and paste the smoke test output. The maintainers run the full benchmark after the merge.

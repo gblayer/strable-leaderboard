@@ -1,0 +1,62 @@
+name: Checks
+
+# Runs on every pull request, on GitHub's machines, with a read-only token and no secrets:
+# the smoke test on each changed model folder, and check_results on each changed results file.
+on:
+  pull_request:
+    paths:
+      - "models/**"
+      - "results/**"
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: List what this pull request changes
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          models=$(git diff --name-only "$BASE_SHA" HEAD -- models/ | cut -d/ -f2 | sort -u \
+            | grep -E '^[a-z0-9][a-z0-9.-]*$' | grep -v '^_template$' || true)
+          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- 'results/*.csv' || true)
+          echo "models=$(echo $models)" >> "$GITHUB_OUTPUT"
+          echo "results=$(echo $results)" >> "$GITHUB_OUTPUT"
+          echo "Model folders: ${models:-none}. Results files: ${results:-none}."
+
+      - name: Smoke-test each changed model in its own environment
+        if: steps.changed.outputs.models != ''
+        env:
+          MODELS: ${{ steps.changed.outputs.models }}
+          HF_HUB_DISABLE_PROGRESS_BARS: "1"
+        run: |
+          status=0
+          for m in $MODELS; do
+            [ -d "models/$m" ] || continue
+            echo "::group::$m"
+            python -m venv "/tmp/env-$m"
+            "/tmp/env-$m/bin/pip" install --quiet -e ".[smoke]" -r "models/$m/requirements.txt"
+            "/tmp/env-$m/bin/python" -m strable_leaderboard.smoke "models/$m" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+      - name: Check each changed results file
+        if: steps.changed.outputs.results != ''
+        env:
+          RESULTS: ${{ steps.changed.outputs.results }}
+        run: |
+          pip install --quiet -e .
+          python -m strable_leaderboard.check_results $RESULTS | tee -a "$GITHUB_STEP_SUMMARY"

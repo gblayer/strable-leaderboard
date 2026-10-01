@@ -1,50 +1,49 @@
 # STRABLE leaderboard
 
-A living leaderboard for [STRABLE](https://arxiv.org/abs/2605.12292), the benchmark of 108 real-world tables with raw strings: names, codes, free text and dates. STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. The leaderboard will live at **strable.ai**.
+The living leaderboard of [STRABLE](https://arxiv.org/abs/2605.12292), the benchmark of 108 real-world tables with raw strings: 76 regression and 32 classification tasks. Accepted to the NeurIPS 2026 Evaluation and Datasets track. The board will live at **strable.ai**.
 
-**Status: design phase.** This repository holds the plan, the evaluation protocol, the cross-validation folds of every table, the model contract with a smoke test, and the design of the site. Nothing runs automatically yet.
+**Status: pre-launch.** Protocol, cross-validation folds, the model contract with its smoke test, the review automation and the site design are here. The first results come with the launch set in November 2026.
 
-| Looking for | Go to |
+| | |
 |---|---|
 | Paper | https://arxiv.org/abs/2605.12292 |
 | Data | https://huggingface.co/datasets/inria-soda/STRABLE-benchmark |
-| Code to reproduce the paper | https://github.com/soda-inria/strable |
+| Paper code | https://github.com/soda-inria/strable |
 
-## Submit a new model
+## Submit a model
 
 Clone this repository, then tell your coding agent:
 
 ```
-cd strable-leaderboard
 Add my model to the STRABLE leaderboard, test it, and open a pull request.
 ```
 
-The agent follows [`.claude/skills/add-model/SKILL.md`](.claude/skills/add-model/SKILL.md). To do it by hand, read [docs/submitting.md](docs/submitting.md).
+It follows [.claude/skills/add-model/SKILL.md](.claude/skills/add-model/SKILL.md). By hand: [docs/submitting.md](docs/submitting.md).
 
-You don't run the benchmark yourself. Once your pull request is merged, we run the model on all 108 tables on our hardware and the leaderboard refreshes.
+You submit code, not results. After the merge we run the model on all 108 tables and the board updates.
 
-## Report issues and suggest features
+## Issues and ideas
 
-Found a bug, a mislabeled table or a wrong metric? Want a feature? [Open an issue](../../issues/new/choose).
+[Open an issue](../../issues/new/choose) for a bug, a wrong score, a table problem or a feature.
 
-## What is in this repository
+## Layout
 
-| Path | What it is |
+| Path | |
 |---|---|
-| [docs/plan.md](docs/plan.md) | How the leaderboard works, end to end, and what comes next |
-| [docs/protocol.md](docs/protocol.md) | Data, cross-validation, metrics, time, encoders, hardware |
-| [docs/submitting.md](docs/submitting.md) | How to add a model, package versus checkpoint, anonymous and API models |
-| [docs/automation.md](docs/automation.md) | Claude review and merge, issues, the cluster runner, safety |
+| [docs/plan.md](docs/plan.md) | How the leaderboard works and what comes next |
+| [docs/protocol.md](docs/protocol.md) | Data, cross-validation, score, time, encoders, hardware, result records |
+| [docs/submitting.md](docs/submitting.md) | Submitting: the contract, the model card, versions, open/closed/anonymous/API, examples |
+| [docs/automation.md](docs/automation.md) | Checks, Claude review, the runner, issues, safety, setup |
 | [docs/site.md](docs/site.md) | Hosting and design of strable.ai |
-| [docs/decisions.md](docs/decisions.md) | Every decision taken so far, with its date |
-| [docs/cluster.md](docs/cluster.md) | Facts about Inria's Margaret cluster |
-| [docs/research.md](docs/research.md) | Notes on TabArena, the STRABLE paper and code, and other leaderboards |
-| [splits/](splits/) | Outer and inner cross-validation folds for all 108 tables |
-| [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, model contract, smoke test |
-| [models/](models/) | One folder per model: `_template/` to start, `ridge/` as a working example |
-| [site/index.html](site/index.html) | Design preview of strable.ai |
+| [docs/decisions.md](docs/decisions.md) | Every decision, with its date |
+| [docs/research.md](docs/research.md) | Notes on TabArena, the paper and other leaderboards |
+| [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
+| [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, model contract, smoke test, results check |
+| [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a working example |
+| [site/index.html](site/index.html) | Design of strable.ai |
+| [.github/workflows/](.github/workflows/) | Checks, Claude review, Claude on issues |
 
-## Quick start
+## Develop
 
 ```
 pip install -e ".[dev]"
