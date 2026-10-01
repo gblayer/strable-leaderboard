@@ -2,7 +2,7 @@
 
 ## Goal
 
-A public leaderboard at strable.ai that ranks pipelines on STRABLE's 108 tables with raw strings and updates itself when a model is added. One score, two times, Pareto-optimal pipelines first.
+A public leaderboard at strable.ai that ranks pipelines on STRABLE's 108 tables with raw strings and updates itself when a model is added. The board shows one accuracy number per pipeline, its fit and predict time per 1,000 rows, and lists the Pareto-optimal pipelines first.
 
 New models come out all the time, so the board does not list the paper's ~445 pipelines. It opens with a launch set chosen around mid-November 2026 and grows with each submission.
 
@@ -16,29 +16,30 @@ New models come out all the time, so the board does not list the paper's ~445 pi
 ## What the board shows
 
 - **Score:** one number, the mean over the 108 tables of R² for regression and AUC for classification, R² floored at 0 per table. Views for regression or classification alone. See [protocol.md](protocol.md).
-- **Time:** fit, meaning embedding plus training, and predict, meaning embedding plus prediction, per 1,000 rows. A switch picks which one drives the plot and the Pareto order.
-- **Rows:** modular pipelines, one of five string encoders plus a numeric learner, and end-to-end models that read strings themselves. Tags for end-to-end, anonymous, closed and API rows. Each row says what it ran on.
+- **Time:** fit plus predict by default, or either alone: fit is embedding plus training, predict is embedding plus prediction, per 1,000 rows. The choice drives the plot and the Pareto order. The top three rows of any order are marked.
+- **Rows:** modular pipelines, one of three string encoders plus a numeric learner, and end-to-end models that read strings themselves. Tags for end-to-end, anonymous, closed and API rows. Hovering a row shows whether it used the GPU.
 - Version history, a suggestion panel, a refresh button and a guided demo.
 
-Not shown: Elo, improvability, normalized scores, families, filters. Each of them either changes when other models join or adds a column without adding knowledge.
+Not shown: Elo, improvability, normalized scores, families, filters, a hardware column. Each of them either changes when other models join or adds a column without adding knowledge.
 
 ## Hosting
 
 | Part | Where |
 |---|---|
 | This repository | GitHub, gblayer/strable-leaderboard |
+| Site | GitHub Pages: https://gblayer.github.io/strable-leaderboard/ once the repository is public, then the domain strable.ai |
 | Paper code | soda-inria/strable, frozen with the paper |
-| Site | GitHub Pages with the domain strable.ai |
 | Data | Hugging Face, inria-soda/STRABLE-benchmark, pinned revision |
 | Runs | The maintainers' cluster: one GPU type for GPU rows, the same nodes without GPU for CPU rows |
 | Suggestions | A free Tally form that emails the maintainer, plus GitHub issues |
 
 ## Launch, v0.1.0
 
-1. Import the paper's per-fold results for the launch set.
-2. Re-run those pipelines once on the reference node, so every row has comparable times.
-3. Check that the re-run scores match the paper.
-4. Publish.
+1. Pick the launch set from the paper: the baselines Ridge, ExtraTrees, XGBoost, CatBoost, the foundation models TabPFN-2.5 and TabICLv2 with the three encoders, the end-to-end models ConTextTab and TabSTAR, and the models released since, such as Kumo Tabular. Decided around mid-November 2026.
+2. Run those pipelines once on the reference node, so every row has comparable times, and check that the scores match the paper.
+3. Publish as v0.1.0. From then on every merged results pull request adds one patch version: v0.1.1, v0.1.2, and so on. Nothing before the launch carries a version.
+
+A submission never triggers a re-run of the others: each pipeline's rows are stored once in `results/`, and the board recomputes the ranking and the Pareto front from all stored rows. Embeddings are cached per encoder, table and fold, so a new numeric-only model costs only its own 972 fit-and-predict runs.
 
 ## Later
 

@@ -57,7 +57,7 @@ This is the only score on the board. Elo, improvability and normalized scores ar
 
 ## Time
 
-Two times, both in seconds per 1,000 rows:
+Two times, both in seconds per 1,000 rows, and their sum:
 
 | Time | Includes | Divided by |
 |---|---|---|
@@ -68,26 +68,28 @@ Two times, both in seconds per 1,000 rows:
 - Embeddings are computed once per table, encoder and fold, then reused by every model. Their time is measured once and added to every pipeline that uses them, split between fit and predict by the rows embedded.
 - An untimed warm-up runs first: imports, CUDA start-up and weight loading are not counted.
 - Per table: the mean over folds. Per pipeline: the median over tables.
+- The board's default time is fit plus predict, the total cost of a pipeline per 1,000 rows. Fit or predict alone can be selected.
 
 ## Pareto front
 
-For the selected time, sort pipelines by time. A pipeline is Pareto-optimal when its score is strictly higher than that of every faster pipeline. API models are shown but kept off the front, since their time includes the network. Anonymous models stay on the front.
+For the selected time, sort pipelines by time. A pipeline is Pareto-optimal when its score is strictly higher than that of every faster pipeline. The front is computed from the results, in the browser by `site/index.html` and in Python by `strable_leaderboard.metrics.pareto_front`; nobody places a row on it by hand. API models are shown but excluded from the computation, since their time includes the network. Open, closed and anonymous rows are all eligible.
+
+The top three rows of the current order, Pareto, score or time, carry a red border in the table and a ring in the plot.
 
 ## Pipelines
 
 **End-to-end models** read raw strings themselves, such as ConTextTab, TabSTAR or CatBoost with native categorical handling. They enter as they are.
 
-**Numeric-only models**, such as TabPFN-2.5 or TabICLv2, are paired with five string encoders. Each string column becomes 30 numbers:
+**Numeric-only models**, such as TabPFN-2.5 or TabICLv2, are paired with three string encoders. Each string column becomes 30 numbers:
 
 | Encoder | Checkpoint | Reduction to 30 dimensions |
 |---|---|---|
 | Tf-Idf | none, character 3-4 grams | Truncated SVD |
-| E5-small-v2 | `intfloat/e5-small-v2` | PCA fitted on the training rows |
-| all-MiniLM-L6-v2 | `sentence-transformers/all-MiniLM-L6-v2` | PCA fitted on the training rows |
+| all-MiniLM-L6-v2 | `sentence-transformers/all-MiniLM-L6-v2` | First 30 embedding dimensions |
 | LLaMA-3.1-8B | `meta-llama/Llama-3.1-8B` | First 30 embedding dimensions |
-| Qwen-3-8B | `Qwen/Qwen3-Embedding-8B` | First 30 embedding dimensions |
 
-- The reduction is fixed per encoder type, as the paper recommends: PCA for encoder-only models, the first dimensions for decoder models. It is never picked per pipeline from test scores.
+- Three encoders cover the range: the cheapest and strongest baseline, a small sentence encoder, a large decoder. The paper's E5-small-v2 and Qwen-3-8B behave like their neighbours and are left out to keep a new model at 972 runs instead of 1,620.
+- The reduction is fixed per encoder and never picked per pipeline from test scores. The paper finds that decoder embeddings lose accuracy under PCA and that encoder-only embeddings are indifferent, so every language model keeps its first 30 dimensions. Full embeddings are not an option: 384 or 4,096 numbers per string column exceed what the tabular models take.
 - The Tf-Idf pipeline uses skrub's `TableVectorizer`, as in the paper: columns with fewer than 40 distinct values are one-hot encoded, dates are expanded, numbers go through a `SquashingScaler`. Language-model pipelines send every string column to the encoder.
 - Each cell is embedded on its own, and missing strings stay missing.
 

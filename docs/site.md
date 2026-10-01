@@ -1,8 +1,14 @@
 # The site
 
+## Where people open it
+
+The leaderboard is one web page. GitHub Pages serves it from this repository at https://gblayer.github.io/strable-leaderboard/ as soon as the repository is public and Pages is switched on (Settings → Pages → Source: GitHub Actions; `.github/workflows/pages.yml` deploys `site/` on every push). With the domain strable.ai bought from a registrar and pointed at GitHub (four A records to 185.199.108.153, .109.153, .110.153, .111.153, a CNAME from `www` to `gblayer.github.io`, then Settings → Pages → Custom domain, which writes `site/CNAME`), the same page answers at https://strable.ai. Until then, "strable.ai" on the page is the planned address.
+
+**Visits.** GitHub's Insights → Traffic counts visits to the repository, not to the page. For the page, add [GoatCounter](https://www.goatcounter.com), free for non-commercial use, no cookies, no banner needed: one `<script data-goatcounter="https://strable.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>` in `site/index.html` once the account exists.
+
 ## Hosting: GitHub Pages
 
-One HTML page plus `results.json`, served by GitHub Pages at strable.ai. The page computes rankings and the Pareto front in the browser.
+One HTML page plus `results.json`, served by GitHub Pages. The page computes rankings and the Pareto front in the browser.
 
 | | GitHub Pages | Hugging Face Space |
 |---|---|---|
@@ -35,13 +41,13 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 
 **Ticker:** top score, fastest pipeline on the front, size of the front, version.
 
-**Controls:** Task (Both, Regression · R², Classification · AUC), Time (Fit, Predict) and Sort (★ Pareto, Score, Time). No filters: tags on the rows carry the rest.
+**Controls:** Task (Both, Regression · R², Classification · AUC), Time (Both, Fit, Predict) and Sort (★ Pareto, Score, Time). No filters: tags on the rows carry the rest.
 
-**Key:** one line each for score, fit time, predict time, modular, end-to-end and runs-on.
+**Key:** one line each for score, fit time, predict time, modular, end-to-end and hardware.
 
-**Table:** rank, pipeline, score, fit, predict, runs on. Tags for end-to-end, anonymous, closed. A star marks Pareto-optimal rows. Under the table: the build date, a Refresh button that re-reads `results.json`, and Show all.
+**Table:** rank, pipeline, score, fit, predict. Tags for end-to-end, anonymous, closed and API. A star marks Pareto-optimal rows, and the top three rows of the current order carry a red border. Under the table: the build date, a Refresh button that re-reads `results.json`, and Show all.
 
-**Plot:** score against time on a log scale, a "Better" arrow towards the top-left corner, the front as a staircase, API models as hollow squares.
+**Plot:** score against time on a log scale, a "Better" arrow towards the top-left corner, the front as a staircase, API models as hollow squares, a ring around the top three.
 
 **Version history**, then the **suggestion panel** on Pine Grove: a free-text box and an optional email, posted to a Tally form, with a link to open a GitHub issue instead.
 

@@ -45,11 +45,11 @@ Trigger: a cron job on the login node if allowed, otherwise one command after ea
 
 **Hardware.** GPU rows run on one GPU, 32 CPU cores and 128 GB of RAM; the GPU type is fixed at launch and shown on the site. CPU rows use the same cores without the GPU. Models too large for that node run elsewhere, and the row says so.
 
-**Cost.** A numeric-only model is 5 encoders × 108 tables × 3 folds = 1,620 tasks. Embeddings are computed once per encoder, table and fold and cached, so a new model only adds its own fit and predict time: one to three GPU-days.
+**Cost.** A numeric-only model is 3 encoders × 108 tables × 3 folds = 972 tasks. Embeddings are computed once per encoder, table and fold and kept in the runner's cache on the cluster's shared storage, never in this repository, so a new model only adds its own fit and predict time: one to two GPU-days.
 
 ## 4. After a results merge
 
-A GitHub Action rebuilds `site/results.json`, deploys the site to GitHub Pages, bumps the patch version and adds a line to the version history. Rankings and the Pareto front are computed in the browser, and the Refresh button on the site re-reads `results.json`.
+`results/<model>.csv` is the memory of every run: one row per encoder, table and fold, readable in the pull request diff and enough for anyone to recompute the board. A GitHub Action turns all the files into `site/results.json`, deploys the site to GitHub Pages, bumps the patch version and adds a line to the version history. Rankings and the Pareto front are computed in the browser from that file, so nothing is re-run and no ranking is stored. The Refresh button under the table re-reads `results.json`.
 
 ## 5. Suggestions and issues
 

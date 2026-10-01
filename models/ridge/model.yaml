@@ -2,6 +2,7 @@ name: Ridge
 version: "sklearn-1.9"
 handles_strings: false
 tasks: [regression, binary, multiclass]
+variant: default
 access: open
 hardware: cpu
 

@@ -23,8 +23,9 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 09-30 | The default task view is "Both": R² and AUC averaged over all 108 tables |
 | 10-01 | Per table, the mean over folds, then an R² below 0 counts as 0 |
 | 10-01 | One score, no normalization. Elo and improvability are not shown |
-| 10-01 | Two times per pipeline: fit (embedding plus training) and predict (embedding plus prediction), per 1,000 rows |
-| 10-01 | Each row shows what it ran on |
+| 10-01 | Two times per pipeline: fit (embedding plus training) and predict (embedding plus prediction), per 1,000 rows. The default view is their sum |
+| 10-01 | No hardware column: hovering a row shows whether it used the GPU; API rows carry a tag |
+| 10-01 | The top three rows of the current order carry a red border |
 
 ## Models
 
@@ -32,11 +33,12 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 |---|---|
 | 09-30 | Models that read raw strings natively are always included as they are |
 | 09-30 | Numeric-only models get five encoders: Tf-Idf, E5-small-v2, all-MiniLM-L6-v2, LLaMA-3.1-8B, Qwen-3-8B |
-| 10-01 | Decoders, LLaMA and Qwen, use their first 30 embedding dimensions. E5 and MiniLM use PCA to 30, Tf-Idf uses SVD to 30 |
+| 10-01 | Three encoders instead of five: Tf-Idf (SVD to 30), all-MiniLM-L6-v2 and LLaMA-3.1-8B (first 30 embedding dimensions). E5-small-v2 and Qwen-3-8B dropped to keep a new model at 972 runs |
 | 09-30 | API models are allowed, kept off the Pareto front, version pinned, the vendor pays and agrees not to train on the data |
 | 10-01 | Anonymous models are allowed: run on our hardware, codename like "jumping-carrot" (an action verb and a fruit or vegetable) with an anonymous tag, on the Pareto front, name never revealed |
 | 10-01 | The model card has no family field |
 | 10-01 | Access is open, closed or api. Anonymous is closed with the name hidden |
+| 10-01 | The card carries `variant: default`; tuned and tuned-ensembled rows come later from their own folders |
 
 ## Site
 
@@ -52,6 +54,8 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-01 | Suggestions go through a free Tally form that emails Gioia, or through GitHub issues |
 | 10-01 | A static page on GitHub Pages, like the Impermanent leaderboard |
 | 10-01 | No family or access filters. Tags on the rows instead. A Refresh button under the table |
+| 10-01 | The hero art uses invented company names only |
+| 10-01 | The README carries the site's palette and type through an SVG banner; the leaderboard URL goes in the README and the repository's About box |
 
 ## Infrastructure
 

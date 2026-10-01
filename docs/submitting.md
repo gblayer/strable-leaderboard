@@ -10,6 +10,27 @@ You submit code, we run it. One pull request adds one folder, `models/<name>/`:
 
 `models/_template/` is the starting point, `models/ridge/` a complete example.
 
+## How a submission travels
+
+```mermaid
+flowchart TD
+  A([A model]) --> B{Code and weights public?}
+  B -- yes --> C[Copy models/_template, fill model.py, model.yaml, requirements.txt]
+  C --> D[Smoke test on three small tables]
+  D --> E[Pull request]
+  E --> F[Checks on GitHub, no secrets]
+  E --> G[Claude review 1/2: verdict]
+  G --> H[Claude review 2/2: agrees or not, label]
+  F --> I{Maintainer merges}
+  H --> I
+  B -- "no: closed, anonymous or API" --> P[Private Hugging Face repo shared with the runner account, card by email]
+  P --> Q[Private repository, codename if anonymous]
+  Q --> R
+  I --> R[Runner: 108 tables x 3 folds on our hardware]
+  R --> S[Results pull request: Checks + Claude review, maintainer merges]
+  S --> T[Site rebuilds, patch version +1]
+```
+
 ## Three steps
 
 1. `cp -r models/_template models/<name>` and fill the three files. The folder name carries the version: `tabpfn-2.5`.
@@ -24,7 +45,7 @@ After that: Claude reviews the pull request and posts a verdict, a maintainer me
 
 The contract is the interface every model implements, so that the runner can train, time and score all models the same way. It is the class `StrableModel` in `strable_leaderboard/model.py`:
 
-- `handles_strings = True`: `fit` and `predict` receive the raw table, and the row is tagged **end-to-end**. `False`: they receive a numeric table from one of the five string encoders, and the runner pairs the model with all five.
+- `handles_strings = True`: `fit` and `predict` receive the raw table, and the row is tagged **end-to-end**. `False`: they receive a numeric table from one of the three string encoders, and the runner pairs the model with all three.
 - `fit(X, y)` trains on the outer training rows. Classification targets are integers 0..K-1; the model sets `self.classes_`.
 - `predict(X)` returns values or labels. `predict_proba(X)` returns one column per class, in the order of `self.classes_`.
 - `self.seed`, `self.device`, `self.n_jobs` are given. Weights load from `self.weights_dir`: there is no network during a run.
@@ -36,8 +57,9 @@ The contract is the interface every model implements, so that the runner can tra
 ```yaml
 name: TabPFN
 version: "2.5"
-handles_strings: false          # false: five encoder rows. true: end-to-end
+handles_strings: false          # false: three encoder rows. true: end-to-end
 tasks: [regression, binary, multiclass]
+variant: default                # default now; tuned and tuned-ensembled later
 access: open                    # open | closed | api
 hardware: gpu                   # gpu | cpu
 gpu_memory_gb: 24               # optional
@@ -58,13 +80,16 @@ What the board derives from it:
 | Field | On the board |
 |---|---|
 | `handles_strings` | The end-to-end tag, or one row per encoder |
-| `access` | `api`: an API row, off the Pareto front. `closed`: a closed tag |
-| `hardware` | The "Runs on" column |
+| `access` | `api`: an API tag and no place on the Pareto front. `closed`: a closed tag |
+| `hardware` | Whether the row used the GPU, shown when hovering the row |
+| `variant` | Nothing yet: only `default` is accepted. Tuned and tuned-ensembled rows come later, each from its own folder |
 | `trained_on_strable` | A contamination note on the row |
 
-There is no family field. Whether a model is a tree ensemble or a foundation model changes nothing in how it runs or ranks, and its own page says so.
+Why `access` matters: *open* means anyone can rerun the row; *closed* means we ran it but only we could; *api* means the vendor's servers ran it, so the time is not comparable with the other rows and the row stays off the Pareto front. The front itself is computed from the results, so a closed model is on it only if nothing beats it.
 
-**Variants.** Every row is the default configuration. Tuned and tuned-plus-ensembled variants are a property of a run, not of the model, so they need no card field: when they come, the runner records `variant` in the result rows and the board shows them as separate rows.
+Why a commit hash in `checkpoint.revision`: a Hugging Face repository is a git repository, and vendors update weights in place. The hash pins the exact weights that were benchmarked, so the row can be reproduced later; a branch name like `main` would silently point to newer weights.
+
+There is no family field. Whether a model is a tree ensemble or a foundation model changes nothing in how it runs or ranks, and its own page says so.
 
 ## Package, weights, checkpoint
 
@@ -78,7 +103,7 @@ Each version is its own folder and its own row, forever: `models/tabpfn-2.5/`, `
 
 ## Open, closed, anonymous, API
 
-| | Code and weights | Runs on | Pareto front | How to submit |
+| | Code and weights | Runs on | Eligible for the front | How to submit |
 |---|---|---|---|---|
 | Open | Public | Our hardware | Yes | Public pull request |
 | Closed | Private, shared with us | Our hardware | Yes, with a *closed* tag | Private channel |
@@ -87,14 +112,14 @@ Each version is its own folder and its own row, forever: `models/tabpfn-2.5/`, `
 
 Closed and anonymous are the same case; anonymous also hides the name. Closed, anonymous and API models do not fit a public pull request. Instead:
 
-1. The submitter puts the package and the checkpoint in a private Hugging Face repository (Settings → *Make private*) and adds the runner account as a read collaborator (Settings → *Collaborators*). A private repository is visible only to its owner and its collaborators.
+1. The submitter creates a repository on huggingface.co, sets it to private (Settings → *Make private*: only the owner and the people listed under Settings → *Collaborators* can see or download it), uploads the package and the weights, and adds our runner account as a read collaborator. Our runner account is a Hugging Face user that exists only to download submissions.
 2. The submitter emails the model card and `model.py` to the maintainer. For an API model, the card says how the runner authenticates, the vendor pays for the calls and agrees not to train on the data, and the API version is pinned.
-3. The folder goes into the private repository `strable-leaderboard-private`, with the same layout as `models/`. Anonymous entries get a codename from `strable_leaderboard.codenames` and `anonymous: true` in the card; the codename-to-model mapping never leaves that repository.
-4. Results are published here like any other, under the name or the codename.
+3. The maintainer puts the folder into the private GitHub repository `strable-leaderboard-private`, same layout as `models/`. Anonymous entries get a codename from `strable_leaderboard.codenames` and `anonymous: true` in the card; the codename-to-model mapping never leaves that repository.
+4. The runner, a script on the cluster login node using the runner account's token, downloads the private repository, runs the model like any other, and the results are published here under the name or the codename. The weights never become public.
 
 ## Examples
 
-**Open, numeric-only: Kumo Tabular.** NVIDIA's in-context model takes numerical and categorical columns; text needs preprocessing, so on STRABLE it is paired with the five encoders, like TabPFN and TabICL.
+**Open, numeric-only: Kumo Tabular.** NVIDIA's in-context model takes numerical and categorical columns; text needs preprocessing, so on STRABLE it is paired with the three encoders, like TabPFN and TabICL.
 1. `cp -r models/_template models/kumo-tabular-1.0`
 2. `model.py`: `handles_strings = False`; `fit` builds `sdm.models.KumoTabular` on `self.device` and stores the context; `predict_proba` returns the class probabilities in the order of `self.classes_`.
 3. `model.yaml`: `access: open`, `hardware: gpu`, `package: structured-data-models==<version>`, `checkpoint: {repo: nvidia/Kumo-Tabular, revision: <commit hash>}`, `licence: OpenMDW-1.1 weights, Apache-2.0 code`.

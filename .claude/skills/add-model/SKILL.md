@@ -14,7 +14,7 @@ Take them from the user's repository, package docs or model card; ask only for w
 - Name and version. One folder per version: `tabpfn-3.5`, not `tabpfn`.
 - The pip package and its exact version.
 - The weights: a Hugging Face repository and a commit hash, or none.
-- Does it read raw string columns itself? Yes: end-to-end, `handles_strings: true`. No: it gets numbers from the five encoders.
+- Does it read raw string columns itself? Yes: end-to-end, `handles_strings: true`. No: it gets numbers from the three encoders.
 - Tasks, gpu or cpu, GPU memory, licence, code and paper links.
 - STRABLE tables in its pre-training or tuning data, for `trained_on_strable`.
 

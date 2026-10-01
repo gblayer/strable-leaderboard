@@ -204,6 +204,7 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .hs tbody tr:last-child td { border-bottom: 0; }
 .hs tr.row:hover, .hs tr.row.is-hot { background: var(--surface-2); }
 .hs tr.row:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -2px; }
+.hs tr.top { border: 2px solid var(--mark); }
 .rank { font: 700 12.5px/1 var(--f-body); color: var(--ink-3); white-space: nowrap; width: 1%; letter-spacing: 0.03em; }
 .pipe { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; min-width: 0; }
 .enc { color: var(--ink-2); white-space: nowrap; }
@@ -213,6 +214,7 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .tag.e2e { color: var(--accent-2); border-color: var(--accent-2); }
 .tag.anon { color: var(--mark); border-color: var(--mark); }
 .tag.closed { color: var(--ink-2); border-color: var(--ink-3); }
+.tag.api { color: var(--ink-3); border-style: dashed; }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
 .star path { fill: var(--mark); }
@@ -238,6 +240,7 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .sw-on { background: var(--mark); }
 .sw-off { background: var(--mark-muted); }
 .sw-api { background: var(--surface); box-shadow: inset 0 0 0 2px var(--mark-muted); }
+.sw-top { background: transparent; box-shadow: 0 0 0 2px var(--mark); width: 8px; height: 8px; margin: 1px; }
 .sw-line { width: 16px; height: 2px; background: var(--mark); }
 #plot { position: relative; margin-top: 10px; touch-action: pan-y; }
 #plot svg { display: block; width: 100%; height: auto; }
@@ -249,6 +252,7 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .pt.on { fill: var(--mark); }
 .pt.api { fill: var(--surface); stroke: var(--mark-muted); stroke-width: 2; }
 .pt.hot { stroke: var(--ink); stroke-width: 2.5; }
+.top-ring { fill: none; stroke: var(--mark); stroke-width: 2; pointer-events: none; }
 .plabel { fill: var(--ink-2); font: 500 11px var(--f-mono); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
 .better { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
 .better-head { fill: var(--ink-3); }
@@ -395,8 +399,8 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
           <rect class="cell-h" x="101" y="99" width="67" height="27"></rect><text class="cell-h-t" x="109" y="116">CODE</text>
           <rect class="cell-h" x="237" y="99" width="47" height="27"></rect><text class="cell-h-t" x="245" y="116">Y</text>
           <text class="cell-t" x="27" y="144">ACME CO</text><text class="cell-t" x="109" y="144">ICD-9</text><text class="cell-t num" x="245" y="144">4.2</text>
-          <text class="cell-t" x="27" y="172">BOSCH</text><text class="cell-t" x="109" y="172">N18.3</text><text class="cell-t num" x="245" y="172">3.9</text>
-          <text class="cell-t" x="27" y="200">MAX MARA</text><text class="cell-t" x="109" y="200">90210</text><text class="cell-t num" x="245" y="200">5.1</text>
+          <text class="cell-t" x="27" y="172">ZORBEL LTD</text><text class="cell-t" x="109" y="172">N18.3</text><text class="cell-t num" x="245" y="172">3.9</text>
+          <text class="cell-t" x="27" y="200">PLUMERA SA</text><text class="cell-t" x="109" y="200">90210</text><text class="cell-t num" x="245" y="200">5.1</text>
           <text class="cell-t" x="27" y="228">HRSA</text><text class="cell-t" x="109" y="228">Z-114</text><text class="cell-t num" x="245" y="228">2.7</text>
           <g class="trail-g">
             <rect class="trail" x="190.5" y="74" width="24" height="4" opacity="0.7"></rect>
@@ -438,7 +442,8 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
         <div class="ctl" id="ctl-time">
           <span class="cap" id="time-lbl">Time</span>
           <div class="seg" role="group" aria-labelledby="time-lbl">
-            <button type="button" id="time-fit" data-time="fit" aria-pressed="true">Fit</button>
+            <button type="button" id="time-both" data-time="both" aria-pressed="true">Both</button>
+            <button type="button" id="time-fit" data-time="fit" aria-pressed="false">Fit</button>
             <button type="button" id="time-pred" data-time="pred" aria-pressed="false">Predict</button>
           </div>
         </div>
@@ -455,9 +460,9 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
         <div><dt>Score</dt><dd id="key-score"></dd></div>
         <div><dt>Fit time</dt><dd>String embedding + training, seconds per 1K training rows.</dd></div>
         <div><dt>Predict time</dt><dd>String embedding + prediction, seconds per 1K rows.</dd></div>
-        <div><dt>Modular</dt><dd>Each string column becomes 30 numbers (SVD for Tf-Idf, PCA for E5 and MiniLM, the first 30 dimensions for LLaMA and Qwen), then a tabular learner fits.</dd></div>
+        <div><dt>Modular</dt><dd>Each string column becomes 30 numbers: Tf-Idf with SVD, or the first 30 embedding dimensions of MiniLM-L6-v2 or LLaMA-3.1-8B. Then a tabular learner fits.</dd></div>
         <div><dt>End-to-end</dt><dd>The model reads the raw strings itself. Anonymous models appear under a codename.</dd></div>
-        <div><dt>Runs on</dt><dd>GPU rows: 1 NVIDIA [GPU model], 32 CPU cores, 128 GB RAM. CPU rows: the same node without the GPU. API rows: the vendor's servers, time includes the network.</dd></div>
+        <div><dt>Hardware</dt><dd>One node for every row: 1 NVIDIA [GPU model], 32 CPU cores, 128 GB RAM. Hover a row to see whether it used the GPU. API rows ran on the vendor's servers.</dd></div>
       </dl>
     </div>
 
@@ -472,7 +477,6 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
                 <th scope="col" class="num"><span id="th-metric">Score</span><small id="th-metric-sub">mean</small></th>
                 <th scope="col" class="num" id="th-fit"><span>Fit</span><small>s / 1K rows</small></th>
                 <th scope="col" class="num" id="th-pred"><span>Predict</span><small>s / 1K rows</small></th>
-                <th scope="col">Runs on</th>
               </tr>
             </thead>
             <tbody id="rows"></tbody>
@@ -494,6 +498,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
             <li><span class="sw sw-on"></span>Pareto-optimal</li>
             <li><span class="sw sw-off"></span>Not on the front</li>
             <li><span class="sw sw-api"></span>API model</li>
+            <li><span class="sw sw-top"></span>Top 3 in this order</li>
             <li><span class="sw sw-line"></span>Pareto front</li>
           </ul>
         </div>
@@ -511,7 +516,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
     <ol>
       <li><b>v0.1.2</b><span>Added Embedding API + TabPFN-2.5, an API model. Example entry.</span></li>
       <li><b>v0.1.1</b><span>Re-ran CatBoost on 3 tables after a timing fix. Other scores unchanged. Example entry.</span></li>
-      <li><b>v0.1.0</b><span>First public version: 17 pipelines on 108 tables, default configs. Example entry.</span></li>
+      <li><b>v0.1.0</b><span>First public version: 13 pipelines on 108 tables, default configs. Example entry.</span></li>
     </ol>
   </section>
 
@@ -561,7 +566,7 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.45; font-fa
 
 <script>
 /* Placeholder pipelines. Per task: [score, fit seconds per 1K training rows, predict seconds per 1K rows].
-   kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU", "CPU" or "API".
+   kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU", "CPU" or "API" (shown in the tooltip; API rows get a tag).
    Optional flags: anon (codename, name never revealed), closed (named, weights not public).
    The real site loads the same records from results.json, see refresh(). */
 let DATA = [
@@ -573,12 +578,8 @@ let DATA = [
   { id: 'tfidf-tabpfn', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.744, 0.45, 9.5], clf: [0.906, 0.40, 8.4] },
   { id: 'minilm-tabicl', enc: 'MiniLM-L6-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.722, 1.9, 5.4], clf: [0.893, 1.7, 4.9] },
   { id: 'minilm-tabpfn', enc: 'MiniLM-L6-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.733, 1.9, 10.8], clf: [0.897, 1.7, 9.6] },
-  { id: 'e5-tabicl', enc: 'E5-small-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.727, 2.6, 6.1], clf: [0.896, 2.3, 5.5] },
-  { id: 'e5-tabpfn', enc: 'E5-small-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.738, 2.6, 11.5], clf: [0.901, 2.3, 10.2] },
   { id: 'llama-tabicl', enc: 'LLaMA-3.1-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.736, 145, 150], clf: [0.892, 130, 134] },
   { id: 'llama-tabpfn', enc: 'LLaMA-3.1-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.741, 145, 156], clf: [0.895, 130, 139] },
-  { id: 'qwen-tabicl', enc: 'Qwen-3-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.739, 158, 163], clf: [0.894, 140, 145] },
-  { id: 'qwen-tabpfn', enc: 'Qwen-3-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.747, 158, 169], clf: [0.898, 140, 150] },
   { id: 'contexttab', enc: '', lrn: 'ConTextTab', kind: 'e2e', hw: 'GPU', reg: [0.722, 0.6, 24], clf: [0.884, 0.55, 21] },
   { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', hw: 'GPU', reg: [0.668, 46, 2.8], clf: [0.873, 42, 2.5] },
   { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.5, 0.25], clf: [0.868, 8.6, 0.22] },
@@ -594,11 +595,12 @@ const TASKS = {
   clf: { metric: 'AUC', colSub: 'mean', axis: 'Mean AUC', key: 'Mean AUC over the ' + N_CLF + ' classification tables.' }
 };
 const TIMES = {
-  fit: { name: 'Fit', title: 'Score vs fit time', axis: 'Fit time: embedding + training, s per 1K rows, log scale' },
-  pred: { name: 'Predict', title: 'Score vs predict time', axis: 'Predict time: embedding + prediction, s per 1K rows, log scale' }
+  both: { name: 'Fit + predict', title: 'Score vs fit + predict time', axis: 'Fit + predict time, s per 1K rows, log scale', fastest: 'FASTEST ON THE FRONT ' },
+  fit: { name: 'Fit', title: 'Score vs fit time', axis: 'Fit time: embedding + training, s per 1K rows, log scale', fastest: 'FASTEST TO FIT ON THE FRONT ' },
+  pred: { name: 'Predict', title: 'Score vs predict time', axis: 'Predict time: embedding + prediction, s per 1K rows, log scale', fastest: 'FASTEST TO PREDICT ON THE FRONT ' }
 };
 const LIMIT = 12;
-const state = { task: 'both', time: 'fit', sort: 'pareto', showAll: false, hot: null };
+const state = { task: 'both', time: 'both', sort: 'pareto', showAll: false, hot: null };
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -607,7 +609,6 @@ const SVGNS = 'http://www.w3.org/2000/svg';
 const sv = (tag, attrs) => { const n = document.createElementNS(SVGNS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
 function items(task, time) {
-  const ti = time === 'fit' ? 1 : 2;
   return DATA.map((d) => {
     let s, fit, pred;
     if (task === 'both') {
@@ -615,7 +616,7 @@ function items(task, time) {
       fit = (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL;
       pred = (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL;
     } else { s = d[task][0]; fit = d[task][1]; pred = d[task][2]; }
-    return { id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, api: d.hw === 'API', s: s, fit: fit, pred: pred, t: ti === 1 ? fit : pred };
+    return { id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, api: d.hw === 'API', s: s, fit: fit, pred: pred, t: time === 'fit' ? fit : time === 'pred' ? pred : fit + pred };
   });
 }
 function paretoSet(list) {
@@ -646,8 +647,8 @@ function renderTable(list, front, rows) {
   const tbody = $('rows'); tbody.textContent = '';
   const T = TASKS[state.task];
   $('th-metric').textContent = T.metric; $('th-metric-sub').textContent = T.colSub;
-  $('th-fit').classList.toggle('on', state.time === 'fit');
-  $('th-pred').classList.toggle('on', state.time === 'pred');
+  $('th-fit').classList.toggle('on', state.time !== 'pred');
+  $('th-pred').classList.toggle('on', state.time !== 'fit');
   const nOn = rows.filter((d) => front.has(d.id)).length;
   const base = Math.max(LIMIT, state.sort === 'pareto' ? nOn + 4 : LIMIT);
   const limit = state.showAll ? rows.length : base;
@@ -658,12 +659,12 @@ function renderTable(list, front, rows) {
       if (g !== group) {
         group = g;
         const gr = el('tr', 'group'); const td = el('td');
-        td.colSpan = 6;
+        td.colSpan = 5;
         td.textContent = g === 'on' ? '★ Pareto front · ' + nOn : 'Not on the front · ' + (rows.length - nOn);
         gr.appendChild(td); tbody.appendChild(gr);
       }
     }
-    const tr = el('tr', 'row'); tr.tabIndex = 0; tr.dataset.id = d.id;
+    const tr = el('tr', 'row' + (i < 3 ? ' top' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
     tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', fit ' + fmtT(d.fit) + ', predict ' + fmtT(d.pred) + ' per 1K rows, runs on ' + d.hw + (front.has(d.id) ? ', Pareto-optimal' : ''));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
@@ -671,14 +672,14 @@ function renderTable(list, front, rows) {
     else { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); p.appendChild(el('span', 'lrn', d.lrn)); }
     if (d.anon) p.appendChild(el('span', 'tag anon', 'ANONYMOUS'));
     else if (d.closed) p.appendChild(el('span', 'tag closed', 'CLOSED'));
+    if (d.api) p.appendChild(el('span', 'tag api', 'API'));
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
     tr.appendChild(el('td', 'num score', fmtS(d.s)));
     const approx = d.api ? '≈ ' : '';
-    tr.appendChild(el('td', 'num time' + (state.time === 'fit' ? ' on' : '') + (d.api ? ' api' : ''), approx + fmtN(d.fit)));
-    tr.appendChild(el('td', 'num time' + (state.time === 'pred' ? ' on' : '') + (d.api ? ' api' : ''), approx + fmtN(d.pred)));
-    tr.appendChild(el('td', 'hw', d.hw));
+    tr.appendChild(el('td', 'num time' + (state.time !== 'pred' ? ' on' : '') + (d.api ? ' api' : ''), approx + fmtN(d.fit)));
+    tr.appendChild(el('td', 'num time' + (state.time !== 'fit' ? ' on' : '') + (d.api ? ' api' : ''), approx + fmtN(d.pred)));
     tr.addEventListener('pointerenter', () => setHot(d.id));
     tr.addEventListener('pointerleave', () => setHot(null));
     tr.addEventListener('focus', () => setHot(d.id));
@@ -695,7 +696,7 @@ function niceStep(range) {
   const raw = range / 5, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
   return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
 }
-function renderPlot(list, front) {
+function renderPlot(list, front, top) {
   const host = $('plot'); host.textContent = '';
   const W = Math.max(280, host.clientWidth || 520);
   const H = Math.round(Math.max(300, Math.min(440, W * 0.8)));
@@ -757,6 +758,7 @@ function renderPlot(list, front) {
     const on = front.has(d.id), sz = on ? 10 : 8, cx = X(d.t), cy = Y(d.s);
     const r = sv('rect', { class: 'pt' + (on ? ' on' : '') + (d.api ? ' api' : ''), x: cx - sz / 2, y: cy - sz / 2, width: sz, height: sz });
     pts.appendChild(r); geo.push({ d, cx, cy, node: r, on });
+    if (top && top.has(d.id)) pts.appendChild(sv('rect', { class: 'top-ring', x: cx - sz / 2 - 4, y: cy - sz / 2 - 4, width: sz + 8, height: sz + 8 }));
   }
   svg.appendChild(pts);
 
@@ -828,7 +830,7 @@ function renderTicker(list, front) {
   const top = state.task === 'both' ? 'TOP SCORE ' : 'TOP ' + TASKS[state.task].metric + ' ';
   const msgs = [
     [top, fmtS(best.s), ' · ' + pipeName(best)],
-    ['FASTEST TO ' + (state.time === 'fit' ? 'FIT' : 'PREDICT') + ' ON THE FRONT ', pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K rows'],
+    [TIMES[state.time].fastest, pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K rows'],
     ['★ PARETO FRONT ', String(fr.length), ' pipelines'],
     ['VERSION ', VERSION, ' · ' + N_ALL + ' tables · ' + N_REG + ' regression · ' + N_CLF + ' classification']
   ];
@@ -842,14 +844,14 @@ function render() {
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
-  renderPlot(list, front);
+  renderPlot(list, front, new Set(rows.slice(0, 3).map((d) => d.id)));
   renderTicker(list, front);
   $('stat-n').textContent = String(DATA.length);
   $('ver-chip').textContent = VERSION;
   $('key-score').textContent = TASKS[state.task].key;
   $('plot-title').textContent = TIMES[state.time].title;
   ['both', 'reg', 'clf'].forEach((k) => $('task-' + k).setAttribute('aria-pressed', String(state.task === k)));
-  ['fit', 'pred'].forEach((k) => $('time-' + k).setAttribute('aria-pressed', String(state.time === k)));
+  ['both', 'fit', 'pred'].forEach((k) => $('time-' + k).setAttribute('aria-pressed', String(state.time === k)));
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
 }
 
@@ -911,7 +913,7 @@ const TOUR = [
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. ★ Pareto puts the best trade-offs between score and time first, and is the default. Score ranks by accuracy, Time by speed.' },
   { sel: '#ctl-time', block: 'center', time: 'pred',
-    text: 'Time. Fit counts string embedding and training. Predict counts embedding and prediction for 1K new rows. The plot and the Pareto order follow this choice.' },
+    text: 'Time. Both is fit plus predict per 1K rows. Fit counts string embedding and training; Predict counts embedding and prediction on new rows. The plot and the Pareto order follow this choice.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
     text: 'Two kinds of pipelines. Modular ones pair a string encoder with a tabular learner. End-to-end models read raw strings themselves and carry a tag. Anonymous models appear under a codename.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf-tabpfn',
@@ -926,7 +928,7 @@ function startBar() {
   if (tour && tour.playing) { b.style.transition = 'width 7000ms linear'; b.style.width = '100%'; }
 }
 function applyStep(s) {
-  state.task = s.task || 'both'; state.time = s.time || 'fit'; state.sort = s.sort || 'pareto';
+  state.task = s.task || 'both'; state.time = s.time || 'both'; state.sort = s.sort || 'pareto';
   state.showAll = false; state.hot = s.hot || null;
   render();
 }
@@ -989,6 +991,7 @@ document.addEventListener('keydown', (e) => {
   const toks = (location.hash || '').replace('#', '').split('.');
   if (toks.indexOf('reg') >= 0) state.task = 'reg';
   if (toks.indexOf('clf') >= 0) state.task = 'clf';
+  if (toks.indexOf('fit') >= 0) state.time = 'fit';
   if (toks.indexOf('predict') >= 0) state.time = 'pred';
   if (toks.indexOf('score') >= 0) state.sort = 'score';
   if (toks.indexOf('time') >= 0) state.sort = 'time';
@@ -997,7 +1000,7 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();
 let rz = null;
-new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task, state.time); if (list.length) renderPlot(list, paretoSet(list)); }); }).observe($('plot'));
+new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task, state.time); if (list.length) { const front = paretoSet(list); renderPlot(list, front, new Set(ordered(list, state.sort, front).slice(0, 3).map((d) => d.id))); } }); }).observe($('plot'));
 </script>
 
 </body>

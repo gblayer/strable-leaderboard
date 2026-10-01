@@ -30,8 +30,9 @@ SMOKE_TABLES = {
     "binary": "animalandveterinary-event",  # 1,345 rows
     "multiclass": "drug-ndc",  # 583 rows, 4 classes
 }
-REQUIRED = ["name", "version", "handles_strings", "tasks", "access", "hardware", "package", "checkpoint", "licence",
-            "trained_on_strable"]
+REQUIRED = ["name", "version", "handles_strings", "tasks", "variant", "access", "hardware", "package", "checkpoint",
+            "licence", "trained_on_strable"]
+VARIANTS = {"default"}  # tuned and tuned-ensembled come later
 ACCESS = {"open", "closed", "api"}
 HARDWARE = {"gpu", "cpu"}
 TASKS = {"regression", "binary", "multiclass"}
@@ -43,6 +44,8 @@ def load_card(folder: Path) -> dict:
     missing = [k for k in REQUIRED if k not in card]
     if missing:
         raise ValueError(f"model.yaml misses {missing}")
+    if card["variant"] not in VARIANTS:
+        raise ValueError(f"variant must be one of {sorted(VARIANTS)} for now")
     if card["access"] not in ACCESS:
         raise ValueError(f"access must be one of {sorted(ACCESS)}")
     if card["hardware"] not in HARDWARE:

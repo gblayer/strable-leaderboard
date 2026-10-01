@@ -2,8 +2,9 @@
 
 name: My Model                  # shown on the board
 version: "1.0"                  # one folder per version: models/my-model-1.0
-handles_strings: false          # false: paired with the five string encoders. true: end-to-end
+handles_strings: false          # false: paired with the three string encoders. true: end-to-end
 tasks: [regression, binary, multiclass]
+variant: default                # default now; tuned and tuned-ensembled later, one folder each
 access: open                    # open | closed | api
 hardware: gpu                   # gpu | cpu
 gpu_memory_gb: 24               # optional: what the runner must reserve
