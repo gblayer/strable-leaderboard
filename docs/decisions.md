@@ -21,7 +21,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | Date | Decision |
 |---|---|
 | 09-30 | The default task view is "Both": R² and AUC averaged over all 108 tables |
-| 10-01 | Per table, the mean over folds, then an R² below 0 counts as 0 |
+| 10-01 | Per table, the mean over folds, then an R² below 0 counts as 0. Reversed later that day: raw values, exactly as in the paper |
 | 10-01 | One score, no normalization. Elo and improvability are not shown |
 | 10-01 | Two times per pipeline: fit (embedding plus training) per 1,000 training rows and predict (embedding plus prediction) per 1,000 test rows. The default view is the total, fit plus predict seconds per 1,000 table rows, as in the paper |
 | 10-01 | No hardware column: hovering a row shows whether it used the GPU |
@@ -59,6 +59,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-01 | Larger type on a wider page; the Pareto line starts at the x axis |
 | 10-01 | No key panel: the paper defines the numbers. No preview bar: the theme follows the system, Demo sits in the navigation |
 | 10-01 | The first board imports the paper's Figure 3 and 4a pipelines (raw scores, total time, hardware "paper"); re-runs on the reference node replace them |
+| 10-01 | Per-fold results stay private, on the cluster and in the private repository. The public repository holds only the aggregates in site/results.json |
 | 10-01 | The hero art uses invented company names only |
 | 10-01 | The README carries the site's palette and type through an SVG banner; the leaderboard URL goes in the README and the repository's About box |
 

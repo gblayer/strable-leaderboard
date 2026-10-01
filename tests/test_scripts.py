@@ -33,7 +33,7 @@ def test_build_site_data(tmp_path):
     assert data["version"] == "v0.1.0" and data["history"][0]["note"] == "First version"
     (p,) = data["pipelines"]
     assert p["id"] == "tfidf+ridge" and p["enc"] == "Tf-Idf" and p["lrn"] == "Ridge" and p["kind"] == "modular"
-    assert p["both"][0] < 0.6 and p["reg"][0] < 0.6 and p["clf"][0] == 0.6  # one floored table pulls the mean down
+    assert p["both"][0] < 0.6 and p["reg"][0] < 0.6 and p["clf"][0] == 0.6  # one negative R² pulls the mean down
     assert p["reg"][1] > 0 and p["reg"][2] > 0 and p["reg"][3] > 0  # fit, predict, total per 1K rows
 
 

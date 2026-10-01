@@ -1,6 +1,6 @@
 name: Claude review
 
-# Two independent Claude passes on every pull request that touches models/ or results/.
+# Two independent Claude passes on every pull request that touches models/ or site/results.json.
 # Needs the secret CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`) and the labels
 # claude-approved and needs-maintainer. See docs/automation.md.
 #
@@ -12,7 +12,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - "models/**"
-      - "results/**"
+      - "site/results.json"
 
 permissions:
   contents: read

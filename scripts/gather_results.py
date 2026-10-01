@@ -1,6 +1,6 @@
-"""Gather the rows written by strable_leaderboard.run into results/<model>.csv.
+"""Gather the rows written by strable_leaderboard.run into <results>/<model>.csv.
 
-    python scripts/gather_results.py runs/ results/
+    python scripts/gather_results.py runs $STRABLE_RESULTS
 
 One file per model folder, one row per (encoder, table, fold), sorted. Existing rows of the
 same (encoder, table, fold) are replaced, other rows are kept, so a re-run of a few tables

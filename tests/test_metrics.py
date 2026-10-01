@@ -16,18 +16,18 @@ def _results():
     return pd.DataFrame(rows)
 
 
-def test_negative_r2_counts_as_zero_after_fold_mean():
+def test_table_scores_are_raw_fold_means():
     t = table_scores(_results()).set_index("table")
-    assert t.loc["r3", "score"] == 0.0
+    assert t.loc["r3", "score"] == pytest.approx(-3.0)  # a negative R² is kept, as in the paper
     assert t.loc["r1", "score"] == pytest.approx(0.8)
 
 
 def test_leaderboard_views():
     both = leaderboard(_results(), "both", n_tables=4)
-    assert both.loc["A", "score"] == pytest.approx((0.8 + 0.7 + 0.0 + 0.9) / 4)
+    assert both.loc["A", "score"] == pytest.approx((0.8 + 0.7 - 3.0 + 0.9) / 4)
     assert bool(both.loc["A", "complete"])
     reg = leaderboard(_results(), "regression")
-    assert reg.loc["A", "score"] == pytest.approx(0.5)
+    assert reg.loc["A", "score"] == pytest.approx((0.8 + 0.7 - 3.0) / 3)
     assert reg.loc["A", "fit_per_1k"] == pytest.approx(1.0)
     assert reg.loc["A", "predict_per_1k"] == pytest.approx(1.0)
 

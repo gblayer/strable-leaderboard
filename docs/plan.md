@@ -15,7 +15,7 @@ New models come out all the time, so the board does not list the paper's ~445 pi
 
 ## What the board shows
 
-- **Score:** one number, the mean over the 108 tables of R² for regression and AUC for classification, R² floored at 0 per table. Views for regression or classification alone. See [protocol.md](protocol.md).
+- **Score:** one number, the mean over the 108 tables of R² for regression and AUC for classification, computed exactly as in the paper. Views for regression or classification alone. See [protocol.md](protocol.md).
 - **Time:** fit plus predict by default, or either alone: fit is embedding plus training, predict is embedding plus prediction, per 1,000 rows. The choice drives the plot and the Pareto order. The top three rows of any order are marked.
 - **Rows:** modular pipelines, one of three string encoders plus a numeric learner, and end-to-end models that read strings themselves. Tags for end-to-end, anonymous and closed rows. Hovering a row shows whether it used the GPU. The table has a fixed height and scrolls, so every pipeline is always in it.
 - Version history, a suggestion panel, a Refresh button next to the version chip, and a guided demo that shows where things are; the key under the controls says how to read them.
@@ -39,7 +39,7 @@ Not shown: Elo, improvability, normalized scores, families, filters, a hardware 
 2. Add a `models/<name>/` folder for each of those learners, so the runner can re-run them on the reference node with fit and predict timed apart; re-runs replace the imported rows. Add the models released since, such as Kumo Tabular. The launch set is settled around mid-November 2026.
 3. Publish as v0.1.0. From then on every merged results pull request adds one patch version: v0.1.1, v0.1.2, and so on. Nothing before the launch carries a version.
 
-A submission never triggers a re-run of the others: each pipeline's rows are stored once in `results/`, and the board recomputes the ranking and the Pareto front from all stored rows. Embeddings are cached per encoder, table and fold, so a new numeric-only model costs only its own 972 fit-and-predict runs.
+A submission never triggers a re-run of the others: each pipeline's rows are stored once in the private results folder, and the board recomputes the ranking and the Pareto front from the aggregates in `site/results.json`. Embeddings are cached per encoder, table and fold, so a new numeric-only model costs only its own 972 fit-and-predict runs.
 
 ## Later
 

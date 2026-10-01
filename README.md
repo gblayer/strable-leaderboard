@@ -10,6 +10,8 @@
 
 The living leaderboard of [STRABLE](https://arxiv.org/abs/2605.12292), the benchmark of 108 real-world tables with raw strings: 76 regression and 32 classification tasks. One score per pipeline, fit and predict time, Pareto-optimal pipelines first.
 
+If you benchmark on STRABLE, [star this repository](https://github.com/gblayer/strable-leaderboard/stargazers) and cite the paper ([CITATION.cff](CITATION.cff)). To claim a rank, name the board version and date shown at the top of the page.
+
 **Leaderboard:** https://gblayer.github.io/strable-leaderboard/
 
 **Status: pre-launch.** Protocol, cross-validation folds, the model contract with its smoke test, the review automation and the site are here. The first results come with the launch set in November 2026.
@@ -43,8 +45,8 @@ You submit code, not results. After the merge we run the model on all 108 tables
 | [docs/research.md](docs/research.md) | Notes on TabArena, the paper and other leaderboards |
 | [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
 | [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, model contract, smoke test, one run (`run.py`), results check |
-| [scripts/](scripts/) | Runner: prepare, make_tasks, run_array, gather_results, check; import_paper_results; build_site_data |
-| [results/](results/) | One CSV per model, one row per encoder, table and fold, plus `versions.yaml` |
+| [scripts/](scripts/) | Runner: prepare, make_tasks, run_array, gather_results; import_paper_results; build_site_data |
+| [site/results.json](site/results.json) | The aggregates the page shows; per-fold results stay private |
 | [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a working example |
 | [site/index.html](site/index.html) | The page served at https://gblayer.github.io/strable-leaderboard/ |
 | [.github/workflows/](.github/workflows/) | Checks, Claude review, Claude on issues, Pages deployment |

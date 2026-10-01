@@ -1,18 +1,20 @@
 """Import the paper's result_comparison*.csv files into results/<model>.csv.
 
-    python scripts/import_paper_results.py result_comparison.csv [more.csv ...] --out results/
+    python scripts/import_paper_results.py result_comparison.csv [more.csv ...] --out $STRABLE_RESULTS
 
-The paper timed fit and predict together, so imported rows carry ``total_s`` only and
-``hardware: paper`` (mixed GPUs and CPUs). Scores are the raw per-fold R² or ROC-AUC; the
-board floors R² when it aggregates. Only default-configuration ``num-str`` pipelines are
+Run it where the paper's CSVs are, on the cluster. The paper timed fit and predict together,
+so imported rows carry ``total_s`` only and ``hardware: paper`` (mixed GPUs and CPUs). Scores
+are the raw per-fold R² or ROC-AUC. Only default-configuration ``num-str`` pipelines are
 imported; add ``--encoders`` or ``--learners`` to restrict further.
 
-Paper method tokens are ``num-str_<encoder>_<learner>``. Unknown tokens or table names are
-listed, not imported: extend the maps below for them.
+Paper method tokens are ``num-str_<encoder>_<learner>``. Unknown tokens are listed, not
+imported: extend the maps below for them. A ``data_name`` that is not a table of the dataset
+(a table renamed before the Hugging Face release) goes into ``RENAMES`` as old name -> new name.
 """
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -72,7 +74,7 @@ def convert(paper: pd.DataFrame, tables: dict, encoders=None, learners=None) -> 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("csv", nargs="+", type=Path)
-    parser.add_argument("--out", type=Path, default=ROOT / "results")
+    parser.add_argument("--out", type=Path, default=os.environ.get("STRABLE_RESULTS", "results"))
     parser.add_argument("--encoders", nargs="*", help="leaderboard encoder ids to keep")
     parser.add_argument("--learners", nargs="*", help="model folders to keep")
     args = parser.parse_args(argv)

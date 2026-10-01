@@ -3,11 +3,12 @@
     python scripts/make_tasks.py models/tabpfn-2.5 [models/...] > tasks.txt
 
 A numeric-only model gets the three encoders, an end-to-end model one line per table and fold.
-Tasks with a row in runs/ or results/<model>.csv are left out, so the list is what the job
-array still has to do.
+Tasks with a row in runs/ or in $STRABLE_RESULTS/<model>.csv are left out, so the list is what
+the job array still has to do.
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -33,7 +34,7 @@ def done(model: str, runs: Path, results: Path) -> set:
     return keys
 
 
-def tasks(folders, runs=ROOT / "runs", results=ROOT / "results"):
+def tasks(folders, runs=ROOT / "runs", results=Path(os.environ.get("STRABLE_RESULTS", "results"))):
     tables = json.loads(MANIFEST.read_text())["tables"]
     out = []
     for folder in folders:

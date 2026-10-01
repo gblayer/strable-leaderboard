@@ -35,7 +35,9 @@ flowchart TD
 
 1. `cp -r models/_template models/<name>` and fill the three files. The folder name carries the version: `tabpfn-2.5`.
 2. Test: `pip install -e ".[dev]" -r models/<name>/requirements.txt && python -m strable_leaderboard.smoke models/<name>`
-3. Push a branch `add-<name>` (in a fork if you have no write access) and open the pull request, title `Add <Name> <version>`.
+3. Push a branch `add-<name>` and open the pull request, title `Add <Name> <version>`.
+
+A pull request always comes from a branch, never from `main`. Contributors without write access first **fork** the repository (a copy under their own GitHub account, made with the Fork button), push the branch there and open the pull request from it; GitHub shows that pull request here, with its diff and checks, while the branch itself stays in the fork. Cloning is different: a clone is a copy on your own machine, and you can only push it to repositories you may write to. This is the standard GitHub flow, used by TabArena as well.
 
 Or clone the repository and tell your coding agent: *"Add my model to the STRABLE leaderboard, test it, and open a pull request."* It follows `.claude/skills/add-model/SKILL.md`.
 
@@ -85,7 +87,7 @@ What the board derives from it:
 | `variant` | Nothing yet: only `default` is accepted. Tuned and tuned-ensembled rows come later, each from its own folder |
 | `trained_on_strable` | A contamination note on the row |
 
-Why `access` matters: *open* means any reader can rerun the row, since the code, the weights, the folder and the folds are all public; *closed* means we ran it on our hardware with weights shared privately, so the numbers are comparable but only we could produce them. The Pareto front is computed from the results, so a closed model is on it only if nothing beats it.
+Why `access` matters: *open* means anyone can rerun the pipeline, since the code, the weights, the folder and the folds are public; *closed* means we ran it on our hardware with weights shared privately, so the numbers are comparable but only we could produce them. The Pareto front is computed from the results, so a closed model is on it only if nothing beats it.
 
 Models reachable only through a vendor's API are not on the board: they would run on the vendor's servers, so neither the time nor the hardware would be comparable. A vendor who wants a row shares the weights privately and the model runs as closed.
 

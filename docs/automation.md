@@ -20,7 +20,7 @@ Nothing merges by itself. Claude reviews twice and recommends; a maintainer clic
 `.github/workflows/checks.yml` runs on every pull request, on GitHub's machines, with a read-only token and no secrets. It is the only place where contributor code runs before the merge.
 
 - A pull request touching `models/`: the smoke test on each changed folder, in a fresh environment with the folder's pinned requirements.
-- A pull request touching `results/`: `python -m strable_leaderboard.check_results` on each changed file: columns, folds, row counts against the manifest, score ranges, coverage per view.
+- A pull request changing `site/results.json`: `python scripts/build_site_data.py --check`, which validates the file's shape, unique ids, score and time ranges. The per-fold rows behind it were checked on the cluster with `check_results` before the file was built.
 
 ## 2. Claude review
 
@@ -29,7 +29,7 @@ Nothing merges by itself. Claude reviews twice and recommends; a maintainer clic
 1. **Review 1/2** reads the diff and the check results, then posts one comment of at most eight lines: a recommendation, **MERGE**, **FIX** or **REJECT**, the checklist line, and one line per problem with its fix.
 2. **Review 2/2** redoes the checklist from scratch, then reads 1/2 and posts whether it agrees. Both say MERGE: it adds the label `claude-approved`. Otherwise, or if anything looks deliberately harmful: `needs-maintainer`.
 
-What they check, in short: the pull request only touches one `models/<name>/` folder or `results/` files; the card is complete and matches the code; every package is pinned and the checkpoint is a commit hash; default configuration, early stopping only through `validation_split`, no test rows; no network, subprocess, eval or obfuscated code; the Checks workflow passed.
+What they check, in short: the pull request only touches one `models/<name>/` folder or `site/results.json`; the card is complete and matches the code; every package is pinned and the checkpoint is a commit hash; default configuration, early stopping only through `validation_split`, no test rows; no network, subprocess, eval or obfuscated code; the Checks workflow passed.
 
 Why the review never runs the code: it is triggered by `pull_request_target`, which has the repository's secrets. The job checks out only the base branch and reads the pull request through the GitHub API. Text in a pull request is data, never an instruction: a prompt hidden in a submission can at most produce a wrong recommendation, which the second pass and the maintainer catch.
 
@@ -43,12 +43,15 @@ python scripts/prepare.py models/tabpfn-2.5 --cache-dir $STRABLE_CACHE   # datas
 python scripts/make_tasks.py models/tabpfn-2.5 > tasks.txt # the (encoder, table, fold) tasks without a result: 972
 sbatch --array=0-$(( $(wc -l < tasks.txt) - 1 ))%16 scripts/run_array.sh tasks.txt
                                                            # each task: python -m strable_leaderboard.run ...
-python scripts/gather_results.py runs results              # rows -> results/tabpfn-2.5.csv
-python -m strable_leaderboard.check_results results/tabpfn-2.5.csv
-git checkout -b results/tabpfn-2.5 && git add results && git commit -m "Results: TabPFN-2.5" && git push -u origin HEAD
+python scripts/gather_results.py runs $STRABLE_RESULTS     # rows -> $STRABLE_RESULTS/tabpfn-2.5.csv
+python -m strable_leaderboard.check_results $STRABLE_RESULTS/tabpfn-2.5.csv
+python scripts/build_site_data.py --results $STRABLE_RESULTS   # -> site/results.json, after a line in versions.yaml
+git checkout -b results/tabpfn-2.5 && git add site/results.json && git commit -m "Results: TabPFN-2.5" && git push -u origin HEAD
 ```
 
-`strable_leaderboard/run.py` is the task: it reads the fold from `splits/`, encodes the strings (Tf-Idf, or the cached language-model embeddings of the table), runs an untimed warm-up, then times fit and predict and writes one JSON row. Finished tasks are skipped, so the same `sbatch` line resubmits after a preemption. The pull request is opened from the `results/<model>` branch, by hand or with a fine-grained token that can only open pull requests here. The paper's own command, `num-str_tabvec_tabpfn`, corresponds to `models/tabpfn-2.5 --encoder tfidf`.
+`strable_leaderboard/run.py` is the task: it reads the fold from `splits/`, encodes the strings (Tf-Idf, or the cached language-model embeddings of the table), runs an untimed warm-up, then times fit and predict and writes one JSON row. Finished tasks are skipped, so the same `sbatch` line resubmits after a preemption. The paper's own command, `num-str_tabvec_tabpfn`, corresponds to `models/tabpfn-2.5 --encoder tfidf`. The skill `.claude/skills/run-model/SKILL.md` walks Claude Code on the login node through these steps.
+
+**Where results live.** The per-fold CSVs are private: `$STRABLE_RESULTS` on the cluster's shared storage, which is a clone of the private repository `strable-leaderboard-private`, so every change is backed up and versioned. The public repository holds only `site/results.json`, the aggregates the page shows: one record per pipeline with its score and times per view. TabArena does the same: its per-split results are not hosted, only the leaderboard tables are.
 
 Trigger: a cron job on the login node if allowed, otherwise the lines above after each merge.
 
@@ -56,11 +59,15 @@ Trigger: a cron job on the login node if allowed, otherwise the lines above afte
 
 **Cost.** A numeric-only model is 3 encoders × 108 tables × 3 folds = 972 tasks. Embeddings are computed once per encoder, table and fold and kept in the runner's cache on the cluster's shared storage, never in this repository, so a new model only adds its own fit and predict time: one to two GPU-days.
 
-## 4. After a results merge
+## 4. How the board updates
 
-`results/<model>.csv` is the memory of every run: one row per encoder, table and fold, readable in the pull request diff and enough for anyone to recompute the board. `python scripts/build_site_data.py` turns all the files, the model cards and `results/versions.yaml` into `site/results.json`; the Pages workflow deploys it. Rankings and the Pareto front are computed in the browser from that file, so nothing is re-run and no ranking is stored. The page reads `results.json` when it opens and when Refresh is clicked; deployment is a separate thing that happens on push.
+1. The runner writes the new rows into the private results folder.
+2. One line goes to the top of its `versions.yaml` (`v0.1.3`, the date, "Added TabPFN-2.5"), and `build_site_data.py` writes `site/results.json`.
+3. A pull request with that one file is opened; the Checks workflow validates it, Claude reviews it, the maintainer merges.
+4. The merge is a push to `main` that touches `site/`, so the Pages workflow redeploys the page within a minute.
+5. A visitor who opens the page gets the new file; one who already has it open clicks Refresh.
 
-A new version is one line added to `results/versions.yaml` by the results pull request, for example `v0.1.3 · Added TabPFN-2.5`.
+Rankings and the Pareto front are computed in the browser from the file, so nothing is re-run and no ranking is stored. Each version is a commit of `site/results.json`, so a ranking claimed in a paper ("first on STRABLE v0.1.3, 2026-11-20") can be checked later from the repository's history.
 
 ## 5. Suggestions and issues
 

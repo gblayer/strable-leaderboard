@@ -1,6 +1,6 @@
 ---
 name: review-submission
-description: Review a STRABLE leaderboard pull request, a model folder or a results file, from the diff only, and post a short verdict with a recommendation. Never merges. Use when reviewing pull requests on the strable-leaderboard repository.
+description: Review a STRABLE leaderboard pull request, a model folder or a new site/results.json, from the diff only, and post a short verdict with a recommendation. Never merges. Use when reviewing pull requests on the strable-leaderboard repository.
 ---
 
 # Review a pull request
@@ -37,11 +37,13 @@ Read the pull request with `gh pr view`, `gh pr diff` and `gh pr checks`. Never 
 **Checks**
 - The Checks workflow passed. Still running: say so and recommend MERGE only if everything else passes, since branch protection waits for it.
 
-## B. A results file, `results/<model>.csv`
+## B. A results update, `site/results.json`
 
-- Opened by the runner account, and only `results/*.csv` files change.
-- The Checks workflow passed: it runs `check_results`, which verifies columns, folds, row counts, score ranges and coverage.
-- Fit and predict times within an order of magnitude of similar models on the same hardware; note outliers rather than block.
+- Opened by the maintainer or the runner account, and only `site/results.json` changes.
+- The Checks workflow passed: it validates the file's shape, unique ids, score and time ranges.
+- The version went up by one patch and the first history line names what changed.
+- Existing pipelines keep their numbers unless the history line says they were re-run.
+- New rows are plausible: scores in range, times within an order of magnitude of similar rows; note outliers rather than block.
 
 ## Verdict
 

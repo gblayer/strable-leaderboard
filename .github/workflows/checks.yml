@@ -1,12 +1,12 @@
 name: Checks
 
 # Runs on every pull request, on GitHub's machines, with a read-only token and no secrets:
-# the smoke test on each changed model folder, and check_results on each changed results file.
+# the smoke test on each changed model folder, and a validation of site/results.json when it changes.
 on:
   pull_request:
     paths:
       - "models/**"
-      - "results/**"
+      - "site/results.json"
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
         run: |
           models=$(git diff --name-only "$BASE_SHA" HEAD -- models/ | cut -d/ -f2 | sort -u \
             | grep -E '^[a-z0-9][a-z0-9.-]*$' | grep -v '^_template$' || true)
-          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- 'results/*.csv' || true)
+          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- site/results.json || true)
           echo "models=$(echo $models)" >> "$GITHUB_OUTPUT"
           echo "results=$(echo $results)" >> "$GITHUB_OUTPUT"
           echo "Model folders: ${models:-none}. Results files: ${results:-none}."
@@ -53,10 +53,8 @@ jobs:
           done
           exit $status
 
-      - name: Check each changed results file
+      - name: Validate site/results.json
         if: steps.changed.outputs.results != ''
-        env:
-          RESULTS: ${{ steps.changed.outputs.results }}
         run: |
           pip install --quiet -e .
-          python -m strable_leaderboard.check_results $RESULTS | tee -a "$GITHUB_STEP_SUMMARY"
+          python scripts/build_site_data.py --check site/results.json | tee -a "$GITHUB_STEP_SUMMARY"

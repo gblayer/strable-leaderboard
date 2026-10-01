@@ -1,9 +1,9 @@
 """Scores, aggregation and the Pareto front.
 
 Per fold: R² for regression, ROC-AUC for classification (one-vs-rest, macro average for
-multiclass). Per table: mean over the 3 outer folds, then an R² below 0 counts as 0.
-Per pipeline: mean of the table scores over the tables of the chosen view, with no
-per-table normalization, so a pipeline's score never changes when others join.
+multiclass), as in the paper. Per table: mean over the 3 outer folds, raw, so a negative R²
+stays negative. Per pipeline: mean of the table scores over the tables of the chosen view,
+with no per-table normalization, so a pipeline's score never changes when others join.
 Times are seconds per 1,000 rows, averaged over folds and then summarized by the median
 over tables.
 """
@@ -50,8 +50,6 @@ def table_scores(results: pd.DataFrame) -> pd.DataFrame:
         fit_per_1k=("fit_per_1k", "mean"),
         predict_per_1k=("predict_per_1k", "mean"),
     )
-    is_reg = t["task"] == "regression"
-    t.loc[is_reg, "score"] = t.loc[is_reg, "score"].clip(lower=0.0)
     return t
 
 

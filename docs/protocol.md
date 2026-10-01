@@ -42,7 +42,7 @@ The folds are exactly the paper's. The code is in `strable_leaderboard/splits.py
 ## Scores
 
 1. **Per fold:** R² on the test fold for regression. ROC-AUC from predicted probabilities for classification: the positive-class column for binary tasks, one-vs-rest macro average for multiclass tasks.
-2. **Per table:** the mean over the 3 outer folds. Then an R² below 0 counts as 0, so one failed table cannot outweigh the others.
+2. **Per table:** the mean over the 3 outer folds, raw: a negative R² stays negative, as in the paper.
 3. **Per pipeline:** the mean of the table scores over the tables of the chosen view.
 
 | View | Tables averaged |
@@ -103,11 +103,11 @@ Each result records what it ran on. GPU rows: one GPU of the reference type, fix
 
 ## Result records
 
-`results/<model>.csv`, one row per encoder, table and outer fold:
+One file per model, `<model>.csv`, one row per encoder, table and outer fold. The files stay private, on the cluster and in the private repository; the board publishes only the aggregates in `site/results.json`.
 
 `model, encoder, table, task, fold, score, fit_s, predict_s, total_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
 
-- `encoder` is `none` for end-to-end models. `score` is the raw fold score; flooring happens when the board aggregates.
+- `encoder` is `none` for end-to-end models. `score` is the raw fold score.
 - Runs by the runner fill `fit_s` and `predict_s`; `hardware` is the GPU model or `cpu`.
 - Rows imported from the paper (`scripts/import_paper_results.py`) fill `total_s` only, with `hardware: paper`, since the paper timed fit and predict together on mixed hardware. They may name encoders outside the three above.
 - Rows are default configurations; a `variant` column is added when tuned runs come. `python -m strable_leaderboard.check_results` validates a file.
@@ -115,6 +115,5 @@ Each result records what it ran on. GPU rows: one GPU of the reference type, fix
 ## Differences from the paper
 
 - The paper times one total per fold, with the embedding time measured once per table and added to every fold. The leaderboard splits fit and predict.
-- The paper reports raw R² averages. The leaderboard floors R² at 0 per table.
 - The paper evaluates about 445 pipelines. The leaderboard opens with a launch set, chosen around mid-November 2026, and grows.
 - Still to decide: for multiclass tasks, the paper re-applies a softmax to `predict_proba` before computing AUC. The leaderboard plans to use the probabilities as returned.

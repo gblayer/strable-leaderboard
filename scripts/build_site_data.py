@@ -1,15 +1,23 @@
-"""Build site/results.json from results/*.csv, the model cards and results/versions.yaml.
+"""Build site/results.json from the private results folder, the model cards and its versions.yaml.
 
-    python scripts/build_site_data.py
+    python scripts/build_site_data.py --results $STRABLE_RESULTS
+    python scripts/build_site_data.py --check site/results.json
+
+The results folder holds one CSV per model and ``versions.yaml`` (newest first: version, date,
+note). Only the JSON written here is public. ``--check`` validates a JSON file instead, which the
+Checks workflow runs on every pull request that changes it.
 
 One record per pipeline, with a [score, fit, predict, total] quadruple per view (both,
 regression, classification), or null when the pipeline does not cover every table and fold of
-that view. Times are seconds per 1,000 rows, median over tables. Scores are means over tables,
-R² floored at 0 per table. The page computes the ranking and the Pareto front from this file.
+that view. Times are seconds per 1,000 rows, median over tables. Scores are means over tables
+of the raw fold means, as in the paper. The page computes the ranking and the Pareto front from
+this file.
 """
 
+import argparse
 import json
 import math
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -52,7 +60,7 @@ def _num(x):
     return None if x is None or (isinstance(x, float) and math.isnan(x)) else round(float(x), 4)
 
 
-def build(results_dir: Path = ROOT / "results", out: Path = ROOT / "site" / "results.json") -> dict:
+def build(results_dir: Path, out: Path = ROOT / "site" / "results.json") -> dict:
     tables = json.loads(MANIFEST.read_text())["tables"]
     n_tables = {view: sum(1 for m in tables.values() if m["task"] in tasks) for view, tasks in VIEWS.items()}
     pipelines = []
@@ -81,5 +89,42 @@ def build(results_dir: Path = ROOT / "results", out: Path = ROOT / "site" / "res
     return data
 
 
+def problems(data: dict) -> list[str]:
+    """What is wrong with a results.json, as a list of messages."""
+    out = []
+    for key in ["version", "built", "history", "pipelines"]:
+        if key not in data:
+            out.append(f"missing {key}")
+    if out:
+        return out
+    if not str(data["version"]).startswith("v") or not data["history"] or data["history"][0]["version"] != data["version"]:
+        out.append("version must look like v0.1.2 and match the first history entry")
+    ids = [p.get("id") for p in data["pipelines"]]
+    if len(set(ids)) != len(ids):
+        out.append("duplicate pipeline ids")
+    for p in data["pipelines"]:
+        if not p.get("lrn") or p.get("kind") not in ("modular", "e2e"):
+            out.append(f"{p.get('id')}: needs lrn and kind")
+        for view in VIEW_KEYS.values():
+            v = p.get(view)
+            if v is None:
+                continue
+            if len(v) != 4 or v[0] is None or v[0] > 1 or any(x is not None and x <= 0 for x in v[1:]):
+                out.append(f"{p.get('id')} {view}: expected [score <= 1, fit, predict, total] with positive times")
+            if view != "reg" and v[0] < 0:
+                out.append(f"{p.get('id')} {view}: AUC below 0")
+    return out
+
+
 if __name__ == "__main__":
-    build()
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--results", type=Path, default=os.environ.get("STRABLE_RESULTS"))
+    parser.add_argument("--check", type=Path, help="validate this JSON instead of building")
+    args = parser.parse_args()
+    if args.check:
+        found = problems(json.loads(args.check.read_text()))
+        print("\n".join(found) if found else f"{args.check}: ok")
+        sys.exit(1 if found else 0)
+    if not args.results:
+        sys.exit("give --results or set STRABLE_RESULTS")
+    build(args.results)
