@@ -1,0 +1,14 @@
+name: ExtraTrees
+version: "sklearn-1.9"
+handles_strings: false
+tasks: [regression, binary, multiclass]
+variant: default
+access: open
+hardware: cpu
+
+package: scikit-learn==1.9.1
+checkpoint: null
+licence: BSD-3-Clause
+trained_on_strable: []
+
+code: https://scikit-learn.org/stable/modules/ensemble.html#extremely-randomized-trees
