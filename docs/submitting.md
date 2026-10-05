@@ -117,8 +117,8 @@ Closed and anonymous are the same case; anonymous also hides the name. Neither f
 
 1. The submitter creates a repository on huggingface.co, sets it to private (Settings → *Make private*: only the owner and the people listed under Settings → *Collaborators* can see or download it), uploads the package and the weights, and adds our runner account as a read collaborator. Our runner account is a Hugging Face user that exists only to download submissions.
 2. The submitter emails the model card and `model.py` to the maintainer.
-3. The maintainer puts the folder into the private GitHub repository `strable-leaderboard-private`, same layout as `models/`. Anonymous entries get a codename from `strable_leaderboard.codenames` and `anonymous: true` in the card; the codename-to-model mapping never leaves that repository.
-4. The runner, a script on the cluster login node using the runner account's token, downloads the private repository, runs the model like any other, and the results are published here under the name or the codename. The weights never become public.
+3. The maintainer puts the folder into `private/<name>/` of the repository clone on the cluster, a folder that `.gitignore` keeps off GitHub, with the same layout as `models/`. Anonymous entries get a codename from `strable_leaderboard.codenames` and `anonymous: true` in the card; the codename-to-model mapping never leaves the cluster.
+4. The runner downloads the private Hugging Face repository with the runner account's token, runs the model like any other, and the aggregates are published here under the name or the codename. The weights never become public.
 
 ## Examples
 

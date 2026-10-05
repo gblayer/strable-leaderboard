@@ -43,15 +43,15 @@ python scripts/prepare.py models/tabpfn-2.5 --cache-dir $STRABLE_CACHE   # datas
 python scripts/make_tasks.py models/tabpfn-2.5 > tasks.txt # the (encoder, table, fold) tasks without a result: 972
 sbatch --array=0-$(( $(wc -l < tasks.txt) - 1 ))%16 scripts/run_array.sh tasks.txt
                                                            # each task: python -m strable_leaderboard.run ...
-python scripts/gather_results.py runs $STRABLE_RESULTS     # rows -> $STRABLE_RESULTS/tabpfn-2.5.csv
-python -m strable_leaderboard.check_results $STRABLE_RESULTS/tabpfn-2.5.csv
-python scripts/build_site_data.py --results $STRABLE_RESULTS   # -> site/results.json, after a line in versions.yaml
+python scripts/gather_results.py runs results              # rows -> results/tabpfn-2.5.csv (gitignored)
+python -m strable_leaderboard.check_results results/tabpfn-2.5.csv
+python scripts/build_site_data.py --results results        # -> site/results.json, after a line in results/versions.yaml
 git checkout -b results/tabpfn-2.5 && git add site/results.json && git commit -m "Results: TabPFN-2.5" && git push -u origin HEAD
 ```
 
 `strable_leaderboard/run.py` is the task: it reads the fold from `splits/`, encodes the strings (Tf-Idf, or the cached language-model embeddings of the table), runs an untimed warm-up, then times fit and predict and writes one JSON row. Finished tasks are skipped, so the same `sbatch` line resubmits after a preemption. The paper's own command, `num-str_tabvec_tabpfn`, corresponds to `models/tabpfn-2.5 --encoder tfidf`. The skill `.claude/skills/run-model/SKILL.md` walks Claude Code on the login node through these steps.
 
-**Where results live.** The per-fold CSVs are private: `$STRABLE_RESULTS` on the cluster's shared storage, which is a clone of the private repository `strable-leaderboard-private`, so every change is backed up and versioned. The public repository holds only `site/results.json`, the aggregates the page shows: one record per pipeline with its score and times per view. TabArena does the same: its per-split results are not hosted, only the leaderboard tables are.
+**Where results live.** In `results/` of the repository clone on the cluster's shared storage. That folder is in `.gitignore`, so the per-fold CSVs never reach GitHub; the public repository gets only `site/results.json`, the aggregates the page shows (one record per pipeline with its score and times per view). Closed and anonymous model folders live the same way, in the gitignored `private/`. TabArena does the same: its per-split results are not hosted, only the leaderboard tables are, as public CSV files in its Space.
 
 Trigger: a cron job on the login node if allowed, otherwise the lines above after each merge.
 

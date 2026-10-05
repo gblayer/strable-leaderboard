@@ -59,7 +59,8 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-01 | Larger type on a wider page; the Pareto line starts at the x axis |
 | 10-01 | No key panel: the paper defines the numbers. No preview bar: the theme follows the system, Demo sits in the navigation |
 | 10-01 | The first board imports the paper's Figure 3 and 4a pipelines (raw scores, total time, hardware "paper"); re-runs on the reference node replace them |
-| 10-01 | Per-fold results stay private, on the cluster and in the private repository. The public repository holds only the aggregates in site/results.json |
+| 10-01 | Per-fold results stay private in the gitignored results/ folder of the clone on the cluster, closed model folders in private/. One repository; GitHub holds only the aggregates in site/results.json |
+| 10-04 | A rank is cited as "STRABLE leaderboard vX.Y.Z, date"; every version is a tagged commit of site/results.json |
 | 10-01 | The hero art uses invented company names only |
 | 10-01 | The README carries the site's palette and type through an SVG banner; the leaderboard URL goes in the README and the repository's About box |
 

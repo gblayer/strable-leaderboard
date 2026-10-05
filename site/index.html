@@ -249,6 +249,7 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 /* ---------- version history ---------- */
 .history { margin-top: 44px; display: grid; gap: 14px; }
 .history-sub { margin: 6px 0 0; color: var(--ink-3); font-size: 14.5px; }
+.history-sub span { font-family: var(--f-mono); color: var(--ink-2); }
 .history ol { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); }
 .history li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 16px; color: var(--ink-2); }
 .history li:last-child { border-bottom: 0; }
@@ -468,7 +469,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
   <section class="history" id="history" aria-labelledby="history-title">
     <div>
       <h2 class="title" id="history-title">Version history</h2>
-      <p class="history-sub">What changed in each version of the leaderboard.</p>
+      <p class="history-sub">What changed in each version. To cite a rank: <span id="cite"></span></p>
     </div>
     <ol id="history-list"></ol>
   </section>
@@ -538,6 +539,7 @@ let HISTORY = [
   { version: 'v0.1.0', note: 'First public version: 13 pipelines on 108 tables, default configs. Example entry.' }
 ];
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-model';
+const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TASKS = {
   both: { metric: 'Score', colSub: 'R² and AUC, mean', axis: 'Mean score, R² and AUC' },
@@ -821,6 +823,7 @@ async function loadResults() {
   } catch (e) { return false; }
 }
 function renderHistory() {
+  $('cite').textContent = 'STRABLE leaderboard ' + VERSION + ', ' + BUILT + ', ' + SITE;
   const ol = $('history-list'); ol.textContent = '';
   for (const h of HISTORY) { const li = el('li'); li.appendChild(el('b', null, h.version)); li.appendChild(el('span', null, h.note)); ol.appendChild(li); }
   $('tbl-foot').hidden = !PLACEHOLDER;

@@ -103,7 +103,7 @@ Each result records what it ran on. GPU rows: one GPU of the reference type, fix
 
 ## Result records
 
-One file per model, `<model>.csv`, one row per encoder, table and outer fold. The files stay private, on the cluster and in the private repository; the board publishes only the aggregates in `site/results.json`.
+One file per model, `<model>.csv`, one row per encoder, table and outer fold. The files stay private in the gitignored `results/` folder of the clone on the cluster; the board publishes only the aggregates in `site/results.json`.
 
 `model, encoder, table, task, fold, score, fit_s, predict_s, total_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
 
