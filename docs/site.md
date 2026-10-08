@@ -43,7 +43,7 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 
 **Controls:** Task (Both, Regression · R², Classification · AUC), Time (Both, Fit, Predict) and Sort (★ Pareto, Score, Time). No filters and no key: the paper defines the numbers, tags on the rows carry the rest.
 
-**Table:** rank, pipeline, score, fit, predict, at a fixed height with its own scrollbar, so every pipeline is always in it. Tags for end-to-end, anonymous and closed rows. A star marks Pareto-optimal rows, and one red frame surrounds the top three rows of the current order.
+**Table:** rank, pipeline, score, fit, predict, at a fixed height with its own scrollbar, so every pipeline is always in it. Tags for end-to-end, tuned, anonymous, closed, paper and incomplete rows; a paper row shows its total time in one cell across fit and predict. A star marks Pareto-optimal rows, and one red frame surrounds the top three rows of the current order.
 
 **Plot:** score against time on a log scale, a "Better" arrow towards the top-left corner, the front as a staircase from the x axis to the right edge, labels on the front, a ring around the top three.
 

@@ -1,6 +1,6 @@
 # Decisions
 
-Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September to 1 October 2026.
+Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September to 1 October 2026, and since.
 
 ## Product
 
@@ -26,6 +26,8 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-01 | Two times per pipeline: fit (embedding plus training) per 1,000 training rows and predict (embedding plus prediction) per 1,000 test rows. The default view is the total, fit plus predict seconds per 1,000 table rows, as in the paper |
 | 10-01 | No hardware column: hovering a row shows whether it used the GPU |
 | 10-01 | One red frame around the top three rows of the current order, and a ring around them in the plot |
+| 10-08 | Score and time are medians over all fold rows of a view, like the paper's Figure 4a (the total time is run time per 1,000 table rows). Replaces the mean over tables |
+| 10-08 | A pipeline is shown in every view where it has rows, with its coverage and an "incomplete" tag when tables or folds are missing. Replaces "must cover every table and fold or not be ranked" |
 
 ## Models
 
@@ -39,6 +41,9 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-01 | The model card has no family field |
 | 10-01 | Access is open or closed. Anonymous is closed with the name hidden |
 | 10-01 | The card carries `variant: default`; tuned and tuned-ensembled rows come later from their own folders |
+| 10-08 | All 75 pipelines of the paper's Figure 4a are imported, listed one by one in `scripts/paper_selection.yaml`, Mambular included although incomplete (317/324 folds). Not the OHE CT=30 Ridge runs, not TabPFN-3/3.5 |
+| 10-08 | Paper encoders get honest ids and names: "E5-small-v2 · PCA-30", "LLaMA-3.1-8B · SS+PCA-30", "Qwen-3-8B · first-30" and so on. Only the paper's Tf-Idf is the leaderboard's `tfidf`; a PCA-30 row never takes a first-30 id |
+| 10-08 | The paper's tuned rows (XGBoost, ExtraTrees, CatBoost) are imported with `variant: tuned` and shown with a "tuned" tag; result records, site data and page carry the variant |
 
 ## Site
 

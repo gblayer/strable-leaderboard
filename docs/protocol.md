@@ -42,16 +42,15 @@ The folds are exactly the paper's. The code is in `strable_leaderboard/splits.py
 ## Scores
 
 1. **Per fold:** R² on the test fold for regression. ROC-AUC from predicted probabilities for classification: the positive-class column for binary tasks, one-vs-rest macro average for multiclass tasks.
-2. **Per table:** the mean over the 3 outer folds, raw: a negative R² stays negative, as in the paper.
-3. **Per pipeline:** the mean of the table scores over the tables of the chosen view.
+2. **Per pipeline:** the median over all fold rows of the chosen view, raw, as in the paper's Figure 4a: every (table, outer fold) pair is one row, and a negative R² stays negative.
 
-| View | Tables averaged |
+| View | Fold rows |
 |---|---|
-| Both (default) | All 108, R² for regression and AUC for classification |
-| Regression | The 76 regression tables |
-| Classification | The 32 classification tables |
+| Both (default) | All 108 tables × 3 folds = 324, R² for regression and AUC for classification |
+| Regression | The 76 regression tables × 3 = 228 |
+| Classification | The 32 classification tables × 3 = 96 |
 
-There is no per-table normalization, so a pipeline's score never changes when other pipelines join. A pipeline must cover every table and fold of a view to be ranked in it.
+There is no per-table normalization, so a pipeline's score never changes when other pipelines join. A pipeline is shown in every view where it has rows, with its coverage (fold rows present out of those expected). When rows are missing, the row carries an **incomplete** tag and the hover shows the count, for example 317/324 folds for Mambular, whose paper runs miss one table and a few folds.
 
 This is the only score on the board. Elo, improvability and normalized scores are relative to the field and change whenever a model joins, so they are not shown.
 
@@ -67,12 +66,12 @@ Two times, both in seconds per 1,000 rows, and their sum:
 - For in-context learners such as TabPFN and TabICL, fit mostly stores the context, and the forward pass happens in predict.
 - Embeddings are computed once per table, encoder and fold, then reused by every model. Their time is measured once and added to every pipeline that uses them, split between fit and predict by the rows embedded.
 - An untimed warm-up runs first: imports, CUDA start-up and weight loading are not counted.
-- Per table: the mean over folds. Per pipeline: the median over tables.
-- The board's default time is the total: fit plus predict seconds, divided by all rows of the table, as in the paper's Pareto plot. Fit or predict alone can be selected. Rows imported from the paper have only the total, since the paper timed fit and predict together.
+- Per pipeline: the median over the fold rows of the view, like the score. Fit is divided by the training rows of the fold, predict by its test rows.
+- The board's default time is the total: fit plus predict seconds, divided by all rows of the table, as in the paper's Pareto plot (`run_time / num_rows * 1000`, median over fold rows). Fit or predict alone can be selected. Rows imported from the paper have only the total, since the paper timed fit and predict together: they take no part in the fit or predict plot and front.
 
 ## Pareto front
 
-For the selected time, sort pipelines by time. A pipeline is Pareto-optimal when its score is strictly higher than that of every faster pipeline. The front is computed from the results, in the browser by `site/index.html` and in Python by `strable_leaderboard.metrics.pareto_front`; nobody places a row on it by hand. API models are shown but excluded from the computation, since their time includes the network. Open, closed and anonymous rows are all eligible.
+For the selected time, sort pipelines by time. A pipeline is Pareto-optimal when its score is strictly higher than that of every faster pipeline. The front is computed from the results, in the browser by `site/index.html` and in Python by `strable_leaderboard.metrics.pareto_front`; nobody places a row on it by hand. API models are shown but excluded from the computation, since their time includes the network. Open, closed, anonymous, tuned, paper and incomplete rows are all eligible, as every pipeline of the paper's Figure 4a was. With the paper's 75 pipelines, the front of the default view is the six of the paper's Table E.8.
 
 The top three rows of the current order, Pareto, score or time, carry a red border in the table and a ring in the plot.
 
@@ -93,9 +92,11 @@ The top three rows of the current order, Pareto, score or time, carry a red bord
 - The Tf-Idf pipeline uses skrub's `TableVectorizer`, as in the paper: columns with fewer than 40 distinct values are one-hot encoded, dates are expanded, numbers go through a `SquashingScaler`. Language-model pipelines send every string column to the encoder.
 - Each cell is embedded on its own, and missing strings stay missing.
 
+**Rows imported from the paper** keep the encoders the paper used, under ids and names that say what was done (`scripts/paper_selection.yaml`): the language models and FastText went through a PCA to 30 components fitted on the training rows, the paper's default, so they appear as, for example, `minilm-l6-v2-pca30`, "MiniLM-L6-v2 · PCA-30". `-ss-pca30` adds a StandardScaler before the PCA, `-first30` keeps the first 30 dimensions without PCA. TargetEncoder and Tarte keep their names. Only the paper's Tf-Idf is the leaderboard's `tfidf`; a PCA row never carries the id of a first-30 encoder.
+
 ## Configurations
 
-Default configurations only: every model runs with the hyperparameters it ships with. Early stopping may use the protocol's validation split. Tuned and tuned-plus-ensembled variants are planned for later versions.
+Default configurations: every model runs with the hyperparameters it ships with. Early stopping may use the protocol's validation split. Each result row has a `variant`: `default`, or `tuned` for a hyperparameter search over the inner folds. The tuned rows on the board so far are the paper's (XGBoost, ExtraTrees and CatBoost) and carry a **tuned** tag. Tuned-plus-ensembled variants are planned for later versions.
 
 ## Hardware
 
@@ -103,17 +104,19 @@ Each result records what it ran on. GPU rows: one GPU of the reference type, fix
 
 ## Result records
 
-One file per model, `<model>.csv`, one row per encoder, table and outer fold. The files stay private in the gitignored `results/` folder of the clone on the cluster; the board publishes only the aggregates in `site/results.json`.
+One file per model, `<model>.csv`, one row per encoder, variant, table and outer fold. The files stay private in the gitignored `results/` folder of the clone on the cluster; the board publishes only the aggregates in `site/results.json`.
 
-`model, encoder, table, task, fold, score, fit_s, predict_s, total_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
+`model, encoder, variant, table, task, fold, score, fit_s, predict_s, total_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
 
 - `encoder` is `none` for end-to-end models. `score` is the raw fold score.
 - Runs by the runner fill `fit_s` and `predict_s`; `hardware` is the GPU model or `cpu`.
-- Rows imported from the paper (`scripts/import_paper_results.py`) fill `total_s` only, with `hardware: paper`, since the paper timed fit and predict together on mixed hardware. They may name encoders outside the three above.
-- Rows are default configurations; a `variant` column is added when tuned runs come. `python -m strable_leaderboard.check_results` validates a file.
+- `variant` is `default` or `tuned`.
+- Rows imported from the paper (`scripts/import_paper_results.py`) fill `total_s` only, with `hardware: paper` and `package: paper`, since the paper timed fit and predict together on mixed hardware. Exactly the pipelines of `scripts/paper_selection.yaml` are imported: the 75 of the paper's Figure 4a. They name encoders outside the three above. The board tags them **paper**.
+- `python -m strable_leaderboard.check_results` validates a file and prints its coverage per view.
 
 ## Differences from the paper
 
 - The paper times one total per fold, with the embedding time measured once per table and added to every fold. The leaderboard splits fit and predict.
+- The board opens with the paper's 75 Figure 4a pipelines, imported as published (score, total time); a re-run on the reference node replaces a pipeline's paper rows.
 - The paper evaluates about 445 pipelines. The leaderboard opens with a launch set, chosen around mid-November 2026, and grows.
 - Still to decide: for multiclass tasks, the paper re-applies a softmax to `predict_proba` before computing AUC. The leaderboard plans to use the probabilities as returned.
