@@ -12,7 +12,7 @@ def _rows(encoder="tfidf", tables=("r1", "c1"), folds=(0, 1, 2)):
     rows = []
     for table in tables:
         for fold in folds:
-            rows.append(dict(model="ridge", encoder=encoder, table=table, task=MANIFEST["tables"][table]["task"],
+            rows.append(dict(model="ridge", encoder=encoder, variant="default", table=table, task=MANIFEST["tables"][table]["task"],
                              fold=fold, score=0.5, fit_s=1.0, predict_s=0.2, total_s=None, n_train=20, n_test=10, hardware="cpu",
                              package="scikit-learn==1.9.1", checkpoint_revision="", protocol_version="0.1",
                              date="2026-11-15"))
@@ -24,7 +24,7 @@ def test_complete_file_has_no_problems(tmp_path):
     _rows().to_csv(path, index=False)
     problems, coverage = check(path, MANIFEST)
     assert problems == []
-    assert any(line.endswith("both            2/2 tables complete") for line in coverage)
+    assert any(line.endswith("both            6/6 folds") for line in coverage)
 
 
 def test_problems_are_reported(tmp_path):
@@ -37,7 +37,7 @@ def test_problems_are_reported(tmp_path):
     assert any("model must be 'other'" in p for p in problems)
     assert any("R² cannot exceed 1" in p for p in problems)
     assert any("n_train or n_test" in p for p in problems)
-    assert any("0/2 tables complete" in line for line in coverage)
+    assert any(line.endswith("both            4/6 folds incomplete") for line in coverage)
 
 
 def test_paper_rows_need_only_a_total_time(tmp_path):
@@ -49,3 +49,13 @@ def test_paper_rows_need_only_a_total_time(tmp_path):
     df["total_s"] = None
     df.to_csv(path, index=False)
     assert any("needs fit_s and predict_s, or total_s" in p for p in check(path, MANIFEST)[0])
+
+
+def test_tuned_rows_sit_next_to_default_rows(tmp_path):
+    tuned = _rows().assign(variant="tuned")
+    path = tmp_path / "ridge.csv"
+    pd.concat([_rows(), tuned]).to_csv(path, index=False)
+    problems, coverage = check(path, MANIFEST)
+    assert problems == [] and sum(line.endswith("6/6 folds") for line in coverage) == 2
+    pd.concat([_rows(), tuned.assign(variant="ensembled")]).to_csv(path, index=False)
+    assert any("variant must be one of" in p for p in check(path, MANIFEST)[0])

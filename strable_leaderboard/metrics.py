@@ -1,11 +1,11 @@
 """Scores, aggregation and the Pareto front.
 
 Per fold: R² for regression, ROC-AUC for classification (one-vs-rest, macro average for
-multiclass), as in the paper. Per table: mean over the 3 outer folds, raw, so a negative R²
-stays negative. Per pipeline: mean of the table scores over the tables of the chosen view,
-with no per-table normalization, so a pipeline's score never changes when others join.
-Times are seconds per 1,000 rows, averaged over folds and then summarized by the median
-over tables.
+multiclass), as in the paper. Per pipeline and view: the median over all fold rows of the view,
+raw, as in the paper's Figure 4a, so a negative R² stays a fold row like any other. Times are
+seconds per 1,000 rows, also the median over fold rows: fit per 1,000 training rows, predict
+per 1,000 test rows, and the total (fit plus predict, or the paper's single time) per 1,000 table
+rows. No per-table normalization, so a pipeline's numbers never change when others join.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import r2_score, roc_auc_score
 
+N_FOLDS = 3
 VIEWS = {
     "both": ("regression", "binary", "multiclass"),
     "regression": ("regression",),
@@ -34,45 +35,43 @@ def fold_score(task: str, y_true, y_pred=None, proba=None, classes=None) -> floa
     return float(roc_auc_score(y_true, proba, multi_class="ovr", average="macro", labels=classes))
 
 
-def table_scores(results: pd.DataFrame) -> pd.DataFrame:
-    """One row per (pipeline, table).
+def per_1k(results: pd.DataFrame) -> pd.DataFrame:
+    """Add fit, predict and total seconds per 1,000 rows to fold rows.
 
-    ``results`` has one row per (pipeline, table, fold) with columns
-    ``pipeline, table, task, fold, score, fit_s, predict_s, n_train, n_test``.
+    ``results`` has ``fit_s, predict_s, n_train, n_test`` and optionally ``total_s``; a row
+    without ``total_s`` totals fit and predict.
     """
-    r = results.assign(
+    total = results["total_s"].fillna(results["fit_s"] + results["predict_s"]) if "total_s" in results else (
+        results["fit_s"] + results["predict_s"])
+    return results.assign(
         fit_per_1k=results["fit_s"] / results["n_train"] * 1000,
         predict_per_1k=results["predict_s"] / results["n_test"] * 1000,
+        total_per_1k=total / (results["n_train"] + results["n_test"]) * 1000,
     )
-    t = r.groupby(["pipeline", "table", "task"], as_index=False).agg(
-        score=("score", "mean"),
-        n_folds=("fold", "nunique"),
-        fit_per_1k=("fit_per_1k", "mean"),
-        predict_per_1k=("predict_per_1k", "mean"),
-    )
-    return t
 
 
 def leaderboard(results: pd.DataFrame, view: str = "both", n_tables: int | None = None) -> pd.DataFrame:
-    """One row per pipeline: mean score, median fit and predict time per 1K rows.
+    """One row per pipeline: median score and median times per 1K rows over the fold rows of the view.
 
-    With ``n_tables``, pipelines that miss a table or a fold are flagged ``complete=False``.
+    ``results`` has one row per (pipeline, table, fold) with columns
+    ``pipeline, table, task, fold, score, fit_s, predict_s, n_train, n_test`` and optionally
+    ``total_s``. ``n_folds`` counts the fold rows; with ``n_tables``, a pipeline that misses a
+    table or a fold of the view is flagged ``complete=False``.
     """
-    t = table_scores(results)
-    t = t[t["task"].isin(VIEWS[view])]
-    board = t.groupby("pipeline").agg(
-        score=("score", "mean"),
+    r = per_1k(results[results["task"].isin(VIEWS[view])])
+    board = r.groupby("pipeline").agg(
+        score=("score", "median"),
         fit_per_1k=("fit_per_1k", "median"),
         predict_per_1k=("predict_per_1k", "median"),
-        n_tables=("table", "nunique"),
-        min_folds=("n_folds", "min"),
+        total_per_1k=("total_per_1k", "median"),
+        n_folds=("score", "size"),
     )
     if n_tables is not None:
-        board["complete"] = (board["n_tables"] == n_tables) & (board["min_folds"] == 3)
+        board["complete"] = board["n_folds"] == n_tables * N_FOLDS
     return board.sort_values("score", ascending=False)
 
 
-def pareto_front(board: pd.DataFrame, time_col: str = "fit_per_1k", exclude=()) -> list[str]:
+def pareto_front(board: pd.DataFrame, time_col: str = "total_per_1k", exclude=()) -> list[str]:
     """Pipelines that no other pipeline beats on both score and time.
 
     Sort by time, then keep a pipeline when its score is strictly higher than every faster

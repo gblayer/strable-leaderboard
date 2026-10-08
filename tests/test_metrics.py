@@ -3,39 +3,37 @@ import pandas as pd
 import pytest
 
 from strable_leaderboard.codenames import codename
-from strable_leaderboard.metrics import fold_score, leaderboard, pareto_front, table_scores
+from strable_leaderboard.metrics import fold_score, leaderboard, pareto_front
 
 
 def _results():
     rows = []
-    # pipeline A: R² 0.8, 0.7 and a failed table (-3.0); AUC 0.9
+    # pipeline A: R² 0.8, 0.7 and a failed table (-3.0); AUC 0.9. Fold 2 of r1 is twice as slow.
     for table, task, score in [("r1", "regression", 0.8), ("r2", "regression", 0.7), ("r3", "regression", -3.0), ("c1", "binary", 0.9)]:
         for fold in range(3):
             rows.append(dict(pipeline="A", table=table, task=task, fold=fold, score=score,
-                             fit_s=1.0, predict_s=0.5, n_train=1000, n_test=500))
+                             fit_s=2.0 if (table, fold) == ("r1", 2) else 1.0, predict_s=0.5, n_train=1000, n_test=500))
     return pd.DataFrame(rows)
 
 
-def test_table_scores_are_raw_fold_means():
-    t = table_scores(_results()).set_index("table")
-    assert t.loc["r3", "score"] == pytest.approx(-3.0)  # a negative R² is kept, as in the paper
-    assert t.loc["r1", "score"] == pytest.approx(0.8)
-
-
-def test_leaderboard_views():
+def test_leaderboard_is_the_median_over_fold_rows():
     both = leaderboard(_results(), "both", n_tables=4)
-    assert both.loc["A", "score"] == pytest.approx((0.8 + 0.7 - 3.0 + 0.9) / 4)
-    assert bool(both.loc["A", "complete"])
-    reg = leaderboard(_results(), "regression")
-    assert reg.loc["A", "score"] == pytest.approx((0.8 + 0.7 - 3.0) / 3)
-    assert reg.loc["A", "fit_per_1k"] == pytest.approx(1.0)
+    assert both.loc["A", "score"] == pytest.approx(0.75)  # median of 12 fold rows, the -3.0 table counts as 3 rows
+    assert both.loc["A", "n_folds"] == 12 and bool(both.loc["A", "complete"])
+    reg = leaderboard(_results(), "regression", n_tables=76)
+    assert reg.loc["A", "score"] == pytest.approx(0.7) and not reg.loc["A", "complete"]
+    assert reg.loc["A", "fit_per_1k"] == pytest.approx(1.0)  # median, not pulled up by the slow fold
     assert reg.loc["A", "predict_per_1k"] == pytest.approx(1.0)
+    assert reg.loc["A", "total_per_1k"] == pytest.approx(1.0)  # (1.0 + 0.5) s over 1,500 rows
+    paper = _results().assign(fit_s=None, predict_s=None, total_s=3.0)  # rows imported from the paper
+    clf = leaderboard(paper, "classification")
+    assert clf.loc["A", "total_per_1k"] == pytest.approx(2.0) and pd.isna(clf.loc["A", "fit_per_1k"])
 
 
 def test_pareto_front_keeps_only_undominated_pipelines():
     board = pd.DataFrame({"score": [0.6, 0.7, 0.65, 0.8], "fit_per_1k": [0.1, 1.0, 2.0, 10.0]}, index=list("abcd"))
-    assert pareto_front(board) == ["a", "b", "d"]
-    assert pareto_front(board, exclude=["b"]) == ["a", "c", "d"]
+    assert pareto_front(board, "fit_per_1k") == ["a", "b", "d"]
+    assert pareto_front(board, "fit_per_1k", exclude=["b"]) == ["a", "c", "d"]
 
 
 def test_fold_scores():
