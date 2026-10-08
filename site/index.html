@@ -204,6 +204,8 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .tag.e2e { color: var(--accent-2); border-color: var(--accent-2); }
 .tag.anon { color: var(--mark); border-color: var(--mark); }
 .tag.closed { color: var(--ink-2); border-color: var(--ink-3); }
+.tag.tuned { color: var(--accent); border-color: var(--accent); }
+.tag.incomplete { color: var(--ink-2); border-style: dashed; border-color: var(--ink-3); }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
 .star path { fill: var(--mark); }
@@ -437,8 +439,8 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
             <thead>
               <tr>
                 <th scope="col">Rank</th>
-                <th scope="col">Pipeline<small>default configs</small></th>
-                <th scope="col" class="num"><span id="th-metric">Score</span><small id="th-metric-sub">mean</small></th>
+                <th scope="col">Pipeline<small>default configs unless tuned</small></th>
+                <th scope="col" class="num"><span id="th-metric">Score</span><small id="th-metric-sub">median</small></th>
                 <th scope="col" class="num" id="th-fit"><span>Fit</span><small>s / 1K rows</small></th>
                 <th scope="col" class="num" id="th-pred"><span>Predict</span><small>s / 1K rows</small></th>
               </tr>
@@ -517,14 +519,16 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 /* Placeholder pipelines. Per task: [score, fit seconds per 1K training rows, predict seconds per 1K rows].
    kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU" or "CPU", shown in the tooltip.
    Optional flags: anon (codename, name never revealed), closed (named, weights not public).
-   The real site loads the same records from results.json, see refresh(). */
+   The real site loads records from results.json, see refresh(): per task (both, reg, clf)
+   [median score, fit, predict, total per 1K rows, fold rows, fold rows expected], plus variant
+   ("default" or "tuned") and paper (imported from the paper, total time only). */
 let DATA = [
   { id: 'te-ridge', enc: 'TargetEncoder', lrn: 'Ridge', kind: 'modular', hw: 'CPU', reg: [0.612, 0.06, 0.01], clf: [0.842, 0.05, 0.01] },
   { id: 'te-et', enc: 'TargetEncoder', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.684, 0.16, 0.03], clf: [0.871, 0.14, 0.03] },
   { id: 'tfidf-et', enc: 'Tf-Idf', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.697, 0.85, 0.20], clf: [0.879, 0.75, 0.18] },
   { id: 'tfidf-xgb', enc: 'Tf-Idf', lrn: 'XGBoost', kind: 'modular', hw: 'CPU', reg: [0.689, 3.6, 0.15], clf: [0.883, 3.2, 0.14] },
   { id: 'tfidf-tabicl', enc: 'Tf-Idf', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.733, 0.40, 4.2], clf: [0.902, 0.36, 3.8] },
-  { id: 'tfidf-tabpfn', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.744, 0.45, 9.5], clf: [0.906, 0.40, 8.4] },
+  { id: 'tfidf+tabpfn-2.5', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.744, 0.45, 9.5], clf: [0.906, 0.40, 8.4] },
   { id: 'minilm-tabicl', enc: 'MiniLM-L6-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.722, 1.9, 5.4], clf: [0.893, 1.7, 4.9] },
   { id: 'minilm-tabpfn', enc: 'MiniLM-L6-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.733, 1.9, 10.8], clf: [0.897, 1.7, 9.6] },
   { id: 'llama-tabicl', enc: 'LLaMA-3.1-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.736, 145, 150], clf: [0.892, 130, 134] },
@@ -542,9 +546,9 @@ const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-mode
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TASKS = {
-  both: { metric: 'Score', colSub: 'R² and AUC, mean', axis: 'Mean score, R² and AUC' },
-  reg: { metric: 'R²', colSub: 'mean', axis: 'Mean R²' },
-  clf: { metric: 'AUC', colSub: 'mean', axis: 'Mean AUC' }
+  both: { metric: 'Score', colSub: 'R² and AUC, median', axis: 'Median score, R² and AUC' },
+  reg: { metric: 'R²', colSub: 'median', axis: 'Median R²' },
+  clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC' }
 };
 const TIMES = {
   both: { name: 'Fit + predict', title: 'Score vs fit + predict time', axis: 'Fit + predict time, s per 1K rows, log scale', fastest: 'FASTEST ON THE FRONT ' },
@@ -561,17 +565,22 @@ const sv = (tag, attrs) => { const n = document.createElementNS(SVGNS, tag); for
 
 /* One row per pipeline for the chosen task. A pipeline without results for that task is left out.
    A missing time (null) means the pipeline was imported from the paper with a total time only:
-   it is shown as "—" and takes no part in the Pareto front of that time. */
+   the table shows the total, and the pipeline takes no part in the plot or Pareto front of fit
+   or predict. A pipeline with fewer fold rows than the task has is tagged incomplete. */
 const num = (v) => (v == null || Number.isNaN(v) ? NaN : v);
 function items(task, time) {
   const rows = [];
   for (const d of DATA) {
     let v = d[task];
-    if (task === 'both' && !v && d.reg && d.clf) v = [(N_REG * d.reg[0] + N_CLF * d.clf[0]) / N_ALL, (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL, (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL];
+    // placeholders only: results.json always has its own "both" medians
+    if (PLACEHOLDER && task === 'both' && !v && d.reg && d.clf) v = [(N_REG * d.reg[0] + N_CLF * d.clf[0]) / N_ALL, (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL, (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL];
     if (!v) continue;
     const s = v[0], fit = num(v[1]), pred = num(v[2]);
     const total = v.length > 3 && v[3] != null ? v[3] : fit + pred;  // paper rows carry a total only
-    rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, s: s, fit: fit, pred: pred, t: time === 'fit' ? fit : time === 'pred' ? pred : total });
+    const cov = v.length > 5 ? v[4] + '/' + v[5] + ' folds' : '';
+    rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw,
+      tuned: d.variant === 'tuned', paper: !!d.paper, incomplete: v.length > 5 && v[4] < v[5], cov: cov,
+      s: s, fit: fit, pred: pred, total: total, t: time === 'fit' ? fit : time === 'pred' ? pred : total });
   }
   return rows;
 }
@@ -592,7 +601,8 @@ function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n 
 const fmtS = (v) => v.toFixed(3);
 function fmtN(t) { if (Number.isNaN(t)) return '—'; if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
 const fmtT = (t) => fmtN(t) + ' s';
-function pipeName(d) { return d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn; }
+function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
+function timesText(d) { return Number.isNaN(d.fit) && Number.isNaN(d.pred) ? 'total ' + fmtT(d.total) : 'fit ' + fmtT(d.fit) + ', predict ' + fmtT(d.pred); }
 
 function starSvg() {
   const s = sv('svg', { class: 'star', viewBox: '0 0 11 11', 'aria-hidden': 'true' });
@@ -621,19 +631,26 @@ function renderTable(list, front, rows) {
       }
     }
     const tr = el('tr', 'row' + (i < nTop ? ' top' : '') + (i === 0 ? ' top-first' : '') + (i === nTop - 1 ? ' top-last' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
-    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', fit ' + fmtT(d.fit) + ', predict ' + fmtT(d.pred) + ' per 1K rows, runs on ' + d.hw + (front.has(d.id) ? ', Pareto-optimal' : ''));
+    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timesText(d) + ' per 1K rows, ' + (d.paper ? 'from the paper' : 'runs on ' + d.hw) + (d.incomplete ? ', incomplete, ' + d.cov : '') + (front.has(d.id) ? ', Pareto-optimal' : ''));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
     if (d.kind === 'e2e') { p.appendChild(el('span', 'lrn', d.lrn)); p.appendChild(el('span', 'tag e2e', 'END-TO-END')); }
     else { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); p.appendChild(el('span', 'lrn', d.lrn)); }
+    if (d.tuned) p.appendChild(el('span', 'tag tuned', 'TUNED'));
     if (d.anon) p.appendChild(el('span', 'tag anon', 'ANONYMOUS'));
     else if (d.closed) p.appendChild(el('span', 'tag closed', 'CLOSED'));
+    if (d.paper) p.appendChild(el('span', 'tag', 'PAPER'));
+    if (d.incomplete) { const g = el('span', 'tag incomplete', 'INCOMPLETE'); g.title = d.cov; p.appendChild(g); }
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
     tr.appendChild(el('td', 'num score', fmtS(d.s)));
-    tr.appendChild(el('td', 'num time' + (state.time !== 'pred' ? ' on' : ''), fmtN(d.fit)));
-    tr.appendChild(el('td', 'num time' + (state.time !== 'fit' ? ' on' : ''), fmtN(d.pred)));
+    if (Number.isNaN(d.fit) && Number.isNaN(d.pred)) {  // paper rows: one total for fit and predict
+      const tt = el('td', 'num time' + (state.time === 'both' ? ' on' : ''), fmtN(d.total) + ' total'); tt.colSpan = 2; tr.appendChild(tt);
+    } else {
+      tr.appendChild(el('td', 'num time' + (state.time !== 'pred' ? ' on' : ''), fmtN(d.fit)));
+      tr.appendChild(el('td', 'num time' + (state.time !== 'fit' ? ' on' : ''), fmtN(d.pred)));
+    }
     tr.addEventListener('pointerenter', () => setHot(d.id));
     tr.addEventListener('pointerleave', () => setHot(null));
     tr.addEventListener('focus', () => setHot(d.id));
@@ -754,8 +771,8 @@ function showTip(id) {
   tip.textContent = '';
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
   tip.appendChild(l1);
-  tip.appendChild(el('div', null, 'fit ' + fmtT(g.d.fit) + '  ·  predict ' + fmtT(g.d.pred) + ' per 1K rows'));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + ' · runs on ' + g.d.hw + (g.on ? ' · ★ Pareto-optimal' : '')));
+  tip.appendChild(el('div', null, timesText(g.d).replace(', ', '  ·  ') + ' per 1K rows'));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + (g.d.paper ? ' · from the paper' : ' · runs on ' + g.d.hw) + (g.d.incomplete ? ' · incomplete, ' + g.d.cov : '') + (g.on ? ' · ★ Pareto-optimal' : '')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -781,7 +798,8 @@ function renderTicker(list, front) {
   const top = state.task === 'both' ? 'TOP SCORE ' : 'TOP ' + TASKS[state.task].metric + ' ';
   const msgs = [
     [top, fmtS(best.s), ' · ' + pipeName(best)],
-    [TIMES[state.time].fastest, pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K rows'],
+    fr.length ? [TIMES[state.time].fastest, pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K rows']
+      : [TIMES[state.time].fastest, '—', ' · paper rows have a total time only'],
     ['★ PARETO FRONT ', String(fr.length), ' pipelines'],
     ['VERSION ', VERSION, ' · ' + N_ALL + ' tables · ' + N_REG + ' regression · ' + N_CLF + ' classification']
   ];
@@ -869,8 +887,8 @@ const TOUR = [
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of any order get a red frame, here and in the plot.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
-    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, anonymous and closed rows, a star marks the Pareto front, and hovering a row lights its point in the plot.' },
-  { sel: '#plot-card', block: 'center', hot: 'tfidf-tabpfn',
+    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned, anonymous, closed, paper and incomplete rows, a star marks the Pareto front, and hovering a row lights its point in the plot.' },
+  { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
     text: 'The plot: score against time, log scale. The line is the Pareto front and the arrow points to the ideal corner. Hover a point for its numbers.' },
   { sel: '#history', block: 'center',
     text: 'Version history lists what changed in each version. The version chip at the top shows the current one, and Refresh fetches the latest results.' },
