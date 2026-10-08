@@ -22,18 +22,16 @@ def test_leaderboard_is_the_median_over_fold_rows():
     assert both.loc["A", "n_folds"] == 12 and bool(both.loc["A", "complete"])
     reg = leaderboard(_results(), "regression", n_tables=76)
     assert reg.loc["A", "score"] == pytest.approx(0.7) and not reg.loc["A", "complete"]
-    assert reg.loc["A", "fit_per_1k"] == pytest.approx(1.0)  # median, not pulled up by the slow fold
-    assert reg.loc["A", "predict_per_1k"] == pytest.approx(1.0)
-    assert reg.loc["A", "total_per_1k"] == pytest.approx(1.0)  # (1.0 + 0.5) s over 1,500 rows
+    assert reg.loc["A", "total_per_1k"] == pytest.approx(1.0)  # (1.0 + 0.5) s over 1,500 rows; median, not the slow fold
+    assert list(reg.columns) == ["score", "total_per_1k", "n_folds", "complete"]  # no fit or predict time
     paper = _results().assign(fit_s=None, predict_s=None, total_s=3.0)  # rows imported from the paper
-    clf = leaderboard(paper, "classification")
-    assert clf.loc["A", "total_per_1k"] == pytest.approx(2.0) and pd.isna(clf.loc["A", "fit_per_1k"])
+    assert leaderboard(paper, "classification").loc["A", "total_per_1k"] == pytest.approx(2.0)
 
 
 def test_pareto_front_keeps_only_undominated_pipelines():
-    board = pd.DataFrame({"score": [0.6, 0.7, 0.65, 0.8], "fit_per_1k": [0.1, 1.0, 2.0, 10.0]}, index=list("abcd"))
-    assert pareto_front(board, "fit_per_1k") == ["a", "b", "d"]
-    assert pareto_front(board, "fit_per_1k", exclude=["b"]) == ["a", "c", "d"]
+    board = pd.DataFrame({"score": [0.6, 0.7, 0.65, 0.8], "total_per_1k": [0.1, 1.0, 2.0, 10.0]}, index=list("abcd"))
+    assert pareto_front(board) == ["a", "b", "d"]
+    assert pareto_front(board, exclude=["b"]) == ["a", "c", "d"]
 
 
 def test_fold_scores():

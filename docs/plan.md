@@ -2,7 +2,7 @@
 
 ## Goal
 
-A public leaderboard at https://gblayer.github.io/strable-leaderboard/ that ranks pipelines on STRABLE's 108 tables with raw strings and updates itself when a model is added. The board shows one accuracy number per pipeline, its fit and predict time per 1,000 rows, and lists the Pareto-optimal pipelines first.
+A public leaderboard at https://gblayer.github.io/strable-leaderboard/ that ranks pipelines on STRABLE's 108 tables with raw strings and updates itself when a model is added. The board shows one accuracy number per pipeline, its total run time per 1,000 samples, and lists the Pareto-optimal pipelines first.
 
 New models come out all the time, so the board does not list the paper's ~445 pipelines. It opens with a launch set chosen around mid-November 2026 and grows with each submission.
 
@@ -16,7 +16,7 @@ New models come out all the time, so the board does not list the paper's ~445 pi
 ## What the board shows
 
 - **Score:** one number, the median over the fold rows of the 108 tables of R² for regression and AUC for classification, as in the paper's Figure 4a. Views for regression or classification alone. See [protocol.md](protocol.md).
-- **Time:** fit plus predict by default, or either alone: fit is embedding plus training, predict is embedding plus prediction, per 1,000 rows. The choice drives the plot and the Pareto order. The top three rows of any order are marked.
+- **Time:** the total run time per 1,000 samples (encoding, training and prediction), median over fold rows, on a log scale, as in Figure 4a. No fit or predict views. It drives the plot and the Pareto order. The top three rows of any order are marked.
 - **Rows:** modular pipelines, one of three string encoders plus a numeric learner, and end-to-end models that read strings themselves. Tags for end-to-end, anonymous and closed rows. Hovering a row shows whether it used the GPU. The table has a fixed height and scrolls, so every pipeline is always in it.
 - Version history, a suggestion panel, a Refresh button next to the version chip, and a guided demo that shows where things are; the key under the controls says how to read them.
 
@@ -36,7 +36,7 @@ Not shown: Elo, improvability, normalized scores, families, filters, a hardware 
 ## Launch, v0.1.0
 
 1. Import the paper's 75 Figure 4a pipelines (`scripts/paper_selection.yaml`) with `scripts/import_paper_results.py`: scores and total times as published, `hardware: paper`. This is enough for a first board.
-2. Add a `models/<name>/` folder for each of those learners, so the runner can re-run them on the reference node with fit and predict timed apart; re-runs replace the imported rows. Add the models released since, such as Kumo Tabular. The launch set is settled around mid-November 2026.
+2. Add a `models/<name>/` folder for each of those learners, so the runner can re-run them on the reference node; re-runs replace the imported rows. Add the models released since, such as Kumo Tabular. The launch set is settled around mid-November 2026.
 3. Publish as v0.1.0. From then on every merged results pull request adds one patch version: v0.1.1, v0.1.2, and so on. Nothing before the launch carries a version.
 
 A submission never triggers a re-run of the others: each pipeline's rows are stored once in the private results folder, and the board recomputes the ranking and the Pareto front from the aggregates in `site/results.json`. Embeddings are cached per encoder, table and fold, so a new numeric-only model costs only its own 972 fit-and-predict runs.

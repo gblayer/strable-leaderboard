@@ -40,13 +40,16 @@ def test_build_site_data(tmp_path):
     assert p["id"] == "tfidf+ridge" and p["enc"] == "Tf-Idf" and p["lrn"] == "Ridge" and p["kind"] == "modular"
     assert p["variant"] == "default" and "paper" not in p
     assert p["both"][0] == 0.6 and p["clf"][0] == 0.6  # the median: one negative table does not move it
-    assert p["reg"][1] > 0 and p["reg"][2] > 0 and p["reg"][3] > 0  # fit, predict, total per 1K rows
-    assert p["both"][4:] == [324, 324] and p["reg"][4:] == [228, 228] and p["clf"][4:] == [96, 96]
+    assert all(len(p[v]) == 4 for v in ("both", "reg", "clf"))  # [score, time, fold rows, expected]: no fit or predict
+    assert p["reg"][1] > 0  # total run time per 1K samples
+    assert p["both"][2:] == [324, 324] and p["reg"][2:] == [228, 228] and p["clf"][2:] == [96, 96]
     assert t["id"] == "tfidf+ridge:tuned" and t["variant"] == "tuned" and t["paper"] is True
-    assert t["reg"][1] is None and t["reg"][2] is None and t["reg"][3] > 0  # paper rows: total only
-    assert t["reg"][4:] == [225, 228] and t["clf"][4:] == [96, 96]  # one table missing: incomplete in reg only
+    assert t["reg"][1] > 0  # paper rows: their total run time
+    assert t["reg"][2:] == [225, 228] and t["clf"][2:] == [96, 96]  # one table missing: incomplete in reg only
     assert problems(data) == []
-    t["both"][4] = 325
+    t["both"][2] = 325
+    assert problems(data)
+    t["both"] = [0.6, 1.0, None, 1.5, 324, 324]  # the old format with fit and predict
     assert problems(data)
 
 
@@ -94,11 +97,11 @@ def test_published_board_reproduces_table_e8():
     assert problems(data) == []
     paper = [p for p in data["pipelines"] if p.get("paper")]
     assert len(paper) == 75
-    board = pd.DataFrame([{"id": p["id"], "score": p["both"][0], "total_per_1k": p["both"][3]} for p in paper]).set_index("id")
+    board = pd.DataFrame([{"id": p["id"], "score": p["both"][0], "total_per_1k": p["both"][1]} for p in paper]).set_index("id")
     e8 = {"targetencoder+ridge": (0.6593, 0.0924), "targetencoder+extratrees": (0.7290, 0.1695),
           "tfidf+extratrees": (0.7407, 0.9679), "e5-small-v2-pca30+extratrees": (0.7422, 2.5152),
           "tfidf+tabicl-v2": (0.7799, 2.9988), "tfidf+tabpfn-2.5": (0.7891, 6.6700)}
-    assert pareto_front(board, "total_per_1k") == list(e8)
+    assert pareto_front(board) == list(e8)
     assert {i: tuple(board.loc[i]) for i in e8} == e8
-    incomplete = {p["id"] for p in paper if p["both"][4] < p["both"][5]}
+    incomplete = {p["id"] for p in paper if p["both"][2] < p["both"][3]}
     assert "mambular" in incomplete

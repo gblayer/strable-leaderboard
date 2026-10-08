@@ -23,11 +23,12 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 09-30 | The default task view is "Both": R² and AUC averaged over all 108 tables |
 | 10-01 | Per table, the mean over folds, then an R² below 0 counts as 0. Reversed later that day: raw values, exactly as in the paper |
 | 10-01 | One score, no normalization. Elo and improvability are not shown |
-| 10-01 | Two times per pipeline: fit (embedding plus training) per 1,000 training rows and predict (embedding plus prediction) per 1,000 test rows. The default view is the total, fit plus predict seconds per 1,000 table rows, as in the paper |
+| 10-01 | Two times per pipeline: fit (embedding plus training) per 1,000 training rows and predict (embedding plus prediction) per 1,000 test rows. The default view is the total, fit plus predict seconds per 1,000 table rows, as in the paper. Replaced 10-08 by the total only |
 | 10-01 | No hardware column: hovering a row shows whether it used the GPU |
 | 10-01 | One red frame around the top three rows of the current order, and a ring around them in the plot |
-| 10-08 | Score and time are medians over all fold rows of a view, like the paper's Figure 4a (the total time is run time per 1,000 table rows). Replaces the mean over tables |
-| 10-08 | A pipeline is shown in every view where it has rows, with its coverage and an "incomplete" tag when tables or folds are missing. Replaces "must cover every table and fold or not be ranked" |
+| 10-08 | Score is the median over fold rows of R² (regression) and AUC (classification), as in Figure 4a; time is also a median over fold rows. Replaces the mean over tables |
+| 10-08 | Time: total run time per 1K samples only, as in Figure 4a; no fit or predict views |
+| 10-08 | A pipeline is shown in every view where it has rows, with an "incomplete" tag, without counts, when tables or folds are missing. Replaces "must cover every table and fold or not be ranked" |
 
 ## Models
 

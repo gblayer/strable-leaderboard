@@ -8,10 +8,10 @@ note). Only the JSON written here is public. ``--check`` validates a JSON file i
 Checks workflow runs on every pull request that changes it.
 
 One record per pipeline (model, encoder, variant), with a list per view (both, reg, clf):
-[score, fit, predict, total, fold rows, fold rows expected], or null when the pipeline has no
-row in that view. Score and times are medians over the fold rows of the view, as in the paper's
-Figure 4a; times are seconds per 1,000 rows (fit: training rows, predict: test rows, total: table
-rows), null when not measured. A view with fewer fold rows than expected is shown with an
+[score, time, fold rows, fold rows expected], or null when the pipeline has no row in that view.
+As in the paper's Figure 4a, score is the median over the fold rows of the view of R² or AUC, and
+time the median of the total run time per 1,000 samples (encoding, training and prediction
+seconds over the table's rows). A view with fewer fold rows than expected is shown with an
 incomplete tag. ``paper`` marks rows imported from the paper. The page computes the ranking and
 the Pareto front from this file.
 """
@@ -50,19 +50,18 @@ def expected_folds() -> dict:
 
 
 def summarize(rows: pd.DataFrame, expected: dict) -> dict:
-    """Per view: [median score, fit/1k, predict/1k, total/1k, fold rows, fold rows expected] or None."""
+    """Per view: [median score, median total s per 1K samples, fold rows, fold rows expected] or None."""
     out = {}
     for view in VIEWS:
         key = VIEW_KEYS[view]
         b = leaderboard(rows.assign(pipeline="p"), view)
         out[key] = None if b.empty else [
-            round(float(b["score"].iloc[0]), 4), *(_num(b[c].iloc[0]) for c in ["fit_per_1k", "predict_per_1k", "total_per_1k"]),
-            int(b["n_folds"].iloc[0]), expected[key]]
+            round(float(b["score"].iloc[0]), 4), _num(b["total_per_1k"].iloc[0]), int(b["n_folds"].iloc[0]), expected[key]]
     return out
 
 
 def _num(x):
-    return None if x is None or (isinstance(x, float) and math.isnan(x)) else round(float(x), 4)
+    return None if x is None or math.isnan(float(x)) else round(float(x), 4)
 
 
 def build(results_dir: Path, out: Path = ROOT / "site" / "results.json") -> dict:
@@ -123,10 +122,9 @@ def problems(data: dict) -> list[str]:
             v = p.get(view)
             if v is None:
                 continue
-            if (len(v) != 6 or v[0] is None or v[0] > 1 or v[3] is None or any(x is not None and x <= 0 for x in v[1:4])
-                    or not 0 < v[4] <= v[5] or v[5] != expected[view]):
-                out.append(f"{p.get('id')} {view}: expected [score <= 1, fit, predict, total > 0, fold rows, "
-                           f"{expected[view]}] with positive times")
+            if (len(v) != 4 or v[0] is None or v[0] > 1 or v[1] is None or v[1] <= 0
+                    or not 0 < v[2] <= v[3] or v[3] != expected[view]):
+                out.append(f"{p.get('id')} {view}: expected [score <= 1, time > 0, fold rows, {expected[view]}]")
             elif view == "clf" and v[0] < 0:
                 out.append(f"{p.get('id')} {view}: AUC below 0")
     return out

@@ -184,8 +184,6 @@ section { scroll-margin-top: 76px; }
 table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); font-size: 14.5px; font-variant-numeric: tabular-nums; }
 .hs th { font: 700 13px/1.2 var(--f-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); text-align: left; padding: 16px 12px 11px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: bottom; }
 .hs th small { display: block; font: 500 12px/1.2 var(--f-body); color: var(--ink-3); letter-spacing: 0.02em; text-transform: none; margin-top: 3px; }
-.hs th.on { color: var(--ink); }
-.hs th.on span { text-decoration: underline; text-decoration-color: var(--mark); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .hs th.num, .hs td.num { text-align: right; }
 .hs td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .hs tbody tr:last-child td { border-bottom: 0; }
@@ -211,7 +209,6 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .star path { fill: var(--mark); }
 .score { color: var(--ink); font-weight: 600; }
 .time { color: var(--ink-2); white-space: nowrap; }
-.time.on { color: var(--ink); font-weight: 600; }
 .hw { font: 600 10px/1 var(--f-mono); letter-spacing: 0.08em; color: var(--ink-3); white-space: nowrap; }
 .group td { font: 700 12.5px/1.3 var(--f-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); padding: 16px 10px 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
 .tbl-foot { padding: 10px 14px; border-top: 1px solid var(--line); }
@@ -413,14 +410,6 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
             <button type="button" id="task-clf" data-task="clf" aria-pressed="false">Classification · AUC</button>
           </div>
         </div>
-        <div class="ctl" id="ctl-time">
-          <span class="cap" id="time-lbl">Time</span>
-          <div class="seg" role="group" aria-labelledby="time-lbl">
-            <button type="button" id="time-both" data-time="both" aria-pressed="true">Both</button>
-            <button type="button" id="time-fit" data-time="fit" aria-pressed="false">Fit</button>
-            <button type="button" id="time-pred" data-time="pred" aria-pressed="false">Predict</button>
-          </div>
-        </div>
         <div class="ctl" id="ctl-sort">
           <span class="cap" id="sort-lbl">Sort</span>
           <div class="seg" role="group" aria-labelledby="sort-lbl">
@@ -441,8 +430,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
                 <th scope="col">Rank</th>
                 <th scope="col">Pipeline<small>default configs unless tuned</small></th>
                 <th scope="col" class="num"><span id="th-metric">Score</span><small id="th-metric-sub">median</small></th>
-                <th scope="col" class="num" id="th-fit"><span>Fit</span><small>s / 1K rows</small></th>
-                <th scope="col" class="num" id="th-pred"><span>Predict</span><small>s / 1K rows</small></th>
+                <th scope="col" class="num" id="th-time"><span>Time</span><small>total s / 1K samples, median</small></th>
               </tr>
             </thead>
             <tbody id="rows"></tbody>
@@ -455,7 +443,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 
       <div class="card plot-card" id="plot-card">
         <div class="plot-head">
-          <h3 class="card-title" id="plot-title">Score vs fit time</h3>
+          <h3 class="card-title" id="plot-title">Score vs total run time</h3>
           <ul class="legend">
             <li><span class="sw sw-on"></span>Pareto-optimal</li>
             <li><span class="sw sw-off"></span>Not on the front</li>
@@ -516,26 +504,26 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 </div>
 
 <script>
-/* Placeholder pipelines. Per task: [score, fit seconds per 1K training rows, predict seconds per 1K rows].
+/* Placeholder pipelines. Per task: [score, total run time in seconds per 1K samples].
    kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU" or "CPU", shown in the tooltip.
    Optional flags: anon (codename, name never revealed), closed (named, weights not public).
    The real site loads records from results.json, see refresh(): per task (both, reg, clf)
-   [median score, fit, predict, total per 1K rows, fold rows, fold rows expected], plus variant
-   ("default" or "tuned") and paper (imported from the paper, total time only). */
+   [median score, median total s per 1K samples, fold rows, fold rows expected], plus variant
+   ("default" or "tuned") and paper (imported from the paper). */
 let DATA = [
-  { id: 'te-ridge', enc: 'TargetEncoder', lrn: 'Ridge', kind: 'modular', hw: 'CPU', reg: [0.612, 0.06, 0.01], clf: [0.842, 0.05, 0.01] },
-  { id: 'te-et', enc: 'TargetEncoder', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.684, 0.16, 0.03], clf: [0.871, 0.14, 0.03] },
-  { id: 'tfidf-et', enc: 'Tf-Idf', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.697, 0.85, 0.20], clf: [0.879, 0.75, 0.18] },
-  { id: 'tfidf-xgb', enc: 'Tf-Idf', lrn: 'XGBoost', kind: 'modular', hw: 'CPU', reg: [0.689, 3.6, 0.15], clf: [0.883, 3.2, 0.14] },
-  { id: 'tfidf-tabicl', enc: 'Tf-Idf', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.733, 0.40, 4.2], clf: [0.902, 0.36, 3.8] },
-  { id: 'tfidf+tabpfn-2.5', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.744, 0.45, 9.5], clf: [0.906, 0.40, 8.4] },
-  { id: 'minilm-tabicl', enc: 'MiniLM-L6-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.722, 1.9, 5.4], clf: [0.893, 1.7, 4.9] },
-  { id: 'minilm-tabpfn', enc: 'MiniLM-L6-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.733, 1.9, 10.8], clf: [0.897, 1.7, 9.6] },
-  { id: 'llama-tabicl', enc: 'LLaMA-3.1-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.736, 145, 150], clf: [0.892, 130, 134] },
-  { id: 'llama-tabpfn', enc: 'LLaMA-3.1-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.741, 145, 156], clf: [0.895, 130, 139] },
-  { id: 'contexttab', enc: '', lrn: 'ConTextTab', kind: 'e2e', hw: 'GPU', reg: [0.722, 0.6, 24], clf: [0.884, 0.55, 21] },
-  { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', hw: 'GPU', reg: [0.668, 46, 2.8], clf: [0.873, 42, 2.5] },
-  { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.5, 0.25], clf: [0.868, 8.6, 0.22] }
+  { id: 'te-ridge', enc: 'TargetEncoder', lrn: 'Ridge', kind: 'modular', hw: 'CPU', reg: [0.612, 0.07], clf: [0.842, 0.06] },
+  { id: 'te-et', enc: 'TargetEncoder', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.684, 0.19], clf: [0.871, 0.17] },
+  { id: 'tfidf-et', enc: 'Tf-Idf', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.697, 1.05], clf: [0.879, 0.93] },
+  { id: 'tfidf-xgb', enc: 'Tf-Idf', lrn: 'XGBoost', kind: 'modular', hw: 'CPU', reg: [0.689, 3.75], clf: [0.883, 3.34] },
+  { id: 'tfidf-tabicl', enc: 'Tf-Idf', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.733, 4.6], clf: [0.902, 4.16] },
+  { id: 'tfidf+tabpfn-2.5', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.744, 9.95], clf: [0.906, 8.8] },
+  { id: 'minilm-tabicl', enc: 'MiniLM-L6-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.722, 7.3], clf: [0.893, 6.6] },
+  { id: 'minilm-tabpfn', enc: 'MiniLM-L6-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.733, 12.7], clf: [0.897, 11.3] },
+  { id: 'llama-tabicl', enc: 'LLaMA-3.1-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.736, 295], clf: [0.892, 264] },
+  { id: 'llama-tabpfn', enc: 'LLaMA-3.1-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.741, 301], clf: [0.895, 269] },
+  { id: 'contexttab', enc: '', lrn: 'ConTextTab', kind: 'e2e', hw: 'GPU', reg: [0.722, 24.6], clf: [0.884, 21.6] },
+  { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', hw: 'GPU', reg: [0.668, 48.8], clf: [0.873, 44.5] },
+  { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.75], clf: [0.868, 8.82] }
 ];
 let VERSION = 'v0.1.1', BUILT = '2026-10-01', PLACEHOLDER = true;
 let HISTORY = [
@@ -546,16 +534,12 @@ const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-mode
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TASKS = {
-  both: { metric: 'Score', colSub: 'R² and AUC, median', axis: 'Median score, R² and AUC' },
+  both: { metric: 'Score', colSub: 'R² & AUC, median', axis: 'Median score (R² & AUC)' },
   reg: { metric: 'R²', colSub: 'median', axis: 'Median R²' },
   clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC' }
 };
-const TIMES = {
-  both: { name: 'Fit + predict', title: 'Score vs fit + predict time', axis: 'Fit + predict time, s per 1K rows, log scale', fastest: 'FASTEST ON THE FRONT ' },
-  fit: { name: 'Fit', title: 'Score vs fit time', axis: 'Fit time: embedding + training, s per 1K rows, log scale', fastest: 'FASTEST TO FIT ON THE FRONT ' },
-  pred: { name: 'Predict', title: 'Score vs predict time', axis: 'Predict time: embedding + prediction, s per 1K rows, log scale', fastest: 'FASTEST TO PREDICT ON THE FRONT ' }
-};
-const state = { task: 'both', time: 'both', sort: 'pareto', hot: null };
+const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
+const state = { task: 'both', sort: 'pareto', hot: null };
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -563,24 +547,20 @@ const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls)
 const SVGNS = 'http://www.w3.org/2000/svg';
 const sv = (tag, attrs) => { const n = document.createElementNS(SVGNS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
-/* One row per pipeline for the chosen task. A pipeline without results for that task is left out.
-   A missing time (null) means the pipeline was imported from the paper with a total time only:
-   the table shows the total, and the pipeline takes no part in the plot or Pareto front of fit
-   or predict. A pipeline with fewer fold rows than the task has is tagged incomplete. */
+/* One row per pipeline for the chosen task: median score and median total run time per 1K samples.
+   A pipeline without results for that task is left out. A pipeline with fewer fold rows than the
+   task has is tagged incomplete. */
 const num = (v) => (v == null || Number.isNaN(v) ? NaN : v);
-function items(task, time) {
+function items(task) {
   const rows = [];
   for (const d of DATA) {
     let v = d[task];
     // placeholders only: results.json always has its own "both" medians
-    if (PLACEHOLDER && task === 'both' && !v && d.reg && d.clf) v = [(N_REG * d.reg[0] + N_CLF * d.clf[0]) / N_ALL, (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL, (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL];
+    if (PLACEHOLDER && task === 'both' && !v && d.reg && d.clf) v = [(N_REG * d.reg[0] + N_CLF * d.clf[0]) / N_ALL, (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL];
     if (!v) continue;
-    const s = v[0], fit = num(v[1]), pred = num(v[2]);
-    const total = v.length > 3 && v[3] != null ? v[3] : fit + pred;  // paper rows carry a total only
-    const cov = v.length > 5 ? v[4] + '/' + v[5] + ' folds' : '';
     rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw,
-      tuned: d.variant === 'tuned', paper: !!d.paper, incomplete: v.length > 5 && v[4] < v[5], cov: cov,
-      s: s, fit: fit, pred: pred, total: total, t: time === 'fit' ? fit : time === 'pred' ? pred : total });
+      tuned: d.variant === 'tuned', paper: !!d.paper, incomplete: v.length > 3 && v[2] < v[3],
+      s: v[0], t: num(v[1]) });
   }
   return rows;
 }
@@ -602,7 +582,7 @@ const fmtS = (v) => v.toFixed(3);
 function fmtN(t) { if (Number.isNaN(t)) return '—'; if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
 const fmtT = (t) => fmtN(t) + ' s';
 function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
-function timesText(d) { return Number.isNaN(d.fit) && Number.isNaN(d.pred) ? 'total ' + fmtT(d.total) : 'fit ' + fmtT(d.fit) + ', predict ' + fmtT(d.pred); }
+function timeText(d) { return 'total run time ' + fmtT(d.t) + ' per 1K samples'; }
 
 function starSvg() {
   const s = sv('svg', { class: 'star', viewBox: '0 0 11 11', 'aria-hidden': 'true' });
@@ -614,8 +594,6 @@ function renderTable(list, front, rows) {
   const tbody = $('rows'); tbody.textContent = '';
   const T = TASKS[state.task];
   $('th-metric').textContent = T.metric; $('th-metric-sub').textContent = T.colSub;
-  $('th-fit').classList.toggle('on', state.time !== 'pred');
-  $('th-pred').classList.toggle('on', state.time !== 'fit');
   const nOn = rows.filter((d) => front.has(d.id)).length;
   const nTop = state.sort === 'pareto' ? Math.min(3, nOn) : 3;  // one red frame around the first rows
   let group = null;
@@ -625,13 +603,13 @@ function renderTable(list, front, rows) {
       if (g !== group) {
         group = g;
         const gr = el('tr', 'group'); const td = el('td');
-        td.colSpan = 5;
+        td.colSpan = 4;
         td.textContent = g === 'on' ? '★ Pareto front · ' + nOn : 'Not on the front · ' + (rows.length - nOn);
         gr.appendChild(td); tbody.appendChild(gr);
       }
     }
     const tr = el('tr', 'row' + (i < nTop ? ' top' : '') + (i === 0 ? ' top-first' : '') + (i === nTop - 1 ? ' top-last' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
-    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timesText(d) + ' per 1K rows, ' + (d.paper ? 'from the paper' : 'runs on ' + d.hw) + (d.incomplete ? ', incomplete, ' + d.cov : '') + (front.has(d.id) ? ', Pareto-optimal' : ''));
+    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + ', ' + (d.paper ? 'from the paper' : 'runs on ' + d.hw) + (d.incomplete ? ', incomplete' : '') + (front.has(d.id) ? ', Pareto-optimal' : ''));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
     if (d.kind === 'e2e') { p.appendChild(el('span', 'lrn', d.lrn)); p.appendChild(el('span', 'tag e2e', 'END-TO-END')); }
@@ -640,17 +618,12 @@ function renderTable(list, front, rows) {
     if (d.anon) p.appendChild(el('span', 'tag anon', 'ANONYMOUS'));
     else if (d.closed) p.appendChild(el('span', 'tag closed', 'CLOSED'));
     if (d.paper) p.appendChild(el('span', 'tag', 'PAPER'));
-    if (d.incomplete) { const g = el('span', 'tag incomplete', 'INCOMPLETE'); g.title = d.cov; p.appendChild(g); }
+    if (d.incomplete) p.appendChild(el('span', 'tag incomplete', 'INCOMPLETE'));
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
     tr.appendChild(el('td', 'num score', fmtS(d.s)));
-    if (Number.isNaN(d.fit) && Number.isNaN(d.pred)) {  // paper rows: one total for fit and predict
-      const tt = el('td', 'num time' + (state.time === 'both' ? ' on' : ''), fmtN(d.total) + ' total'); tt.colSpan = 2; tr.appendChild(tt);
-    } else {
-      tr.appendChild(el('td', 'num time' + (state.time !== 'pred' ? ' on' : ''), fmtN(d.fit)));
-      tr.appendChild(el('td', 'num time' + (state.time !== 'fit' ? ' on' : ''), fmtN(d.pred)));
-    }
+    tr.appendChild(el('td', 'num time', fmtN(d.t)));
     tr.addEventListener('pointerenter', () => setHot(d.id));
     tr.addEventListener('pointerleave', () => setHot(null));
     tr.addEventListener('focus', () => setHot(d.id));
@@ -672,7 +645,7 @@ function renderPlot(list, front, top) {
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   list = list.filter((d) => !Number.isNaN(d.t));
   if (!list.length) return;
-  const T = TASKS[state.task], TM = TIMES[state.time];
+  const T = TASKS[state.task];
   const tMin = Math.min(...list.map((d) => d.t)), tMax = Math.max(...list.map((d) => d.t));
   const x0 = Math.floor(Math.log10(tMin)), x1 = Math.ceil(Math.log10(tMax));
   const sMin = Math.min(...list.map((d) => d.s)), sMax = Math.max(...list.map((d) => d.s));
@@ -683,7 +656,7 @@ function renderPlot(list, front, top) {
 
   const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img' });
   const fr = list.filter((d) => front.has(d.id)).sort((a, b) => a.t - b.t);
-  svg.setAttribute('aria-label', 'Scatter of ' + T.axis + ' against ' + TM.name.toLowerCase() + ' time per 1K rows, log scale. The ideal corner is top left. Pareto front: ' + fr.map(pipeName).join(', ') + '.');
+  svg.setAttribute('aria-label', 'Scatter of ' + T.axis + ' against ' + TIME_AXIS + '. The ideal corner is top left. Pareto front: ' + fr.map(pipeName).join(', ') + '.');
   const defs = sv('defs', {});
   const mk = sv('marker', { id: 'better-head', viewBox: '0 0 10 10', refX: '6', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' });
   mk.appendChild(sv('path', { class: 'better-head', d: 'M0 0 L10 5 L0 10 z' }));
@@ -702,7 +675,7 @@ function renderPlot(list, front, top) {
     const tx = sv('text', { x: x, y: H - m.b + 18, 'text-anchor': k === x1 ? 'end' : k === x0 ? 'start' : 'middle' });
     tx.textContent = (v >= 1 ? v.toLocaleString('en-US') : String(v)) + ' s'; ax.appendChild(tx);
   }
-  const xt = sv('text', { class: 'ttl', x: m.l + iw / 2, y: H - 6, 'text-anchor': 'middle' }); xt.textContent = TM.axis; ax.appendChild(xt);
+  const xt = sv('text', { class: 'ttl', x: m.l + iw / 2, y: H - 6, 'text-anchor': 'middle' }); xt.textContent = TIME_AXIS; ax.appendChild(xt);
   const yt = sv('text', { class: 'ttl', x: 12, y: m.t + ih / 2, 'text-anchor': 'middle', transform: 'rotate(-90 12 ' + (m.t + ih / 2) + ')' });
   yt.textContent = T.axis; ax.appendChild(yt);
   svg.appendChild(ax);
@@ -771,8 +744,8 @@ function showTip(id) {
   tip.textContent = '';
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
   tip.appendChild(l1);
-  tip.appendChild(el('div', null, timesText(g.d).replace(', ', '  ·  ') + ' per 1K rows'));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + (g.d.paper ? ' · from the paper' : ' · runs on ' + g.d.hw) + (g.d.incomplete ? ' · incomplete, ' + g.d.cov : '') + (g.on ? ' · ★ Pareto-optimal' : '')));
+  tip.appendChild(el('div', null, timeText(g.d)));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + (g.d.paper ? ' · from the paper' : ' · runs on ' + g.d.hw) + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto-optimal' : '')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -798,8 +771,7 @@ function renderTicker(list, front) {
   const top = state.task === 'both' ? 'TOP SCORE ' : 'TOP ' + TASKS[state.task].metric + ' ';
   const msgs = [
     [top, fmtS(best.s), ' · ' + pipeName(best)],
-    fr.length ? [TIMES[state.time].fastest, pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K rows']
-      : [TIMES[state.time].fastest, '—', ' · paper rows have a total time only'],
+    ['FASTEST ON THE FRONT ', pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K samples'],
     ['★ PARETO FRONT ', String(fr.length), ' pipelines'],
     ['VERSION ', VERSION, ' · ' + N_ALL + ' tables · ' + N_REG + ' regression · ' + N_CLF + ' classification']
   ];
@@ -809,7 +781,7 @@ function renderTicker(list, front) {
 }
 
 function render() {
-  const list = items(state.task, state.time);
+  const list = items(state.task);
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
@@ -817,14 +789,11 @@ function render() {
   renderTicker(list, front);
   $('stat-n').textContent = String(list.length);
   $('ver-chip').textContent = VERSION;
-  $('plot-title').textContent = TIMES[state.time].title;
   ['both', 'reg', 'clf'].forEach((k) => $('task-' + k).setAttribute('aria-pressed', String(state.task === k)));
-  ['both', 'fit', 'pred'].forEach((k) => $('time-' + k).setAttribute('aria-pressed', String(state.time === k)));
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
 }
 
 document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; render(); }));
-document.querySelectorAll('[data-time]').forEach((b) => b.addEventListener('click', () => { state.time = b.dataset.time; render(); }));
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
 
 /* results.json, built from results/ after each merge, sits next to this page. It is read at start
@@ -878,18 +847,16 @@ $('ideas-form').addEventListener('submit', (ev) => {
   $('ideas-msg').textContent = $('ideas-text').value.trim() ? 'Preview only. Nothing was sent.' : 'Write your suggestion first.';
 });
 
-/* ---------- demo tour: task, sort, time, model types, Pareto plot, adding a model ---------- */
+/* ---------- demo tour: task, sort, model types, Pareto plot, adding a model ---------- */
 const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
     text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
-  { sel: '#ctl-time', block: 'center', time: 'pred',
-    text: 'Time. Pick which time the plot and the Pareto order use: fit plus predict, or either alone. The underlined column is the one in use.' },
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of any order get a red frame, here and in the plot.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
     text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned, anonymous, closed, paper and incomplete rows, a star marks the Pareto front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
-    text: 'The plot: score against time, log scale. The line is the Pareto front and the arrow points to the ideal corner. Hover a point for its numbers.' },
+    text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto front and the arrow points to the ideal corner. Hover a point for its numbers.' },
   { sel: '#history', block: 'center',
     text: 'Version history lists what changed in each version. The version chip at the top shows the current one, and Refresh fetches the latest results.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
@@ -902,7 +869,7 @@ function startBar() {
   if (tour && tour.playing) { b.style.transition = 'width 7000ms linear'; b.style.width = '100%'; }
 }
 function applyStep(s) {
-  state.task = s.task || 'both'; state.time = s.time || 'both'; state.sort = s.sort || 'pareto';
+  state.task = s.task || 'both'; state.sort = s.sort || 'pareto';
   state.hot = s.hot || null;
   render();
 }
@@ -930,7 +897,7 @@ function nextStep() { if (!tour) return; if (tour.i < TOUR.length - 1) { tour.i+
 function prevStep() { if (tour && tour.i > 0) { tour.i--; showStep(); } }
 function startTour() {
   if (tour) return;
-  tour = { i: 0, playing: true, timer: null, saved: { task: state.task, time: state.time, sort: state.sort } };
+  tour = { i: 0, playing: true, timer: null, saved: { task: state.task, sort: state.sort } };
   $('tour').hidden = false; $('tour-play').textContent = 'Pause';
   showStep();
 }
@@ -939,7 +906,7 @@ function endTour() {
   clearTimeout(tour.timer); clearFocus();
   const s0 = tour.saved; tour = null;
   $('tour').hidden = true;
-  state.task = s0.task; state.time = s0.time; state.sort = s0.sort; state.hot = null; render();
+  state.task = s0.task; state.sort = s0.sort; state.hot = null; render();
 }
 $('demo-btn').addEventListener('click', startTour);
 $('tour-next').addEventListener('click', nextStep);
@@ -964,8 +931,6 @@ document.addEventListener('keydown', (e) => {
   const toks = (location.hash || '').replace('#', '').split('.');
   if (toks.indexOf('reg') >= 0) state.task = 'reg';
   if (toks.indexOf('clf') >= 0) state.task = 'clf';
-  if (toks.indexOf('fit') >= 0) state.time = 'fit';
-  if (toks.indexOf('predict') >= 0) state.time = 'pred';
   if (toks.indexOf('score') >= 0) state.sort = 'score';
   if (toks.indexOf('time') >= 0) state.sort = 'time';
   render(); renderHistory();
@@ -974,7 +939,7 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();
 let rz = null;
-new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task, state.time); if (list.length) { const front = paretoSet(list); renderPlot(list, front, new Set(ordered(list, state.sort, front).slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id))); } }); }).observe($('plot'));
+new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task); if (list.length) { const front = paretoSet(list); renderPlot(list, front, new Set(ordered(list, state.sort, front).slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id))); } }); }).observe($('plot'));
 </script>
 
 </body>
