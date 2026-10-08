@@ -2,7 +2,8 @@
 # One SLURM array task per line of tasks.txt: "<model folder> <encoder> <table> <fold>".
 #
 #   python scripts/make_tasks.py models/tabpfn-2.5 > tasks.txt
-#   sbatch --array=0-$(( $(wc -l < tasks.txt) - 1 ))%16 scripts/run_array.sh tasks.txt
+#   mkdir -p logs        # SLURM does not create the log folder
+#   sbatch -p <partition> --array=0-$(( $(wc -l < tasks.txt) - 1 ))%16 scripts/run_array.sh tasks.txt
 #
 # Before submitting, on a node with internet: python scripts/prepare.py models/tabpfn-2.5
 # (dataset, checkpoints and the model's environment go into $STRABLE_CACHE). Compute nodes run

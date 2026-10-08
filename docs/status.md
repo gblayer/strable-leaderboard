@@ -6,7 +6,7 @@ What exists, what was decided, what is left. Written for Gioia at the end of the
 
 | | |
 |---|---|
-| Repository | https://github.com/gblayer/strable-leaderboard, private, branch `main` (8 commits) |
+| Repository | https://github.com/gblayer/strable-leaderboard, private, branch `main` |
 | Live page | https://gblayer.github.io/strable-leaderboard/ (GitHub Pages, public even though the repository is private, placeholder numbers until the launch) |
 | Design preview, same page | https://claude.ai/artifact/VeySGPLA7yTSFYkoqwD4Cr |
 | Local clone | `~/Documents/Documents - Work/strable-leaderboard` |
