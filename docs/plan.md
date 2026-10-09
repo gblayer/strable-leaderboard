@@ -8,7 +8,7 @@ New models come out all the time, so the board does not list the paper's ~445 pi
 
 ## How it works
 
-1. **Submit.** A pull request adds `models/<name>/`, by hand or through a coding agent. Open models only. See [submitting.md](submitting.md).
+1. **Submit.** A pull request adds `models/<name>/`, by hand or through a coding agent. Closed and anonymous models use a private channel. See [submitting.md](submitting.md).
 2. **Check and review.** GitHub runs the smoke test. Claude reviews the diff twice and posts a recommendation. A maintainer merges. See [automation.md](automation.md).
 3. **Run.** The runner finds merged pipelines without results and submits a job array on the cluster.
 4. **Publish.** The runner opens a results pull request. Claude checks it, a maintainer merges, the site rebuilds and the patch version goes up.
@@ -17,7 +17,7 @@ New models come out all the time, so the board does not list the paper's ~445 pi
 
 - **Score:** one number, the median over the fold rows of the 108 tables of R² for regression and AUC for classification, as in the paper's Figure 4a. Views for regression or classification alone. See [protocol.md](protocol.md).
 - **Time:** the total run time per 1,000 samples (encoding, training and prediction), median over fold rows, on a log scale, as in Figure 4a. No fit or predict views. It drives the plot and the Pareto order. The top three rows of any order are marked.
-- **Rows:** modular pipelines, one of three string encoders plus a numeric learner, and end-to-end models that read strings themselves. Tags for end-to-end rows. Hovering a row shows whether it used the GPU. The table has a fixed height and scrolls, so every pipeline is always in it.
+- **Rows:** modular pipelines, one of three string encoders plus a numeric learner, and end-to-end models that read strings themselves. Tags for end-to-end, anonymous and closed rows. Hovering a row shows whether it used the GPU. The table has a fixed height and scrolls, so every pipeline is always in it.
 - Version history, a suggestion panel, a Refresh button next to the version chip, and a guided demo that shows where things are; the key under the controls says how to read them.
 
 Not shown: Elo, improvability, normalized scores, families, filters, a hardware column. Each of them either changes when other models join or adds a column without adding knowledge.

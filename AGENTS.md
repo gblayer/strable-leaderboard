@@ -14,6 +14,6 @@ Follow `.claude/skills/add-model/SKILL.md`, with `docs/submitting.md` and `strab
 
 - Reviewing a pull request: `.claude/skills/review-submission/SKILL.md`.
 - Running a model on the cluster and publishing its results: `.claude/skills/run-model/SKILL.md`, with `docs/automation.md`. Normally the dispatcher (`scripts/dispatch.py`) does it.
-- Any change to scores, folds, encoders or times: `docs/protocol.md`; every decision taken so far is in `docs/decisions.md` and holds unless the maintainer changes it.
+- Any change to scores, folds, encoders or times: `docs/protocol.md`, which holds unless the maintainer changes it.
 
-Keep code and prose short and plain. Never commit per-fold results, data, weights, `cache/` or `private/` to this repository, and never name the cluster in it.
+Keep code and prose short and plain. Results reach this repository only as the files `scripts/build_site_data.py` writes into `site/` (aggregates and the per-fold rows, `RESULTS_FILES`); never commit `results/`, `runs/`, data, weights, `cache/` or `private/`, and never name the cluster in it.
