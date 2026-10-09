@@ -23,11 +23,11 @@ from pathlib import Path
 import pandas as pd
 
 from .data import MANIFEST
-from .metrics import N_FOLDS, VIEWS
+from .metrics import VARIANTS, VIEWS, expected_folds
+from .splits import N_OUTER
 
 COLUMNS = ["model", "encoder", "variant", "table", "task", "fold", "score", "fit_s", "predict_s", "total_s", "n_train",
            "n_test", "hardware", "package", "checkpoint_revision", "protocol_version", "date"]
-VARIANTS = ("default", "tuned")
 ENCODER_ID = re.compile(r"^[a-z0-9][a-z0-9.+-]*$")
 
 
@@ -54,7 +54,7 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
     dup = df.duplicated(["encoder", "variant", "table", "fold"]).sum()
     if dup:
         problems.append(f"{dup} duplicate (encoder, variant, table, fold) rows")
-    if not df["fold"].isin(range(N_FOLDS)).all():
+    if not df["fold"].isin(range(N_OUTER)).all():
         problems.append("fold must be 0, 1 or 2")
     for col in ["hardware", "package", "protocol_version", "date"]:
         if df[col].isna().any() or (df[col].astype(str).str.strip() == "").any():
@@ -79,13 +79,12 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
     if (known["n_test"] != n_test).any() or (known["n_train"] != n_rows - known["n_test"]).any():
         problems.append("n_train or n_test disagree with the manifest's folds")
 
-    coverage = []
+    coverage, expected = [], expected_folds(tables)
     for (encoder, variant), g in known.groupby(["encoder", "variant"]):
         for view, view_tasks in VIEWS.items():
-            expected = N_FOLDS * sum(1 for m in tables.values() if m["task"] in view_tasks)
             n = int(g["task"].isin(view_tasks).sum())
-            coverage.append(f"{encoder:<22} {variant:<8} {view:<15} {n}/{expected} folds"
-                            + ("" if n == expected else " incomplete"))
+            coverage.append(f"{encoder:<22} {variant:<8} {view:<15} {n}/{expected[view]} folds"
+                            + ("" if n == expected[view] else " incomplete"))
     return problems, coverage
 
 

@@ -35,10 +35,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from strable_leaderboard.data import MANIFEST  # noqa: E402
 from strable_leaderboard.encoders import NAMES  # noqa: E402
-from strable_leaderboard.metrics import N_FOLDS, VIEWS, leaderboard, pareto_front  # noqa: E402
+from strable_leaderboard.metrics import VARIANTS, VIEWS, expected_folds, pareto_front, per_1k  # noqa: E402
 
 VIEW_KEYS = {"both": "both", "regression": "reg", "classification": "clf"}
-VARIANTS = ("default", "tuned")
 VIEW_NAMES = {"both": "Both (R² & AUC)", "reg": "Regression (R²)", "clf": "Classification (AUC)"}
 SITE = "https://gblayer.github.io/strable-leaderboard/"
 CITATION = ("Blayer et al., STRABLE: Benchmarking Tabular Machine Learning with Strings, arXiv:2605.12292 (2026), "
@@ -58,19 +57,20 @@ def card_of(model: str) -> dict:
         "name": PAPER["learners"].get(model, model), "handles_strings": False, "access": "open", "hardware": ""}
 
 
-def expected_folds() -> dict:
+def folds_expected() -> dict:
+    """Fold rows expected per view key (both, reg, clf)."""
     tables = json.loads(MANIFEST.read_text())["tables"]
-    return {VIEW_KEYS[v]: N_FOLDS * sum(1 for m in tables.values() if m["task"] in tasks) for v, tasks in VIEWS.items()}
+    return {VIEW_KEYS[v]: n for v, n in expected_folds(tables).items()}
 
 
 def summarize(rows: pd.DataFrame, expected: dict) -> dict:
     """Per view: [median score, median total s per 1K samples, fold rows, fold rows expected] or None."""
+    rows = per_1k(rows)
     out = {}
-    for view in VIEWS:
-        key = VIEW_KEYS[view]
-        b = leaderboard(rows.assign(pipeline="p"), view)
-        out[key] = None if b.empty else [
-            round(float(b["score"].iloc[0]), 4), _num(b["total_per_1k"].iloc[0]), int(b["n_folds"].iloc[0]), expected[key]]
+    for view, tasks in VIEWS.items():
+        r = rows[rows["task"].isin(tasks)]
+        out[VIEW_KEYS[view]] = [round(float(r["score"].median()), 4), _num(r["total_per_1k"].median()), len(r),
+                                expected[VIEW_KEYS[view]]] if len(r) else None
     return out
 
 
@@ -79,7 +79,7 @@ def _num(x):
 
 
 def build(results_dir: Path, out: Path = ROOT / "site" / "results.json") -> dict:
-    expected = expected_folds()
+    expected = folds_expected()
     pipelines = []
     for path in sorted(results_dir.glob("*.csv")):
         card = card_of(path.stem)
@@ -159,7 +159,7 @@ def problems(data: dict) -> list[str]:
     ids = [p.get("id") for p in data["pipelines"]]
     if len(set(ids)) != len(ids):
         out.append("duplicate pipeline ids")
-    expected = expected_folds()
+    expected = folds_expected()
     for p in data["pipelines"]:
         if not p.get("lrn") or p.get("kind") not in ("modular", "e2e"):
             out.append(f"{p.get('id')}: needs lrn and kind")

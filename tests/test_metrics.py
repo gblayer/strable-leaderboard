@@ -3,35 +3,24 @@ import pandas as pd
 import pytest
 
 from strable_leaderboard.codenames import codename
-from strable_leaderboard.metrics import fold_score, leaderboard, pareto_front
+from strable_leaderboard.metrics import expected_folds, fold_score, pareto_front, per_1k
 
 
-def _results():
-    rows = []
-    # pipeline A: R² 0.8, 0.7 and a failed table (-3.0); AUC 0.9. Fold 2 of r1 is twice as slow.
-    for table, task, score in [("r1", "regression", 0.8), ("r2", "regression", 0.7), ("r3", "regression", -3.0), ("c1", "binary", 0.9)]:
-        for fold in range(3):
-            rows.append(dict(pipeline="A", table=table, task=task, fold=fold, score=score,
-                             fit_s=2.0 if (table, fold) == ("r1", 2) else 1.0, predict_s=0.5, n_train=1000, n_test=500))
-    return pd.DataFrame(rows)
+def test_total_time_per_1k_samples():
+    runner = pd.DataFrame({"fit_s": [1.0], "predict_s": [0.5], "total_s": [np.nan], "n_train": [1000], "n_test": [500]})
+    assert per_1k(runner)["total_per_1k"].iloc[0] == pytest.approx(1.0)  # (1.0 + 0.5) s over 1,500 rows
+    paper = runner.assign(fit_s=None, predict_s=None, total_s=3.0)  # rows imported from the paper
+    assert per_1k(paper)["total_per_1k"].iloc[0] == pytest.approx(2.0)
 
 
-def test_leaderboard_is_the_median_over_fold_rows():
-    both = leaderboard(_results(), "both", n_tables=4)
-    assert both.loc["A", "score"] == pytest.approx(0.75)  # median of 12 fold rows, the -3.0 table counts as 3 rows
-    assert both.loc["A", "n_folds"] == 12 and bool(both.loc["A", "complete"])
-    reg = leaderboard(_results(), "regression", n_tables=76)
-    assert reg.loc["A", "score"] == pytest.approx(0.7) and not reg.loc["A", "complete"]
-    assert reg.loc["A", "total_per_1k"] == pytest.approx(1.0)  # (1.0 + 0.5) s over 1,500 rows; median, not the slow fold
-    assert list(reg.columns) == ["score", "total_per_1k", "n_folds", "complete"]  # no fit or predict time
-    paper = _results().assign(fit_s=None, predict_s=None, total_s=3.0)  # rows imported from the paper
-    assert leaderboard(paper, "classification").loc["A", "total_per_1k"] == pytest.approx(2.0)
+def test_expected_folds():
+    tables = {"r1": {"task": "regression"}, "c1": {"task": "binary"}, "c2": {"task": "multiclass"}}
+    assert expected_folds(tables) == {"both": 9, "regression": 3, "classification": 6}
 
 
 def test_pareto_front_keeps_only_undominated_pipelines():
     board = pd.DataFrame({"score": [0.6, 0.7, 0.65, 0.8], "total_per_1k": [0.1, 1.0, 2.0, 10.0]}, index=list("abcd"))
     assert pareto_front(board) == ["a", "b", "d"]
-    assert pareto_front(board, exclude=["b"]) == ["a", "c", "d"]
 
 
 def test_fold_scores():
