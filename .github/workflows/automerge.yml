@@ -1,17 +1,10 @@
 name: Auto-merge gate
 
-# Merges a pull request only when every condition of scripts/automerge_gate.py holds: the commit
-# status "Claude review" of the head commit is success (both reviews of that commit say MERGE and
-# claude-approved is set), Checks passed on the same head commit, the diff is exactly one new
-# models/<name>/ folder (or only site/results.json opened by gblayer), nothing protected changes, and
-# the head did not move. Otherwise: label needs-maintainer and one comment per commit
-# "@gblayer your review is needed: <reason>". No message on success.
-#
-# The gate runs from two places: the last job of claude-review.yml, and here when Checks completes,
-# whichever comes last decides. A triage job checks the scope of every pull request at once.
-# Runs on the base branch with the built-in GITHUB_TOKEN; the pull request's code is never checked
-# out. A merge made with GITHUB_TOKEN starts no push workflow, so the gate starts Pages itself when
-# site/ changed (pages.yml has workflow_dispatch).
+# Runs scripts/automerge_gate.py; its conditions: docs/automation.md, section 3. The gate runs here
+# when Checks completes and in the verdict job of claude-review.yml, under one concurrency group
+# per head commit, so the two never merge at once; whichever comes last decides. The triage job
+# checks the scope of every pull request at once. Runs on the base branch with the built-in
+# GITHUB_TOKEN; the pull request's code is never checked out.
 on:
   workflow_run:
     workflows: ["Checks"]
@@ -26,19 +19,17 @@ permissions:
   actions: write         # read workflow runs, start pages.yml
   statuses: read         # the "Claude review" commit status
 
-concurrency:
-  group: automerge-${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
-  cancel-in-progress: false
-
 jobs:
   triage:
     # Every pull request, at once: a scope problem needs the maintainer whatever the reviews say,
-    # including pull requests that the review and Checks workflows never see (.github/ only, say).
+    # including pull requests that the review workflow never sees (.github/ only, say).
     if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4  # the base branch only
+        with:
+          persist-credentials: false
       - name: Scope check
         env:
           GH_TOKEN: ${{ github.token }}
@@ -49,8 +40,13 @@ jobs:
     if: github.event_name == 'workflow_run'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    concurrency:
+      group: automerge-${{ github.event.workflow_run.head_sha }}  # shared with claude-review.yml
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4  # the base branch only
+        with:
+          persist-credentials: false
       - name: Gate
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,29 +1,15 @@
 """The auto-merge gate: merge a pull request only when every condition holds, in code, not by Claude.
 
-    python scripts/automerge_gate.py reset --pr N --sha S      # review starts: old bot labels off, status pending
-    python scripts/automerge_gate.py verdict --pr N --sha S --run-id R   # review ends: status, then the gate
-    python scripts/automerge_gate.py gate --sha S              # Checks completed: the gate
-    python scripts/automerge_gate.py triage --pr N             # every pull request event: scope only
+    python scripts/automerge_gate.py reset --pr N --sha S     # a review round starts: bot labels off, status pending
+    python scripts/automerge_gate.py verdict --pr N --sha S   # it ends: comment, label, status, then the gate
+    python scripts/automerge_gate.py gate --sha S             # Checks completed: the gate
+    python scripts/automerge_gate.py triage --pr N            # every pull request event: scope only
 
-Run by .github/workflows/claude-review.yml and automerge.yml with the built-in GITHUB_TOKEN, on
-the base branch: the pull request's code is never checked out, only read through the API.
-
-The review of a commit is recorded as a commit status, context "Claude review", on that commit:
-pending while the reviews run, success when both review comments of that run say MERGE and
-claude-approved is set, failure otherwise. A status belongs to one commit, so a new push starts
-without one, and the gate never mixes a review of an old commit with the current head.
-
-A pull request is merged (`gh pr merge --merge --match-head-commit <sha>`) only if
-1. both Claude review comments of the review run on the current head say MERGE, and review 2/2
-   added the label claude-approved (and nobody added needs-maintainer);
-2. the Checks workflow succeeded on the current head;
-3. the diff touches exactly one new models/<name>/ folder, or only site/results.json in a pull
-   request opened by gblayer;
-4. nothing under .github/, .claude/, strable_leaderboard/, scripts/, splits/ changes;
-5. the head did not move since the reviews (the merge itself also pins the head).
-A merge that touches site/ then starts the Pages workflow, since a merge made with GITHUB_TOKEN
-starts no push workflow. Otherwise the gate labels needs-maintainer and comments once per commit:
-"@gblayer your review is needed: <reason>". While the reviews or Checks still run, it waits.
+The conditions are written once, in docs/automation.md, section 3. Run by claude-review.yml and
+automerge.yml with the built-in GITHUB_TOKEN, on the base branch: the pull request's code is never
+checked out, only read through the API. ``verdict`` reads the two review passes' structured
+outputs from $REVIEW_ONE and $REVIEW_TWO and records them as the commit status "Claude review" of
+the reviewed commit, so a review of an old commit never counts for a newer head.
 """
 
 from __future__ import annotations
@@ -31,31 +17,29 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import subprocess
 import sys
+from pathlib import Path
 
-MAINTAINER = "gblayer"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from strable_leaderboard import APPROVED, MAINTAINER, NEEDS, RESERVED, SLUG  # noqa: E402
+from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
+
 BOTS = {"github-actions[bot]", "claude[bot]"}
-PROTECTED = (".github/", ".claude/", "strable_leaderboard/", "scripts/", "splits/")
-SLUG = re.compile(r"^[a-z0-9][a-z0-9.-]*$")
-APPROVED, NEEDS = "claude-approved", "needs-maintainer"
 CHECKS_WORKFLOW = "checks.yml"
 REVIEW_CONTEXT = "Claude review"
+REPO = os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO)
 
 
 def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> list[str]:
     """Conditions 3 and 4 on every path the pull request adds, changes, removes or renames."""
-    out = []
-    protected = sorted(p for p in paths if p.startswith(PROTECTED))
-    if protected:
-        out.append("it changes protected paths: " + ", ".join(f"`{p}`" for p in protected[:5]))
+    if not paths:
+        return ["the diff is empty"]
     if set(paths) == {"site/results.json"}:
-        if author != MAINTAINER:
-            out.append(f"a results update opened by {author}, not by {MAINTAINER}")
-        return out
+        return [] if author == MAINTAINER else [f"a results update opened by {author}, not by {MAINTAINER}"]
+    out = []
     outside = sorted(p for p in paths if not (p.startswith("models/") and p.count("/") >= 2))
-    if outside and not protected:
+    if outside:
         out.append("it changes files outside one models/<name>/ folder: " + ", ".join(f"`{p}`" for p in outside[:5]))
     folders = sorted({p.split("/")[1] for p in paths if p.startswith("models/") and p.count("/") >= 2})
     if len(folders) > 1:
@@ -65,38 +49,35 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
             out.append(f"`models/{name}/` is not a valid model folder name")
         elif name in existing_models:
             out.append(f"`models/{name}/` already exists on main: a change to a merged model")
-    if not paths:
-        out.append("the diff is empty")
+        elif name in RESERVED:
+            out.append(f"`models/{name}/` is reserved for a learner of the paper")
     return out
 
 
-def review_verdicts(comments: list[dict], since: str) -> tuple[str | None, str | None]:
-    """The latest bot-written 1/2 and 2/2 comments posted after ``since`` (the review run's start)."""
-    one = two = None
-    for c in sorted(comments, key=lambda c: c["created_at"]):
-        if c["user"]["login"] not in BOTS or c["created_at"] < since:
+def parse_review(raw: str | None) -> dict | None:
+    """One pass's structured output, or None when the pass failed or returned something else."""
+    try:
+        review = json.loads(raw or "")
+    except ValueError:
+        return None
+    ok = isinstance(review, dict) and review.get("recommendation") in ("MERGE", "FIX", "REJECT")
+    return review if ok else None
+
+
+def review_verdict(outputs: list[str | None]) -> tuple[str, str, str]:
+    """("success" | "failure", status description, comment lines) from the passes' outputs."""
+    reviews = [parse_review(raw) for raw in outputs]
+    lines = []
+    for i, review in enumerate(reviews, 1):
+        if review is None:
+            lines.append(f"Pass {i}/{len(reviews)}: no verdict (the review job failed)")
             continue
-        body = c["body"]
-        if "Claude review 1/2" in body:
-            one = body
-        elif "Claude review 2/2" in body:
-            two = body
-    return one, two
-
-
-def says_merge(one: str | None, two: str | None) -> bool:
-    return bool(one and two and "Recommendation: **MERGE**" in one and "agrees with 1/2" in two
-                and "disagrees" not in two and "**MERGE**" in two)
-
-
-def review_status(comments: list[dict], labels: set[str], since: str) -> tuple[str, str]:
-    """("success" | "failure", description) for the review run that started at ``since``."""
-    one, two = review_verdicts(comments, since)
-    if not says_merge(one, two):
-        return "failure", "the two Claude reviews of this commit do not both say MERGE"
-    if APPROVED not in labels:
-        return "failure", f"review 2/2 did not add {APPROVED}"
-    return "success", "both Claude reviews say MERGE"
+        lines.append(f"Pass {i}/{len(reviews)}: **{review['recommendation']}**")
+        # The text comes from a model that read untrusted content: short, and no mentions.
+        lines += [f"- {str(p)[:300]}".replace("@", "@​") for p in list(review.get("problems") or [])[:10]]
+    if all(r and r["recommendation"] == "MERGE" for r in reviews):
+        return "success", "both Claude reviews say MERGE", "\n".join(lines)
+    return "failure", "the two Claude reviews of this commit do not both say MERGE", "\n".join(lines)
 
 
 def decide(pr: dict, paths: list[str], status: dict | None, checks_run: dict | None,
@@ -119,18 +100,12 @@ def decide(pr: dict, paths: list[str], status: dict | None, checks_run: dict | N
         return "wait", "Checks on this commit have not finished"
     if checks_run["conclusion"] != "success":
         return "needs", f"Checks ended with {checks_run['conclusion']} on {sha[:7]}"
-    labels = {label["name"] for label in pr["labels"]}
-    if APPROVED not in labels:
-        return "needs", f"the label {APPROVED} is missing"
-    if NEEDS in labels:
+    if NEEDS in {label["name"] for label in pr["labels"]}:
         return "needs", f"the label {NEEDS} is set"
     return "merge", sha
 
 
 # ---- GitHub through the gh CLI ---------------------------------------------------------------------
-REPO = os.environ.get("GITHUB_REPOSITORY", "gblayer/strable-leaderboard")
-
-
 def gh(*args, check=True) -> str:
     return subprocess.run(["gh", *args], capture_output=True, text=True, check=check).stdout
 
@@ -165,25 +140,32 @@ def changed_paths(number: int) -> list[str]:
     return [f["filename"] for f in files] + [f["previous_filename"] for f in files if f.get("previous_filename")]
 
 
+def comment_once(number: int, body: str, marker: str) -> None:
+    """Comment unless a comment with ``marker`` already exists (a re-run says nothing new)."""
+    if not any(marker in c["body"] for c in api(f"issues/{number}/comments?per_page=100", paginate=True)):
+        gh("pr", "comment", str(number), "--repo", REPO, "--body", f"{body}\n\n{marker}")
+
+
 def needs_maintainer(pr: dict, reason: str) -> None:
-    number, marker = pr["number"], f"<!-- automerge-gate {pr['head']['sha']} -->"
-    gh("pr", "edit", str(number), "--repo", REPO, "--add-label", NEEDS)
-    if any(marker in c["body"] for c in api(f"issues/{number}/comments?per_page=100", paginate=True)):
-        return  # already said for this commit
-    gh("pr", "comment", str(number), "--repo", REPO, "--body", f"@{MAINTAINER} your review is needed: {reason}\n\n{marker}")
+    gh("pr", "edit", str(pr["number"]), "--repo", REPO, "--add-label", NEEDS)
+    comment_once(pr["number"], f"@{MAINTAINER} your review is needed: {reason}",
+                 f"<!-- automerge-gate {pr['head']['sha']} -->")
 
 
 def gate(pr: dict) -> str:
     sha = pr["head"]["sha"]
     verdict, reason = decide(pr, changed_paths(pr["number"]), commit_status(sha), latest_run(CHECKS_WORKFLOW, sha),
                              existing_models())
-    print(f"#{pr['number']} {pr['head']['sha'][:7]}: {verdict} ({reason})")
+    print(f"#{pr['number']} {sha[:7]}: {verdict} ({reason})")
     if verdict == "needs":
         needs_maintainer(pr, reason)
     elif verdict == "merge":
         merged = subprocess.run(["gh", "pr", "merge", str(pr["number"]), "--repo", REPO, "--merge",
-                                 "--match-head-commit", reason], capture_output=True, text=True)
+                                 "--match-head-commit", sha], capture_output=True, text=True)
         if merged.returncode:
+            if api(f"pulls/{pr['number']}").get("merged"):
+                print(f"#{pr['number']}: already merged")  # the other gate run got there first
+                return "merged"
             needs_maintainer(pr, f"the merge failed: {merged.stderr.strip()[-300:]}")
             return "needs"
         if any(p.startswith("site/") for p in changed_paths(pr["number"])):
@@ -207,17 +189,15 @@ def reset(number: int, sha: str) -> None:
             print(f"#{number}: removed {name}")
 
 
-def verdict(number: int, sha: str, run_id: str, reviews_ran: bool) -> None:
-    """The review round of ``sha`` ended: record its verdict as the commit status, then gate."""
-    pr = api(f"pulls/{number}")
-    if not reviews_ran:
-        state, description = "failure", "the Claude review jobs failed or were skipped"
-    else:
-        since = api(f"actions/runs/{run_id}")["run_started_at"]
-        labels = {label["name"] for label in pr["labels"]}
-        state, description = review_status(api(f"issues/{number}/comments?per_page=100", paginate=True), labels, since)
+def verdict(number: int, sha: str) -> None:
+    """The review round of ``sha`` ended: one comment, the label, the commit status, then the gate."""
+    state, description, lines = review_verdict([os.environ.get("REVIEW_ONE"), os.environ.get("REVIEW_TWO")])
+    comment_once(number, f"**Claude review of {sha[:7]}**\n{lines}"[:4000], f"<!-- claude-review {sha} -->")
+    if state == "success":
+        gh("pr", "edit", str(number), "--repo", REPO, "--add-label", APPROVED)
     set_status(sha, state, description)
     print(f"#{number} {sha[:7]}: review {state} ({description})")
+    pr = api(f"pulls/{number}")
     if pr["head"]["sha"] == sha:  # otherwise a newer commit has its own round
         gate(pr)
 
@@ -227,27 +207,26 @@ def main(argv=None) -> int:
     parser.add_argument("mode", choices=["gate", "triage", "reset", "verdict"])
     parser.add_argument("--pr", type=int)
     parser.add_argument("--sha")
-    parser.add_argument("--run-id")
-    parser.add_argument("--reviews-failed", action="store_true")
     args = parser.parse_args(argv)
     if args.mode == "reset":
         reset(args.pr, args.sha)
-        return 0
-    if args.mode == "verdict":
-        verdict(args.pr, args.sha, args.run_id, not args.reviews_failed)
-        return 0
-    if args.mode == "triage":
+    elif args.mode == "verdict":
+        verdict(args.pr, args.sha)
+    elif args.mode == "triage":
         pr = api(f"pulls/{args.pr}")
+        if pr["user"]["login"] == MAINTAINER:
+            print(f"#{pr['number']}: opened by the maintainer, no triage")
+            return 0
         scope = scope_problems(changed_paths(pr["number"]), pr["user"]["login"], existing_models())
         if pr["state"] == "open" and scope:
             needs_maintainer(pr, "; ".join(scope))
         print(f"#{pr['number']}: scope " + ("; ".join(scope) if scope else "ok"))
-        return 0
-    prs = [p for p in api("pulls?state=open&per_page=100", paginate=True) if p["head"]["sha"] == args.sha]
-    if not prs:
-        print(f"no open pull request has head {args.sha}")
-    for pr in prs:
-        gate(api(f"pulls/{pr['number']}"))
+    else:
+        prs = [p for p in api("pulls?state=open&per_page=100", paginate=True) if p["head"]["sha"] == args.sha]
+        if not prs:
+            print(f"no open pull request has head {args.sha}")
+        for pr in prs:
+            gate(api(f"pulls/{pr['number']}"))
     return 0
 
 

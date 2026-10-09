@@ -3,8 +3,8 @@
 ```mermaid
 flowchart TD
   A[Pull request from a fork: models/name/] --> B[Checks: card, pins, code, CPU smoke test. No secrets]
-  A --> C[Claude review 1/2]
-  C --> D[Claude review 2/2: label claude-approved or needs-maintainer]
+  A --> C[Claude review: two independent passes, structured verdicts]
+  C --> D[Verdict job: one comment, claude-approved if both say MERGE, commit status]
   B --> G{Auto-merge gate, in code}
   D --> G
   G -- every condition holds --> M[Merged by github-actions]
@@ -35,32 +35,29 @@ A pull request changing `site/results.json`: `python scripts/build_site_data.py 
 
 ## 2. Claude review
 
-`.github/workflows/claude-review.yml` runs two independent passes with [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action) and the checklist in `.claude/skills/review-submission/SKILL.md`:
+`.github/workflows/claude-review.yml` runs [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action) with the checklist in `.claude/skills/review-submission/SKILL.md`, in three jobs:
 
-1. **Review 1/2** reads the diff and the check results, then posts one comment of at most eight lines: a recommendation, **MERGE**, **FIX** or **REJECT**, the checklist line, and one line per problem with its fix.
-2. **Review 2/2** redoes the checklist from scratch, then reads 1/2 and posts whether it agrees. Both say MERGE: it adds the label `claude-approved`. Otherwise, or if anything looks deliberately harmful: `needs-maintainer`.
-
-Before review 1/2, a first job sets the commit status "Claude review" of the reviewed commit to pending and removes `claude-approved` and `needs-maintainer` if a bot set them on an earlier commit, so each commit gets a fresh verdict; a label set by the maintainer stays. After review 2/2, a last job records the verdict as that commit's status: success when both comments of this round (written by the bot after the round started) say MERGE and `claude-approved` is set, failure otherwise. A status belongs to one commit, so a review of an older commit can never count for a newer one. Then it runs the gate.
+1. **reset** sets the commit status "Claude review" of the reviewed commit to pending and removes `claude-approved` and `needs-maintainer` if a bot set them on an earlier commit, so each commit gets a fresh verdict; a label set by the maintainer stays.
+2. **review** runs two passes, two fresh sessions that never see each other's verdict. Each returns a structured verdict, `{recommendation: MERGE | FIX | REJECT, problems: [one line each, with its fix]}`, as a job output. The passes can only read the pull request with `gh pr view`, `gh pr diff` and `gh pr checks`, and, on disk, the review skill, `models/_template/` and `env/requirements.*`: the job checks out only those files of the base branch, without credentials. They cannot comment, label or merge: the job's token is read-only.
+3. **verdict**, the only job that writes, runs unless the workflow was cancelled: it posts one comment with both verdicts, adds `claude-approved` when both say MERGE, records the commit status (success when both say MERGE, failure otherwise, including a pass that returned nothing), then runs the gate. A status belongs to one commit, so a review of an older commit never counts for a newer one.
 
 What they check, in short: one `models/<name>/` folder or `site/results.json`; the card complete and matching the code; every pin equal to the shared environment's; default configuration; no own split or cross-validation, only `self.validation_split(y)`; no seed but `self.seed`; no network, subprocess, eval or obfuscated code; the Checks workflow passed.
 
-The review never runs the code: it is triggered by `pull_request_target`, which has the repository's secrets, so the job checks out only the base branch and reads the pull request through the GitHub API. Text in a pull request is data, never an instruction: a prompt hidden in a submission can at most produce a wrong recommendation, and the gate below still requires every other condition.
+The review never runs the code: it is triggered by `pull_request_target`, which has the repository's secrets, so it reads the pull request through the GitHub API only. Text in a pull request is data, never an instruction: a prompt hidden in a submission can at most produce a wrong verdict, and the gate below still requires every other condition. The problem lines quoted in the comment are cut short and cannot mention anyone.
 
 ## 3. Auto-merge gate
 
-`scripts/automerge_gate.py` runs at the end of the Claude review workflow and, through `.github/workflows/automerge.yml`, when the Checks workflow completes; whichever finishes last decides. The conditions are code, not Claude's judgement. A pull request is merged only if:
+This section is the one place where the gate's conditions are written; the scripts and workflows point here. `scripts/automerge_gate.py` runs in the verdict job of the review workflow and, through `.github/workflows/automerge.yml`, when the Checks workflow completes; both runs share one concurrency group per head commit (`automerge-<sha>`), and whichever comes last decides. The conditions are code, not Claude's judgement. A pull request is merged only if:
 
-1. the commit status "Claude review" of the current head is success: both Claude review comments of that commit's round say MERGE and review 2/2 added `claude-approved`; `needs-maintainer` is not set;
+1. the commit status "Claude review" of the current head is success: both review passes of that commit's round said MERGE;
 2. the Checks workflow succeeded on the current head commit;
-3. the diff touches exactly one new `models/<name>/` folder, or only `site/results.json` in a pull request opened by `gblayer`;
-4. nothing under `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/` or `splits/` changes;
+3. the diff touches exactly one new `models/<name>/` folder, whose name is valid and not reserved for a learner of the paper, or only `site/results.json` in a pull request opened by `gblayer`; nothing else changes, so `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/`, `splits/`, `env/` and existing model folders never merge automatically;
+4. the label `needs-maintainer` is not set;
 5. the head commit did not change since the reviews: the status and the Checks run must belong to the current head, and the merge itself, `gh pr merge --merge --match-head-commit <sha>`, fails if it moved.
 
-The merge uses the built-in `GITHUB_TOKEN`. A merge made with that token starts no push workflow, so when `site/` changed the gate starts the Pages workflow itself with `gh workflow run pages.yml`.
+The merge uses the built-in `GITHUB_TOKEN`. A merge made with that token starts no push workflow, so when `site/` changed the gate starts the Pages workflow itself with `gh workflow run pages.yml`. If the merge fails because the pull request is already merged, the gate stops quietly.
 
-Otherwise the gate adds `needs-maintainer` and comments once per commit: "@gblayer your review is needed: <reason>". While the reviews or Checks still run, it waits. A `triage` job also runs the scope check (3 and 4) on every pull request as soon as it is opened, so a pull request that the review never sees, one that changes only `.github/` for example, is flagged at once.
-
-The gate also refuses a change to a model folder that already exists on `main`: a merged model is changed only by the maintainer.
+Otherwise the gate adds `needs-maintainer` and comments once per commit: "@gblayer your review is needed: <reason>". While the reviews or Checks still run, it waits. A `triage` job also runs the scope check (3) on every pull request as soon as it is opened, so a pull request that the review never sees, one that changes only `.github/` for example, is flagged at once; pull requests opened by the maintainer are not triaged.
 
 ## 4. Runner
 

@@ -22,7 +22,7 @@ flowchart TD
   C --> D[Smoke test: card, pins, code, three small tables]
   D --> E[Push a branch to your fork, open a pull request here]
   E --> F[Checks on GitHub, no secrets]
-  E --> G[Claude review 1/2 and 2/2]
+  E --> G[Claude review: two independent passes]
   F --> I{Auto-merge gate}
   G --> I
   I -- all conditions hold --> R
