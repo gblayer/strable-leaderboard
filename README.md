@@ -51,9 +51,10 @@ The first line installs this package, the smoke-test tools and your model's pack
 | [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
 | [docs/protocol.md](docs/protocol.md) | Data, cross-validation, score, time, encoders, hardware |
 | [docs/submitting.md](docs/submitting.md) | The contract, the model card, versions, examples |
+| [site/](site/) | The page and its data: `results.json`, `results.parquet`, and every fold in `results_per_fold.csv` and `results_per_fold.parquet` |
 | [AGENTS.md](AGENTS.md) | Where coding agents start |
 
-Maintainer and infrastructure files: `scripts/`, `site/`, `tests/`, `docs/`.
+Maintainer and infrastructure files: `scripts/`, `tests/`, [docs/automation.md](docs/automation.md).
 
 ## Contact
 
