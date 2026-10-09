@@ -97,3 +97,14 @@ def test_a_package_added_to_requirements_in_satisfies_the_model_but_not_the_runn
     folder = _folder(tmp_path / "m", card=card, requirements="kumo==1.0\n")
     assert pin_problems(folder, (env / "requirements.txt", env / "requirements.in")) == []
     assert pin_problems(folder, (env / "requirements.txt",)) != []
+
+
+def test_lock_changes_list_additions_and_every_moved_version():
+    from strable_leaderboard.check_requirements import lock_changes
+
+    old = {"numpy": "2.3.4", "scikit-learn": "1.7.2", "joblib": "1.5.2"}
+    assert lock_changes(old, dict(old, tabulate="0.9.0")) == ["- Added: `tabulate==0.9.0`",
+                                                              "- No existing package changes version."]
+    lines = lock_changes(old, {"numpy": "2.4.0", "scikit-learn": "1.5.2", "sktime": "0.30.0"})
+    assert lines == ["- Added: `sktime==0.30.0`", "- `joblib` 1.5.2 → removed", "- `numpy` 2.3.4 → 2.4.0",
+                     "- `scikit-learn` 1.7.2 → 1.5.2 **downgrade**"]

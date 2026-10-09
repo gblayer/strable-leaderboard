@@ -1,14 +1,16 @@
 name: Claude review
 
-# Two independent Claude passes on every pull request that touches models/ or site/results.json,
-# then one verdict job. Needs the secret CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`) and
+# Two independent Claude passes on every pull request that touches models/, site/results.json or
+# env/requirements.in, then one verdict job. A change to env/requirements.in also gets the env job:
+# what locking it would add to and change in the shared environment, for the maintainer. Needs the secret CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`) and
 # the labels claude-approved and needs-maintainer. The gate's conditions: docs/automation.md, section 3.
 #
 # pull_request_target runs with this repository's secrets, so the pull request's code is never
 # checked out: Claude reads it through `gh pr view/diff/checks` only. The review job checks out,
 # without credentials, only the review skill, the template and the shared environment's pins, and
 # may read nothing else. It cannot comment, label or merge: each pass returns a structured verdict
-# as a job output. The verdict job posts one comment, sets claude-approved when both passes say
+# as a job output. The env job resolves the pull request's env/requirements.in, fetched through the
+# API, with uv and no package build, and runs nothing from the pull request. The verdict job posts one comment, sets claude-approved when both passes say
 # MERGE, records the commit status "Claude review" and runs the gate (scripts/automerge_gate.py).
 on:
   pull_request_target:
@@ -16,6 +18,7 @@ on:
     paths:
       - "models/**"
       - "site/results.json"
+      - "env/requirements.in"
 
 permissions:
   contents: read
@@ -37,7 +40,7 @@ concurrency:
 jobs:
   reset:
     # A new round on this commit: status pending, and the verdict labels the bots set for an
-    # older commit removed.
+    # older commit removed. Its outputs say which of the jobs below have something to do.
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -45,6 +48,8 @@ jobs:
       pull-requests: write
       issues: write
       statuses: write
+    outputs:
+      env: ${{ steps.inputs.outputs.env }}
     steps:
       - uses: actions/checkout@v4  # the base branch only
         with:
@@ -54,6 +59,11 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: python3 scripts/automerge_gate.py reset --pr "$PR" --sha "$SHA"
+      - id: inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: python3 scripts/automerge_gate.py inputs --pr "$PR" >> "$GITHUB_OUTPUT"
 
   review:
     # Two passes in one job, each a fresh session that never sees the other's verdict.
@@ -96,9 +106,47 @@ jobs:
           prompt: ${{ env.PROMPT }}
           claude_args: ${{ env.CLAUDE_ARGS }}
 
+  env:
+    # What locking this pull request's env/requirements.in would add and change: job summary, and
+    # an output for the verdict job's "your review is needed" comment. Only name==version lines
+    # are read, and uv builds nothing (--no-build), so no code from the pull request runs.
+    needs: reset
+    if: needs.reset.outputs.env == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      report: ${{ steps.report.outputs.report }}
+    steps:
+      - uses: actions/checkout@v4  # the base branch, and only these files of it
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            env/
+            strable_leaderboard/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -o pipefail
+          pip install --quiet uv packaging
+          gh api -H "Accept: application/vnd.github.raw" \
+            "repos/$GITHUB_REPOSITORY/contents/env/requirements.in?ref=$SHA" > "$RUNNER_TEMP/requirements.in"
+          python -m strable_leaderboard.check_requirements --report "$RUNNER_TEMP/requirements.in" \
+            | tee "$RUNNER_TEMP/report.md" >> "$GITHUB_STEP_SUMMARY"
+          eof=$(openssl rand -hex 16)
+          { echo "report<<$eof"; cat "$RUNNER_TEMP/report.md"; echo "$eof"; } >> "$GITHUB_OUTPUT"
+
   verdict:
     # The only job that writes: one comment, the label, the commit status, then the gate.
-    needs: [reset, review]
+    needs: [reset, review, env]
     if: ${{ !cancelled() && needs.reset.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -121,4 +169,5 @@ jobs:
           SHA: ${{ github.event.pull_request.head.sha }}
           REVIEW_ONE: ${{ needs.review.outputs.one }}
           REVIEW_TWO: ${{ needs.review.outputs.two }}
+          ENV_REPORT: ${{ needs.env.outputs.report }}
         run: python3 scripts/automerge_gate.py verdict --pr "$PR" --sha "$SHA"

@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import json
 
-from automerge_gate import decide, review_verdict, scope_problems  # noqa: E402
+from automerge_gate import decide, env_details, review_verdict, scope_problems  # noqa: E402
 
 SHA = "a" * 40
 MODEL_FILES = ["models/kumo-tabular-1.0/model.py", "models/kumo-tabular-1.0/model.yaml",
@@ -59,6 +59,16 @@ def test_paths_outside_one_model_folder_never_merge_even_when_approved():
         assert verdict == "needs" and "outside one models/<name>/" in reason
     verdict, _ = gate(p=pr(author="gblayer"), files=[".github/workflows/pages.yml"])
     assert verdict == "needs"  # the maintainer's own workflow changes are hers to merge
+
+
+def test_an_environment_change_waits_for_the_review_round_and_its_report():
+    files = MODEL_FILES + ["env/requirements.in"]
+    assert gate(files=files, status="pending") == ("wait", "the review round reports on the environment change")
+    assert gate(files=files, status=None)[0] == "wait"
+    assert gate(files=files, status="success")[0] == "needs"
+    assert env_details(MODEL_FILES, "report") == ""
+    assert env_details(files, "- Added: `x==1` @someone") == "- Added: `x==1` @\u200bsomeone"
+    assert "no report" in env_details(files, "")
 
 
 def test_scope_one_new_model_folder():

@@ -4,12 +4,15 @@
     python scripts/automerge_gate.py verdict --pr N --sha S   # it ends: comment, label, status, then the gate
     python scripts/automerge_gate.py gate --sha S             # Checks completed: the gate
     python scripts/automerge_gate.py triage --pr N            # every pull request event: scope only
+    python scripts/automerge_gate.py inputs --pr N            # what the review round needs, as job outputs
 
 The conditions are written once, in docs/automation.md, section 3. Run by claude-review.yml and
 automerge.yml with the built-in GITHUB_TOKEN, on the base branch: the pull request's code is never
 checked out, only read through the API. ``verdict`` reads the two review passes' structured
 outputs from $REVIEW_ONE and $REVIEW_TWO and records them as the commit status "Claude review" of
-the reviewed commit, so a review of an old commit never counts for a newer head.
+the reviewed commit, so a review of an old commit never counts for a newer head. A pull request
+that changes env/requirements.in waits for that round, whose env job reports what the change does
+to the shared environment ($ENV_REPORT); the "your review is needed" comment carries the report.
 """
 
 from __future__ import annotations
@@ -28,6 +31,7 @@ from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 BOTS = {"github-actions[bot]", "claude[bot]"}
 CHECKS_WORKFLOW = "checks.yml"
 REVIEW_CONTEXT = "Claude review"
+ENV_INPUT = "env/requirements.in"  # a contributor may add packages here; the maintainer reviews every change
 REPO = os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO)
 
 
@@ -89,10 +93,13 @@ def decide(pr: dict, paths: list[str], status: dict | None, checks_run: dict | N
     if pr.get("draft"):
         return "wait", "draft"
     scope = scope_problems(paths, pr["user"]["login"], existing_models)
+    status_pending = not status or status["state"] == "pending"
     if scope:
+        if ENV_INPUT in paths and status_pending:
+            return "wait", "the review round reports on the environment change"
         return "needs", "; ".join(scope)
     sha = pr["head"]["sha"]
-    if not status or status["state"] == "pending":
+    if status_pending:
         return "wait", "the Claude review of this commit has not finished"
     if status["state"] != "success":
         return "needs", status.get("description") or "the Claude review did not pass"
@@ -146,19 +153,26 @@ def comment_once(number: int, body: str, marker: str) -> None:
         gh("pr", "comment", str(number), "--repo", REPO, "--body", f"{body}\n\n{marker}")
 
 
-def needs_maintainer(pr: dict, reason: str) -> None:
+def needs_maintainer(pr: dict, reason: str, details: str = "") -> None:
     gh("pr", "edit", str(pr["number"]), "--repo", REPO, "--add-label", NEEDS)
-    comment_once(pr["number"], f"@{MAINTAINER} your review is needed: {reason}",
-                 f"<!-- automerge-gate {pr['head']['sha']} -->")
+    body = f"@{MAINTAINER} your review is needed: {reason}" + (f"\n\n{details}" if details else "")
+    comment_once(pr["number"], body[:60000], f"<!-- automerge-gate {pr['head']['sha']} -->")
 
 
-def gate(pr: dict) -> str:
+def env_details(paths: list[str], raw: str | None) -> str:
+    """The env job's report for a pull request that changes env/requirements.in, without mentions."""
+    if ENV_INPUT not in paths:
+        return ""
+    return (raw or "").strip().replace("@", "@\u200b")[:20000] or "**Shared environment**: no report (the env job failed)."
+
+
+def gate(pr: dict, details: str = "") -> str:
     sha = pr["head"]["sha"]
     verdict, reason = decide(pr, changed_paths(pr["number"]), commit_status(sha), latest_run(CHECKS_WORKFLOW, sha),
                              existing_models())
     print(f"#{pr['number']} {sha[:7]}: {verdict} ({reason})")
     if verdict == "needs":
-        needs_maintainer(pr, reason)
+        needs_maintainer(pr, reason, details)
     elif verdict == "merge":
         merged = subprocess.run(["gh", "pr", "merge", str(pr["number"]), "--repo", REPO, "--merge",
                                  "--match-head-commit", sha], capture_output=True, text=True)
@@ -199,17 +213,24 @@ def verdict(number: int, sha: str) -> None:
     print(f"#{number} {sha[:7]}: review {state} ({description})")
     pr = api(f"pulls/{number}")
     if pr["head"]["sha"] == sha:  # otherwise a newer commit has its own round
-        gate(pr)
+        gate(pr, env_details(changed_paths(number), os.environ.get("ENV_REPORT")))
+
+
+def inputs(number: int) -> dict[str, str]:
+    """What the review round's jobs need to know, written to $GITHUB_OUTPUT by the reset job."""
+    return {"env": str(ENV_INPUT in changed_paths(number)).lower()}
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("mode", choices=["gate", "triage", "reset", "verdict"])
+    parser.add_argument("mode", choices=["gate", "triage", "reset", "verdict", "inputs"])
     parser.add_argument("--pr", type=int)
     parser.add_argument("--sha")
     args = parser.parse_args(argv)
     if args.mode == "reset":
         reset(args.pr, args.sha)
+    elif args.mode == "inputs":
+        print("\n".join(f"{k}={v}" for k, v in inputs(args.pr).items()))
     elif args.mode == "verdict":
         verdict(args.pr, args.sha)
     elif args.mode == "triage":
@@ -217,8 +238,9 @@ def main(argv=None) -> int:
         if pr["user"]["login"] == MAINTAINER:
             print(f"#{pr['number']}: opened by the maintainer, no triage")
             return 0
-        scope = scope_problems(changed_paths(pr["number"]), pr["user"]["login"], existing_models())
-        if pr["state"] == "open" and scope:
+        paths = changed_paths(pr["number"])
+        scope = scope_problems(paths, pr["user"]["login"], existing_models())
+        if pr["state"] == "open" and scope and ENV_INPUT not in paths:  # else the verdict job asks, with the env report
             needs_maintainer(pr, "; ".join(scope))
         print(f"#{pr['number']}: scope " + ("; ".join(scope) if scope else "ok"))
     else:
