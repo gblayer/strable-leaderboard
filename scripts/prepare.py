@@ -9,8 +9,10 @@ overrides it). It is gitignored and never reaches GitHub:
   (the paper's versions) plus this package (-e .). Rebuilt only when env/requirements.txt changes.
 - ``data/``: the dataset at the pinned revision.
 - ``weights/<encoder>/``: the language-model encoders' checkpoints.
-- ``weights/<model>/``: each model's checkpoint at its pinned commit, refused above 20 GB unless
-  the folder is in ``LARGE_CHECKPOINTS`` (this file, so only the maintainer can change it).
+- ``weights/<model>/``: each model's checkpoint at its pinned commit, only the card's
+  ``checkpoint.files`` when it lists them (``strable_leaderboard.card.fetch_checkpoint``, which the
+  smoke test uses too), refused above 20 GB unless the folder is in ``LARGE_CHECKPOINTS`` (this
+  file, so only the maintainer can change it).
 - ``sandbox/base.sif``: the small Debian image scripts/sandbox.sh runs model code in, pinned by
   digest, pulled once when Singularity is installed.
 
@@ -32,16 +34,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from strable_leaderboard.check_requirements import ENV_REQUIREMENTS, problems as pin_problems  # noqa: E402
-from strable_leaderboard.card import load_card  # noqa: E402
+from strable_leaderboard.card import checkpoint_bytes, default_cache, fetch_checkpoint, load_card  # noqa: E402
 
 PYTHON = "3.12.12"  # the paper's interpreter
 MAX_CHECKPOINT_BYTES = 20e9
 LARGE_CHECKPOINTS: set[str] = set()  # model folders allowed a checkpoint above the cap
 IMAGE = "docker://debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587"
-
-
-def default_cache() -> Path:
-    return Path(os.environ.get("STRABLE_CACHE", ROOT / "cache"))
 
 
 def env_python(cache: Path) -> Path:
@@ -75,14 +73,6 @@ def build_env(cache: Path, force: bool = False) -> Path:
     stamp.write_text(digest + "\n")
     print("shared env built:", env)
     return env
-
-
-def checkpoint_bytes(repo: str, revision: str) -> int:
-    """The size of every file of the checkpoint at that revision, as Hugging Face reports it."""
-    from huggingface_hub import HfApi
-
-    info = HfApi().model_info(repo, revision=revision, files_metadata=True)
-    return sum(f.size or 0 for f in info.siblings)
 
 
 def pull_image(cache: Path) -> None:
@@ -136,13 +126,13 @@ def main(argv=None) -> int:
     for folder in args.folders:
         ckpt = load_card(folder)["checkpoint"]
         if ckpt:
-            size = checkpoint_bytes(ckpt["repo"], ckpt["revision"])
+            size = checkpoint_bytes(ckpt)
             if size > MAX_CHECKPOINT_BYTES and folder.name not in LARGE_CHECKPOINTS:
                 print(f"{folder.name}: the checkpoint is {size / 1e9:.1f} GB, above {MAX_CHECKPOINT_BYTES / 1e9:.0f} GB; "
                       "the maintainer can allow it in scripts/prepare.py, LARGE_CHECKPOINTS")
                 status = 1
                 continue
-            snapshot_download(ckpt["repo"], revision=ckpt["revision"], local_dir=cache / "weights" / folder.name)
+            fetch_checkpoint(ckpt, cache / "weights" / folder.name)
         print("prepared", folder.name)
     return status
 

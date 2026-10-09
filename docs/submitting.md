@@ -79,6 +79,7 @@ package: tabpfn==9.0.0          # the code, same pin as requirements.txt
 checkpoint:                     # the weights, or null
   repo: Prior-Labs/TabPFN-2.5
   revision: <40-character commit hash>
+  files: ["*.ckpt"]             # optional: only the files the model loads
 licence: Prior Labs licence
 trained_on_strable: []          # STRABLE tables seen in pre-training or tuning
 
@@ -107,7 +108,9 @@ There is no family field. Whether a model is a tree ensemble or a foundation mod
 
 - The **package** is the code, pinned in `requirements.txt` and in the card's `package` field, at the shared environment's version.
 - The **weights** are what the model learned in pre-training. A **checkpoint** is the file holding them, on Hugging Face. For the leaderboard the two words mean the same file, pinned by its repository and commit hash in `model.yaml`.
-- The repository stores neither: only the pins. The runner downloads the checkpoint into a cache before the job starts, and jobs run in a sandbox without network. If a package downloads its weights on first use, point its cache setting at `self.weights_dir`.
+- The repository stores neither: only the pins. The runner downloads the checkpoint into a cache before the job starts, and jobs run in a sandbox without network. `self.weights_dir` is the Hugging Face repository at the pinned revision: its file `<file>` is at `self.weights_dir / "<file>"`. If a package downloads its weights on first use, give it that path or point its cache setting at `self.weights_dir`.
+- The smoke test downloads the checkpoint the same way, into `cache/weights/<name>/` of your clone (gitignored; `$STRABLE_CACHE` moves `cache/`, `--weights-dir` gives another folder), so it runs the code path of the runner.
+- A repository that holds several checkpoints: list the files the model loads in `checkpoint.files` (names or patterns such as `*.ckpt`), and only those are downloaded. A checkpoint above 20 GB needs the maintainer's approval.
 
 ## Versions
 

@@ -25,7 +25,7 @@ Fill the card without asking the user, from the model's sources, in this order: 
 | `variant` | Always `default`: only the default configuration is accepted for now. Tuned and ensembled variants come later with a fixed protocol, as separate folders; never submit one |
 | `hardware` | `gpu` if it needs or is meant for a GPU, else `cpu` |
 | `package` | `name==version`, the version in `env/requirements.txt` if the package is there |
-| `checkpoint` | Hugging Face `repo` and the full 40-character commit hash of the weights (`huggingface_hub.HfApi().model_info(repo).sha`, or the repository's commit list), never `main`. `null` if there are no weights |
+| `checkpoint` | Hugging Face `repo` and the full 40-character commit hash of the weights (`huggingface_hub.HfApi().model_info(repo).sha`, or the repository's commit list), never `main`. `files`, optional: the files the model loads, when the repository holds others. `null` if there are no weights |
 | `licence` | Code and weights licences, from the repository and the model card |
 | `trained_on_strable` | STRABLE tables in its pre-training or tuning data, from the paper's data section; `[]` if none. Names from `splits/manifest.json` |
 | `code`, `paper` | Repository and paper URLs (optional, but fill them when they exist: the review's leakage pass reads them, with the Hugging Face card, to judge the pre-training data) |
@@ -44,7 +44,7 @@ Never leave a template value (`My Model`, `my-model==1.0.0`, `0123456789abcdef`,
 - **No folds or search of your own** (`models/ridge` keeps RidgeCV's alpha search: the paper's baseline, the only exception): never `train_test_split`, `KFold`, `cross_val_score`, `GridSearchCV` or a package option that holds out its own validation set. Early stopping only through `fit_idx, val_idx = self.validation_split(y)`, the paper's first inner fold. If the package splits internally by default, turn that off or pass the protocol's split.
 - **No seed of your own**: `random_state=self.seed` (1234), never a number; no `np.random.seed(0)` or `torch.manual_seed(0)`.
 - `predict(X)`: values or labels. `predict_proba(X)`: shape `(n_rows, n_classes)` in the order of `self.classes_`, rows summing to 1.
-- Weights load from `self.weights_dir`. No downloads in `fit` or `predict`: the runner runs the model without network. Point the package's cache setting at `self.weights_dir` if it downloads on first use.
+- Weights load from `self.weights_dir`, the Hugging Face repository at the pinned revision: file `<file>` is `self.weights_dir / "<file>"`. No downloads in `fit` or `predict`: the runner runs the model without network. Give the package that path (and turn off its auto-download), or point its cache setting at `self.weights_dir`. The smoke test fills `self.weights_dir` the same way.
 - No reading of `splits/` or the tables, no writes outside a temporary folder, no subprocess, no environment variables beyond device settings.
 - Keep it short: a translation between the contract and the package.
 
