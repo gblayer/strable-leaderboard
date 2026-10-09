@@ -72,7 +72,7 @@ name: TabPFN
 version: "2.5"
 handles_strings: false          # false: three encoder rows. true: end-to-end
 tasks: [regression, binary, multiclass]
-variant: default                # default now; tuned and tuned-ensembled later
+variant: default                # the only value accepted for now
 hardware: gpu                   # gpu | cpu
 
 package: tabpfn==6.0.6          # the code, same pin as requirements.txt
@@ -92,8 +92,10 @@ What the board derives from it:
 |---|---|
 | `handles_strings` | The end-to-end tag, or one row per encoder |
 | `hardware` | Whether the row used the GPU, shown when hovering the row |
-| `variant` | Nothing yet: only `default` is accepted. Tuned and tuned-ensembled rows come later, each from its own folder |
+| `variant` | Nothing yet: only `default` is accepted |
 | `trained_on_strable` | A contamination note on the row |
+
+**Variants.** Only `variant: default`, the package's default configuration, is accepted for now. Tuned and tuned-plus-ensembled variants will come later with a fixed protocol (search space, budget, ensembling) that every model follows; each will then be a separate folder. Do not submit them yet.
 
 **Open models only.** The code is on PyPI and the weights are on a public Hugging Face repository, so anyone can rerun the pipeline from the folder and the public folds. Closed models (private code or weights) and anonymous submissions are not accepted, and neither are models reachable only through a vendor's API: they would run on the vendor's servers, so neither the time nor the hardware would be comparable.
 

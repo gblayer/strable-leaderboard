@@ -48,6 +48,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-08 | All 75 pipelines of the paper's Figure 4a are imported, listed one by one in `scripts/paper_selection.yaml`, Mambular included although incomplete (317/324 folds). Not the OHE CT=30 Ridge runs, not TabPFN-3/3.5 |
 | 10-08 | Paper encoders get honest ids and names: "E5-small-v2 · PCA-30", "LLaMA-3.1-8B · SS+PCA-30", "Qwen-3-8B · first-30" and so on. Only the paper's Tf-Idf is the leaderboard's `tfidf`; a PCA-30 row never takes a first-30 id |
 | 10-08 | The paper's tuned rows (XGBoost, ExtraTrees, CatBoost) are imported with `variant: tuned` and shown with a "tuned" tag; result records, site data and page carry the variant |
+| 10-09 | Only `variant: default` is accepted. Tuned and tuned-ensembled variants come later with a fixed protocol, each a separate folder; nothing implements them yet |
 | 10-09 | Open models only: public code and public weights, through a public pull request. Closed and anonymous models are dropped, with the card's `access` field and `private/<name>/` model folders; `private/` stays a gitignored folder for the runner's settings and notes |
 
 ## Site

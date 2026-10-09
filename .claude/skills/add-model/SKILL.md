@@ -22,7 +22,7 @@ Fill the card without asking the user, from the model's sources, in this order: 
 | `name`, `version` | The model's own name and release. One folder per model version; the version lives here |
 | `handles_strings` | Does `fit` accept raw string columns? Check the docs or try it. Yes: `true` (end-to-end). No: `false` |
 | `tasks` | Regression, binary, multiclass: what the package supports |
-| `variant` | Always `default` |
+| `variant` | Always `default`: only the default configuration is accepted for now. Tuned and ensembled variants come later with a fixed protocol, as separate folders; never submit one |
 | `hardware` | `gpu` if it needs or is meant for a GPU, else `cpu` |
 | `package` | `name==version`, the version in `env/requirements.txt` if the package is there |
 | `checkpoint` | Hugging Face `repo` and the full 40-character commit hash of the weights (`huggingface_hub.HfApi().model_info(repo).sha`, or the repository's commit list), never `main`. `null` if there are no weights |
