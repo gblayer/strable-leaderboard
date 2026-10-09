@@ -10,7 +10,7 @@
 
 The living leaderboard of [STRABLE](https://arxiv.org/abs/2605.12292), the benchmark of 108 real-world tables with raw strings: 76 regression and 32 classification tasks. One score and one run time per pipeline, Pareto-optimal pipelines first.
 
-If you benchmark on STRABLE, [star this repository](https://github.com/gblayer/strable-leaderboard/stargazers) and cite the paper ([CITATION.cff](CITATION.cff)). To claim a rank, name the board version and date shown at the top of the page.
+If you benchmark on STRABLE, [star this repository](https://github.com/gblayer/strable-leaderboard/stargazers) and cite the paper ([BibTeX](#citation)). To claim a rank, name the board version and date shown at the top of the page.
 
 **Leaderboard:** https://gblayer.github.io/strable-leaderboard/
 
@@ -63,3 +63,17 @@ python -m strable_leaderboard.run models/ridge --encoder tfidf --table drug-ndc 
 ## Contact
 
 Gioia Blayer, gioia.blayer@inria.fr
+
+## Citation
+
+```bibtex
+@misc{blayer2026strablebenchmarkingtabularmachine,
+      title={STRABLE: Benchmarking Tabular Machine Learning with Strings},
+      author={Gioia Blayer and Myung Jun Kim and Félix Lefebvre and Lennart Purucker and Alan Arazi and Eilam Shapira and Roi Reichart and Frank Hutter and Marine Le Morvan and David Holzmüller and Gaël Varoquaux},
+      year={2026},
+      eprint={2605.12292},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2605.12292},
+}
+```

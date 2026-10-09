@@ -91,17 +91,17 @@ def test_paper_selection_is_figure_4a():
     assert not any("tabpfn3" in m or "30_thresh" in csv for csv, m, _ in rows)
 
 
-def test_published_board_reproduces_table_e8():
-    """site/results.json as built from the paper's Figure 4a rows: Table E.8, the Pareto front of the "both" view."""
+def test_published_board_reproduces_table_e10():
+    """site/results.json as built from the paper's Figure 4a rows: Table E.10, the Pareto front of the "both" view."""
     data = json.loads((ROOT / "site" / "results.json").read_text())
     assert problems(data) == []
     paper = [p for p in data["pipelines"] if p.get("paper")]
     assert len(paper) == 75
     board = pd.DataFrame([{"id": p["id"], "score": p["both"][0], "total_per_1k": p["both"][1]} for p in paper]).set_index("id")
-    e8 = {"targetencoder+ridge": (0.6593, 0.0924), "targetencoder+extratrees": (0.7290, 0.1695),
+    e10 = {"targetencoder+ridge": (0.6593, 0.0924), "targetencoder+extratrees": (0.7290, 0.1695),
           "tfidf+extratrees": (0.7407, 0.9679), "e5-small-v2-pca30+extratrees": (0.7422, 2.5152),
           "tfidf+tabicl-v2": (0.7799, 2.9988), "tfidf+tabpfn-2.5": (0.7891, 6.6700)}
-    assert pareto_front(board) == list(e8)
-    assert {i: tuple(board.loc[i]) for i in e8} == e8
+    assert pareto_front(board) == list(e10)
+    assert {i: tuple(board.loc[i]) for i in e10} == e10
     incomplete = {p["id"] for p in paper if p["both"][2] < p["both"][3]}
     assert "mambular" in incomplete

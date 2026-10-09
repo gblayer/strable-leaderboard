@@ -1,8 +1,9 @@
 """Scores, aggregation and the Pareto front.
 
-Per fold: R² for regression, ROC-AUC for classification (one-vs-rest, macro average for
-multiclass), as in the paper. Per pipeline and view: the median over all fold rows of the view,
-raw, as in the paper's Figure 4a, so a negative R² stays a fold row like any other. Time is the
+Per fold: R² for regression, ROC-AUC for classification (one-vs-rest, macro average of the
+softmax of the probabilities for multiclass), as in the paper. Per pipeline and view: the median
+over all fold rows of the view, raw, as in the paper's Figure 4a, so a negative R² stays a fold
+row like any other. Time is the
 total run time per 1,000 samples, also the median over fold rows: per fold, encoding plus training
 plus prediction seconds (or the paper's run time) divided by the table's rows, times 1,000. No
 per-table normalization, so a pipeline's numbers never change when others join.
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from scipy.special import softmax
 from sklearn.metrics import r2_score, roc_auc_score
 
 N_FOLDS = 3
@@ -23,16 +25,19 @@ VIEWS = {
 
 
 def fold_score(task: str, y_true, y_pred=None, proba=None, classes=None) -> float:
-    """R² for regression; ROC-AUC from probabilities for classification.
+    """R² for regression; ROC-AUC from probabilities for classification, as in the paper.
 
-    ``proba`` has one column per class, in the order of ``classes`` (sorted labels).
+    ``proba`` has one column per class, in the order of ``classes`` (sorted labels). Binary: the
+    positive-class column. Multiclass: one-vs-rest macro AUC of ``softmax(proba, axis=1)``.
     """
     if task == "regression":
         return float(r2_score(y_true, y_pred))
     proba = np.asarray(proba, dtype=float)
     if task == "binary":
         return float(roc_auc_score(np.asarray(y_true) == classes[1], proba[:, 1]))
-    return float(roc_auc_score(y_true, proba, multi_class="ovr", average="macro", labels=classes))
+    # The paper applies a softmax to the probabilities before the multiclass AUC
+    # (reshape_pred_output in src/utils_evaluation.py); kept so re-runs match the paper's rows.
+    return float(roc_auc_score(y_true, softmax(proba, axis=1), multi_class="ovr", average="macro", labels=classes))
 
 
 def per_1k(results: pd.DataFrame) -> pd.DataFrame:

@@ -11,7 +11,7 @@ Everything a result depends on. A change to anything on this page is a minor ver
 |---|---|---|
 | Regression | 76 | R² |
 | Binary classification | 13 | ROC-AUC |
-| Multiclass classification | 19 | ROC-AUC, one-vs-rest, macro average |
+| Multiclass classification | 19 | ROC-AUC of the softmaxed probabilities, one-vs-rest, macro average |
 
 - **Targets:** classification labels are encoded to 0..K-1 in the sorted order of the original labels, as in the paper. Regression targets are used as stored: 61 of the 76 were transformed by the paper's skewness-minimizing step, and R² is computed on that scale.
 
@@ -27,8 +27,9 @@ The folds are exactly the paper's. The code is in `strable_leaderboard/splits.py
 
 **Inner loop**: validation, inside each outer training set.
 - 8 folds, same classes and seed.
-- Default configurations use it only for early stopping: the first inner fold is the validation set, and the model trains on the other 7/8. `StrableModel.validation_split(y)` returns that split.
-- Tuned variants, when added, will search hyperparameters over the 8 inner folds.
+- Default configurations use it only for early stopping: the first inner fold is the validation set, and the model trains on the other 7/8, as the paper's `run_inference` (`src/inference.py`) does for XGBoost and CatBoost without a search. `StrableModel.validation_split(y)` returns that split.
+- Tuned variants search hyperparameters over the 8 inner folds (see Configurations).
+- Learners with their own internal validation in the paper (RealMLP and TabM through pytabkit, TabSTAR, Mambular) did not use these inner folds.
 
 **Files**: `splits/<table>.parquet` has one row per table row, in the order of `data.parquet`.
 
@@ -37,11 +38,13 @@ The folds are exactly the paper's. The code is in `strable_leaderboard/splits.py
 | `outer_fold` | The outer fold (0, 1 or 2) in which the row is a test row |
 | `inner_fold_0`, `inner_fold_1`, `inner_fold_2` | Inside outer training set k, the inner fold (0 to 7) in which the row is a validation row. -1 when the row is in outer test fold k |
 
+Checked on 2026-10-09 for all 108 tables: the outer and inner folds in `splits/` equal, row by row, those the paper's code (`set_split_cv` and the inner `cv` of `script_evaluate.py`) generates on the paper's processed data, and each `data.parquet` at the pinned revision is byte-identical to the paper's.
+
 `splits/manifest.json` records the dataset revision, the seed, the scikit-learn version and, per table, the row count and the SHA-256 of `data.parquet`. `strable_leaderboard.splits.splits_from_table` rebuilds index arrays from a file.
 
 ## Scores
 
-1. **Per fold:** R² on the test fold for regression. ROC-AUC from predicted probabilities for classification: the positive-class column for binary tasks, one-vs-rest macro average for multiclass tasks.
+1. **Per fold:** R² on the test fold for regression. ROC-AUC from predicted probabilities for classification: the positive-class column for binary tasks; for multiclass tasks, a softmax over each row of `predict_proba`, then the one-vs-rest macro average. The softmax is the paper's (`reshape_pred_output` in its `src/utils_evaluation.py`), kept so that re-runs stay comparable with the imported paper rows.
 2. **Per pipeline:** the median of the fold scores (R² for regression, ROC-AUC for classification) over all fold rows of the view, raw, exactly as in the paper's Figure 4a, "Median score (R² & AUC)": every (table, outer fold) pair is one row, and a negative R² stays negative.
 
 | View | Fold rows |
@@ -66,7 +69,7 @@ One time, the total run time per 1,000 samples, as in the paper's Figure 4a:
 
 ## Pareto front
 
-Sort pipelines by the total run time per 1,000 samples, the only time on the board. A pipeline is Pareto-optimal when its score is strictly higher than that of every faster pipeline. The front is computed from the results, in the browser by `site/index.html` and in Python by `strable_leaderboard.metrics.pareto_front`; nobody places a row on it by hand. API models are shown but excluded from the computation, since their time includes the network. Open, closed, anonymous, tuned, paper and incomplete rows are all eligible, as every pipeline of the paper's Figure 4a was. With the paper's 75 pipelines, the front of the default view is the six of the paper's Table E.8.
+Sort pipelines by the total run time per 1,000 samples, the only time on the board. A pipeline is Pareto-optimal when its score is strictly higher than that of every faster pipeline. The front is computed from the results, in the browser by `site/index.html` and in Python by `strable_leaderboard.metrics.pareto_front`; nobody places a row on it by hand. API models are shown but excluded from the computation, since their time includes the network. Open, closed, anonymous, tuned, paper and incomplete rows are all eligible, as every pipeline of the paper's Figure 4a was. With the paper's 75 pipelines, the front of the default view is the six of the paper's Table E.10.
 
 The top three rows of the current order, Pareto, score or time, carry a red border in the table and a ring in the plot.
 
@@ -87,11 +90,11 @@ The top three rows of the current order, Pareto, score or time, carry a red bord
 - The Tf-Idf pipeline uses skrub's `TableVectorizer`, as in the paper: columns with fewer than 40 distinct values are one-hot encoded, dates are expanded, numbers go through a `SquashingScaler`. Language-model pipelines send every string column to the encoder.
 - Each cell is embedded on its own, and missing strings stay missing.
 
-**Rows imported from the paper** keep the encoders the paper used, under ids and names that say what was done (`scripts/paper_selection.yaml`): the language models and FastText went through a PCA to 30 components fitted on the training rows, the paper's default, so they appear as, for example, `minilm-l6-v2-pca30`, "MiniLM-L6-v2 · PCA-30". `-ss-pca30` adds a StandardScaler before the PCA, `-first30` keeps the first 30 dimensions without PCA. TargetEncoder and Tarte keep their names. Only the paper's Tf-Idf is the leaderboard's `tfidf`; a PCA row never carries the id of a first-30 encoder.
+**Rows imported from the paper** keep the encoders the paper used, under ids and names that say what was done (`scripts/paper_selection.yaml`): the language models and FastText went through a PCA to 30 components fitted on the training rows, the paper's default, so they appear as, for example, `minilm-l6-v2-pca30`, "MiniLM-L6-v2 · PCA-30". `-ss-pca30` adds a StandardScaler before the PCA, `-first30` keeps the first 30 dimensions without PCA. TargetEncoder and Tarte keep their names. Tarte is skrub's `TableVectorizer` with string columns passed through, then tarte_ai's `TARTE_TablePreprocessor`; the learner receives TARTE's 768-dimensional row embeddings (paper Appendix D.1 and Table D.2). Only the paper's Tf-Idf is the leaderboard's `tfidf`; a PCA row never carries the id of a first-30 encoder.
 
 ## Configurations
 
-Default configurations: every model runs with the hyperparameters it ships with. Early stopping may use the protocol's validation split. Each result row has a `variant`: `default`, or `tuned` for a hyperparameter search over the inner folds. The tuned rows on the board so far are the paper's (XGBoost, ExtraTrees and CatBoost) and carry a **tuned** tag. Tuned-plus-ensembled variants are planned for later versions.
+Default configurations: every model runs with the hyperparameters it ships with. Early stopping may use the protocol's validation split. Each result row has a `variant`: `default`, or `tuned` for a hyperparameter search over the inner folds. The tuned rows on the board so far are the paper's (XGBoost, ExtraTrees and CatBoost) and carry a **tuned** tag. In the paper, tuning is a random search of 100 configurations (99 sampled plus the default, seed 1234) over the 8 inner folds of each outer training set, in the search space of the paper's Table D.1, "Hyperparameter search space". For CatBoost (`run_gbdt_param_search` in the paper's `src/param_search.py`), each configuration trains on 7/8 with early stopping on the held-out inner fold; the best configuration by mean inner score is then refitted on 7/8, with early stopping on the inner fold where it scored highest. Tuned-plus-ensembled variants are planned for later versions.
 
 ## Hardware
 
@@ -114,4 +117,3 @@ One file per model, `<model>.csv`, one row per encoder, variant, table and outer
 - The paper times one total per fold, with the embedding time measured once per table and added to every fold. The runner records fit and predict apart, but the board shows only their total, like the paper.
 - The board opens with the paper's 75 Figure 4a pipelines, imported as published (score, total time); a re-run on the reference node replaces a pipeline's paper rows.
 - The paper evaluates about 445 pipelines. The leaderboard opens with a launch set, chosen around mid-November 2026, and grows.
-- Still to decide: for multiclass tasks, the paper re-applies a softmax to `predict_proba` before computing AUC. The leaderboard plans to use the probabilities as returned.

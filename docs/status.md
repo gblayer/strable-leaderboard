@@ -27,7 +27,7 @@ What exists, what was decided, what is left. Written for Gioia at the end of the
 
 **Storage.** Per-fold CSVs and `versions.yaml` live in `results/`, closed model folders in `private/`; both are gitignored, so they stay on the cluster. GitHub holds only `site/results.json`, the aggregates the page shows (what TabArena also publishes).
 
-**README and docs.** README with an SVG banner in the site's palette (lettering as outlines, so GitHub renders the typeface), badges, the page address, a star-and-cite line, `CITATION.cff`, `AGENTS.md`. Docs: plan, protocol, submitting (with the pull-request diagram and the fork explanation), automation, site, decisions (dated), research.
+**README and docs.** README with an SVG banner in the site's palette (lettering as outlines, so GitHub renders the typeface), badges, the page address, a star-and-cite line, a closing Citation section with the paper's BibTeX, `AGENTS.md`. Docs: plan, protocol, submitting (with the pull-request diagram and the fork explanation), automation, site, decisions (dated), research.
 
 ## Decisions, in short
 
@@ -43,5 +43,5 @@ Labels `claude`, `claude-approved`, `needs-maintainer`; Pages switched on (sourc
 2. On the cluster: set `STRABLE_CACHE`, run `scripts/import_paper_results.py` on the paper's CSVs, add a line to `results/versions.yaml`, build `site/results.json`, open the results pull request: the first real board.
 3. A `models/<name>/` folder for each learner of the launch set (ExtraTrees done; XGBoost, CatBoost, TabPFN-2.5, TabICLv2, ConTextTab, TabSTAR, TabM, RealMLP, Kumo Tabular), so they can be re-run with fit and predict timed apart.
 4. Check the reference GPU with `nvidia-smi` on the node where the runs will happen, and write the type into the page's hover text.
-5. Decide: supersede old model versions as TabArena now does, or keep one row per version; a "verified by the authors" tag; a LICENSE file for the repository (Apache-2.0 or MIT); the final author list in `CITATION.cff`.
+5. Decide: supersede old model versions as TabArena now does, or keep one row per version; a "verified by the authors" tag; a LICENSE file for the repository (Apache-2.0 or MIT).
 6. When the repository goes public: branch protection on `main`, a GoatCounter account if visits should be counted, a stars badge.

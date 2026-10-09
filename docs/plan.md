@@ -53,4 +53,3 @@ A submission never triggers a re-run of the others: each pipeline's rows are sto
 - Whether the cluster offers a container runtime, a service account and cron on the login node.
 - When the repository goes public.
 - The Balimo font licence.
-- Multiclass AUC: keep the paper's extra softmax, or use probabilities as returned.

@@ -40,6 +40,25 @@ def test_fold_scores():
     assert fold_score("binary", np.array(["no", "yes"]), proba=proba, classes=np.array(["no", "yes"])) == 1.0
 
 
+def test_multiclass_auc_applies_the_papers_softmax():
+    """salts src/utils_evaluation.py: reshape_pred_output softmaxes (n, K>2) outputs, then return_score
+    computes roc_auc_score(multi_class="ovr", average="macro")."""
+    from scipy.special import softmax
+    from sklearn.metrics import roc_auc_score
+
+    rng = np.random.default_rng(0)
+    y = np.repeat([0, 1, 2], 20)
+    proba = rng.dirichlet([0.3, 0.3, 0.3], size=60)
+    proba[y == 1, 1] += 0.2
+    proba /= proba.sum(axis=1, keepdims=True)
+    paper = roc_auc_score(y, softmax(proba, axis=1), multi_class="ovr", average="macro")
+    assert fold_score("multiclass", y, proba=proba, classes=np.array([0, 1, 2])) == pytest.approx(paper)
+    as_returned = roc_auc_score(y, proba, multi_class="ovr", average="macro")
+    assert abs(paper - as_returned) > 1e-3  # the softmax changes the score
+    labels = np.array(["a", "b", "c"])  # original labels, sorted
+    assert fold_score("multiclass", labels[y], proba=proba, classes=labels) == pytest.approx(paper)
+
+
 def test_codename_format_and_uniqueness():
     names = set()
     for _ in range(50):

@@ -29,6 +29,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-08 | Score is the median over fold rows of R² (regression) and AUC (classification), as in Figure 4a; time is also a median over fold rows. Replaces the mean over tables |
 | 10-08 | Time: total run time per 1K samples only, as in Figure 4a; no fit or predict views |
 | 10-08 | A pipeline is shown in every view where it has rows, with an "incomplete" tag, without counts, when tables or folds are missing. Replaces "must cover every table and fold or not be ranked" |
+| 10-09 | Multiclass AUC keeps the paper's softmax over the predicted probabilities, so re-runs stay comparable with the imported paper rows |
 
 ## Models
 
@@ -69,6 +70,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-04 | A rank is cited as "STRABLE leaderboard vX.Y.Z, date"; every version is a tagged commit of site/results.json |
 | 10-01 | The hero art uses invented company names only |
 | 10-01 | The README carries the site's palette and type through an SVG banner; the leaderboard URL goes in the README and the repository's About box |
+| 10-09 | No CITATION.cff: the README ends with the paper's BibTeX |
 
 ## Infrastructure
 
