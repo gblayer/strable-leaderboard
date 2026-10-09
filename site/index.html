@@ -108,6 +108,8 @@ section { scroll-margin-top: 76px; }
 }
 .btn:hover { transform: translateY(-1px); filter: brightness(1.12); }
 .btn:active { transform: translateY(1px); }
+.btn.ghost { background: transparent; color: var(--head); }
+.nav-btns { display: flex; gap: 10px; }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } .btn:hover, .btn:active { transform: none; } }
 
 .hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 28px 44px; align-items: center; padding-block: 14px 8px; }
@@ -276,6 +278,13 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 .form-msg { font: 500 13px/1.4 var(--f-mono); margin: 0; min-height: 1.4em; }
 .fine { font-size: 13px; margin: 0; }
 
+/* ---------- cite dialog ---------- */
+.modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--ink) 45%, transparent); }
+.dialog { width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto; display: grid; gap: 12px; padding: 18px 20px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r-card); }
+.dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.dialog-x { appearance: none; cursor: pointer; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: 400 20px/1 var(--f-body); }
+.dialog-x:hover { border-color: var(--ink-3); }
+.bib { margin: 0; padding: 12px 14px; overflow-x: auto; font: 12.5px/1.55 var(--f-mono); white-space: pre; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
 
 /* ---------- demo tour ---------- */
 .tour { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(660px, calc(100% - 32px)); z-index: 60; background: var(--ink); color: var(--bg); border-radius: 14px; box-shadow: 0 0 0 3px var(--mark); padding: 14px 16px 12px; display: grid; gap: 10px; }
@@ -315,7 +324,10 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
         <a href="https://arxiv.org/abs/2605.12292">Paper</a>
         <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
       </nav>
-      <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-new-model">Submit a pipeline</a>
+      <div class="nav-btns">
+        <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-model">Submit a pipeline</a>
+        <button type="button" class="btn ghost" id="cite-btn" aria-haspopup="dialog" aria-controls="cite-dialog">Cite</button>
+      </div>
     </div>
   </header>
 
@@ -445,10 +457,10 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
         <div class="plot-head">
           <h3 class="card-title" id="plot-title">Score vs total run time</h3>
           <ul class="legend">
-            <li><span class="sw sw-on"></span>Pareto-optimal</li>
-            <li><span class="sw sw-off"></span>Not on the front</li>
+            <li><span class="sw sw-on"></span>On the Pareto Front</li>
+            <li><span class="sw sw-off"></span>Not on the Pareto Front</li>
             <li><span class="sw sw-top"></span>Top 3 in this order</li>
-            <li><span class="sw sw-line"></span>Pareto front</li>
+            <li><span class="sw sw-line"></span>Pareto Front</li>
           </ul>
         </div>
         <div id="plot"></div>
@@ -486,6 +498,28 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
     </form>
   </section>
 
+</div>
+
+<div class="modal" id="cite-modal" hidden>
+  <div class="dialog" id="cite-dialog" role="dialog" aria-modal="true" aria-labelledby="cite-title">
+    <div class="dialog-head">
+      <h2 class="card-title" id="cite-title">Cite STRABLE</h2>
+      <button type="button" class="dialog-x" id="cite-close" aria-label="Close">×</button>
+    </div>
+<pre class="bib" id="bib" tabindex="0" aria-label="BibTeX">@misc{blayer2026strablebenchmarkingtabularmachine,
+      title={STRABLE: Benchmarking Tabular Machine Learning with Strings},
+      author={Gioia Blayer and Myung Jun Kim and Félix Lefebvre and Lennart Purucker and Alan Arazi and Eilam Shapira and Roi Reichart and Frank Hutter and Marine Le Morvan and David Holzmüller and Gaël Varoquaux},
+      year={2026},
+      eprint={2605.12292},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2605.12292},
+}</pre>
+    <div class="form-row">
+      <button type="button" class="linkbtn" id="cite-copy">Copy</button>
+      <p class="form-msg" id="cite-msg" role="status"></p>
+    </div>
+  </div>
 </div>
 
 <div class="tour" id="tour" role="dialog" aria-live="polite" aria-label="Demo tour" hidden>
@@ -527,7 +561,7 @@ let DATA = [
 ];
 let VERSION = 'v0.1.1', BUILT = '2026-10-01', PLACEHOLDER = true;
 let HISTORY = [];  // only real entries, from results.json (results/versions.yaml)
-const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-model';
+const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model';  // the README heading "Submit a model"
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TASKS = {
@@ -601,12 +635,12 @@ function renderTable(list, front, rows) {
         group = g;
         const gr = el('tr', 'group'); const td = el('td');
         td.colSpan = 4;
-        td.textContent = g === 'on' ? '★ Pareto front · ' + nOn : 'Not on the front · ' + (rows.length - nOn);
+        td.textContent = g === 'on' ? '★ Pareto Front · ' + nOn : 'Not on the Pareto Front · ' + (rows.length - nOn);
         gr.appendChild(td); tbody.appendChild(gr);
       }
     }
     const tr = el('tr', 'row' + (i < nTop ? ' top' : '') + (i === 0 ? ' top-first' : '') + (i === nTop - 1 ? ' top-last' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
-    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + ', ' + (d.paper ? 'from the paper' : 'runs on ' + d.hw) + (d.incomplete ? ', incomplete' : '') + (front.has(d.id) ? ', Pareto-optimal' : ''));
+    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + ', ' + (d.paper ? 'from the paper' : 'runs on ' + d.hw) + (d.incomplete ? ', incomplete' : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
     if (d.kind === 'e2e') { p.appendChild(el('span', 'lrn', d.lrn)); p.appendChild(el('span', 'tag e2e', 'END-TO-END')); }
@@ -653,7 +687,7 @@ function renderPlot(list, front, top) {
 
   const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img' });
   const fr = list.filter((d) => front.has(d.id)).sort((a, b) => a.t - b.t);
-  svg.setAttribute('aria-label', 'Scatter of ' + T.axis + ' against ' + TIME_AXIS + '. The ideal corner is top left. Pareto front: ' + fr.map(pipeName).join(', ') + '.');
+  svg.setAttribute('aria-label', 'Scatter of ' + T.axis + ' against ' + TIME_AXIS + '. The ideal corner is top left. Pareto Front: ' + fr.map(pipeName).join(', ') + '.');
   const defs = sv('defs', {});
   const mk = sv('marker', { id: 'better-head', viewBox: '0 0 10 10', refX: '6', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' });
   mk.appendChild(sv('path', { class: 'better-head', d: 'M0 0 L10 5 L0 10 z' }));
@@ -742,7 +776,7 @@ function showTip(id) {
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
   tip.appendChild(l1);
   tip.appendChild(el('div', null, timeText(g.d)));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + (g.d.paper ? ' · from the paper' : ' · runs on ' + g.d.hw) + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto-optimal' : '')));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + (g.d.paper ? ' · from the paper' : ' · runs on ' + g.d.hw) + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -768,7 +802,7 @@ function renderTicker(list, front) {
   const top = state.task === 'both' ? 'TOP SCORE ' : 'TOP ' + TASKS[state.task].metric + ' ';
   const msgs = [
     [top, fmtS(best.s), ' · ' + pipeName(best)],
-    ['FASTEST ON THE FRONT ', pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K samples'],
+    ['FASTEST ON THE PARETO FRONT ', pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K samples'],
     ['★ PARETO FRONT ', String(fr.length), ' pipelines'],
     ['VERSION ', VERSION, ' · ' + N_ALL + ' tables · ' + N_REG + ' regression · ' + N_CLF + ' classification']
   ];
@@ -822,6 +856,40 @@ async function refresh() {
 }
 $('refresh').addEventListener('click', refresh);
 
+/* Cite: a dialog with the paper's BibTeX. Esc, × or a click outside closes it; Tab stays inside. */
+const BIB = $('bib').textContent;
+let citeReturn = null;
+function openCite() {
+  citeReturn = document.activeElement;
+  $('cite-modal').hidden = false; $('cite-msg').textContent = ''; $('cite-copy').textContent = 'Copy';
+  $('cite-copy').focus();
+}
+function closeCite() {
+  if ($('cite-modal').hidden) return;
+  $('cite-modal').hidden = true;
+  if (citeReturn && citeReturn.focus) citeReturn.focus();
+}
+function selectBib() { const r = document.createRange(); r.selectNodeContents($('bib')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+async function copyBib() {
+  let ok = false;
+  try { await navigator.clipboard.writeText(BIB); ok = true; } catch (e) {
+    selectBib(); try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+  }
+  if (ok) { $('cite-copy').textContent = 'Copied'; $('cite-msg').textContent = 'BibTeX copied to the clipboard.'; }
+  else { selectBib(); $('cite-msg').textContent = 'Selected: press Ctrl+C or ⌘C to copy.'; }
+}
+$('cite-btn').addEventListener('click', openCite);
+$('cite-close').addEventListener('click', closeCite);
+$('cite-copy').addEventListener('click', copyBib);
+$('cite-modal').addEventListener('click', (ev) => { if (ev.target === $('cite-modal')) closeCite(); });
+$('cite-modal').addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') { ev.stopPropagation(); closeCite(); return; }
+  if (ev.key !== 'Tab') return;
+  const f = [$('cite-close'), $('bib'), $('cite-copy')], i = f.indexOf(document.activeElement);
+  ev.preventDefault();
+  f[(i + (ev.shiftKey ? f.length - 1 : 1) + f.length) % f.length].focus();
+});
+
 
 /* In-page links scroll inside the page instead of navigating the frame. */
 document.addEventListener('click', (ev) => {
@@ -852,9 +920,9 @@ const TOUR = [
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of any order get a red frame, here and in the plot.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
-    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned, anonymous, closed, paper and incomplete rows, a star marks the Pareto front, and hovering a row lights its point in the plot.' },
+    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned, anonymous, closed, paper and incomplete rows, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
-    text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto front and the arrow points to the ideal corner. Hover a point for its numbers.' },
+    text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
   { sel: '#history', block: 'center',
     text: 'Version history lists what changed in each version. The version chip at the top shows the current one, and Refresh fetches the latest results.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
@@ -917,7 +985,7 @@ $('tour-play').addEventListener('click', () => {
   startBar();
 });
 document.addEventListener('keydown', (e) => {
-  if (!tour) return;
+  if (!tour || !$('cite-modal').hidden) return;
   const tag = (e.target && e.target.tagName) || '';
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   if (e.key === 'Escape') endTour();
