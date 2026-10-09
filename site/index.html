@@ -213,6 +213,8 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .tag.e2e { color: var(--accent-2); border-color: var(--accent-2); }
 .tag.tuned { color: var(--accent-text); border-color: var(--accent-text); }
 .tag.incomplete { color: var(--ink-2); border-style: dashed; border-color: var(--ink-3); }
+a.tag.leakage { color: var(--ink-2); border-color: var(--ink-3); text-decoration: none; }
+a.tag.leakage:hover, a.tag.leakage:focus-visible { color: var(--ink); border-color: var(--ink-2); }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
 .star path { fill: var(--mark); }
@@ -573,9 +575,12 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 /* Pipelines from results.json, see loadResults(). Per task (both, reg, clf): [median score, median
    total s per 1K samples, fold rows, fold rows expected] or null. kind: "modular" or "e2e" (reads raw
    strings itself), variant: "default" or "tuned", hw: what it ran on when recorded, shown in the
-   tooltip. Empty until the file has loaded. */
+   tooltip. leakage: "possible" when the model's pre-training data may include web tables, with
+   leakage_pr, the model pull request whose review quotes the evidence. Empty until the file has loaded. */
 let DATA = [], HISTORY = [], VERSION = '', BUILT = '', LOADED = false, LOADS = 0;  // HISTORY: results/versions.yaml; LOADS: successful loads
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model';  // the README heading "Submit a model"
+const PULLS = 'https://github.com/gblayer/strable-leaderboard/pull/';
+const LEAK_TIP = "The model's documentation suggests its pre-training data may include web tables; see the review on the pull request";
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TIME_SUB = ' · run time per 1K samples, log scale';
@@ -605,6 +610,7 @@ function items(task) {
     if (!v) continue;
     rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, hw: d.hw,
       tuned: d.variant === 'tuned', incomplete: v.length > 3 && v[2] < v[3],
+      leak: d.leakage === 'possible', leakPr: Number.isInteger(d.leakage_pr) ? d.leakage_pr : null,
       s: v[0], t: num(v[1]) });
   }
   return rows;
@@ -627,8 +633,16 @@ function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n 
 const fmtS = (v) => v.toFixed(3);
 function fmtN(t) { if (Number.isNaN(t)) return '—'; if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
 const fmtT = (t) => fmtN(t) + ' s';
-const TAGS = [['e2e', 'end-to-end', (d) => d.kind === 'e2e'], ['tuned', 'tuned', (d) => d.tuned], ['incomplete', 'incomplete', (d) => d.incomplete]];
+const TAGS = [['e2e', 'end-to-end', (d) => d.kind === 'e2e'], ['tuned', 'tuned', (d) => d.tuned], ['incomplete', 'incomplete', (d) => d.incomplete],
+  ['leakage', 'possible pre-training overlap', (d) => d.leak]];
 const tagsOf = (d) => TAGS.filter((t) => t[2](d));
+/* A tag; the leakage tag links to the review on the model's pull request. */
+function tagEl(cls, name, d) {
+  if (cls !== 'leakage' || d.leakPr == null) return el('span', 'tag ' + cls, name.toUpperCase());
+  const a = el('a', 'tag ' + cls, name.toUpperCase());
+  a.href = PULLS + d.leakPr; a.title = LEAK_TIP; a.target = '_blank'; a.rel = 'noopener';
+  return a;
+}
 function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
 function timeText(d) { return 'total run time ' + fmtT(d.t) + ' per 1K samples'; }
 
@@ -657,12 +671,12 @@ function renderTable(list, front, rows) {
       }
     }
     const tr = el('tr', 'row' + (i < nTop ? ' top' : '') + (i === 0 ? ' top-first' : '') + (i === nTop - 1 ? ' top-last' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
-    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + (d.hw ? ', runs on ' + d.hw : '') + (d.incomplete ? ', incomplete' : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
+    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + (d.hw ? ', runs on ' + d.hw : '') + (d.incomplete ? ', incomplete' : '') + (d.leak ? ', possible pre-training overlap' : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
     if (d.kind !== 'e2e') { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); }
     p.appendChild(el('span', 'lrn', d.lrn));
-    for (const [cls, name] of tagsOf(d)) p.appendChild(el('span', 'tag ' + cls, name.toUpperCase()));
+    for (const [cls, name] of tagsOf(d)) p.appendChild(tagEl(cls, name, d));
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
@@ -789,7 +803,7 @@ function showTip(id) {
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
   tip.appendChild(l1);
   tip.appendChild(el('div', null, timeText(g.d)));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.hw ? ' · runs on ' + g.d.hw : '') + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.hw ? ' · runs on ' + g.d.hw : '') + (g.d.incomplete ? ' · incomplete' : '') + (g.d.leak ? ' · possible pre-training overlap' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -918,7 +932,7 @@ const COLUMNS = {
   rank: 'position in the current order',
   pipeline: 'encoder + learner, or the learner alone for end-to-end pipelines',
   variant: 'default configuration, or tuned',
-  tags: 'end-to-end, tuned, incomplete',
+  tags: 'end-to-end, tuned, incomplete, possible pre-training overlap',
   median_score: { both: 'median over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification), as in the paper\'s Figure 4a',
     reg: 'median R² over the 76 regression tables x 3 outer folds', clf: 'median ROC-AUC over the 32 classification tables x 3 outer folds' },
   median_time_per_1k_s: 'median over the same fold rows of the total run time (encoding, training, prediction) in seconds per 1,000 samples',
@@ -1080,7 +1094,7 @@ const TOUR = [
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of the order get a red frame; the plot stays the same.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
-    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
+    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows and models whose pre-training may overlap STRABLE, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
     text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
   { sel: '#refresh', block: 'center',

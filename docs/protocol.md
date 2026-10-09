@@ -108,7 +108,7 @@ Each result records what it ran on. GPU rows: one GPU of the reference type, fix
 
 ## Result records
 
-One file per model, `<model>.csv`, one row per encoder, variant, table and outer fold, in the gitignored `results/` folder of the clone on the cluster. `scripts/build_site_data.py` publishes from them the aggregates in `site/results.json` and `site/results.parquet`, and every fold row with a score in `site/results_per_fold.parquet` and `site/results_per_fold.csv`: `id, encoder, learner, variant, table, task, fold, score, total_s, n_rows, time_per_1k_s`. Its `--check` recomputes the medians of `results.json` from the per-fold file.
+One file per model, `<model>.csv`, one row per encoder, variant, table and outer fold, in the gitignored `results/` folder of the clone on the cluster. `scripts/build_site_data.py` publishes from them the aggregates in `site/results.json` and `site/results.parquet`, and every fold row with a score in `site/results_per_fold.parquet` and `site/results_per_fold.csv`: `id, encoder, learner, variant, table, task, fold, score, total_s, n_rows, time_per_1k_s, leakage` (`leakage` is `possible` when the review found that the model's pre-training data may include web tables, see `docs/automation.md`, section 6). Its `--check` recomputes the medians of `results.json` from the per-fold file.
 
 `model, encoder, variant, table, task, fold, score, fit_s, predict_s, total_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
 

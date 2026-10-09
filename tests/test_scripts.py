@@ -8,7 +8,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
-from build_site_data import PER_FOLD, build, parquet_problems, per_fold_problems, problems  # noqa: E402
+from build_site_data import (PER_FOLD, build, flags_problems, leakage_problems, parquet_problems,  # noqa: E402
+                             per_fold_problems, problems)
 from import_paper_results import convert  # noqa: E402
 from strable_leaderboard.metrics import pareto_front  # noqa: E402
 
@@ -67,6 +68,37 @@ def test_build_site_data(tmp_path):
     assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == ["tfidf+ridge: medians or fold rows differ from results_per_fold.parquet"]
     folds.iloc[:-1].to_csv(tmp_path / "results_per_fold.csv", index=False)
     assert "results_per_fold.csv does not match results_per_fold.parquet: rebuild both" in per_fold_problems(data, tmp_path / "results_per_fold.parquet")
+
+
+def test_build_site_data_leakage_flags(tmp_path):
+    results = tmp_path / "results"; results.mkdir()
+    _complete_results().to_csv(results / "ridge.csv", index=False)
+    _complete_results(model="tabpfn-2.5").to_csv(results / "tabpfn-2.5.csv", index=False)
+    (results / "versions.yaml").write_text("- version: v0.1.1\n  date: 2026-11-20\n  note: Added TabPFN 2.5\n")
+    flags = {"tabpfn-2.5": {"leakage": "possible", "pr": 12}}
+    (tmp_path / "flags.json").write_text(json.dumps(flags))  # read from next to the output, like site/flags.json
+    data = build(results, tmp_path / "results.json")
+    ridge, tabpfn = data["pipelines"]
+    assert "leakage" not in ridge and "leakage_pr" not in ridge
+    assert tabpfn["id"] == "tfidf+tabpfn-2.5" and tabpfn["leakage"] == "possible" and tabpfn["leakage_pr"] == 12
+    assert problems(data) == [] and flags_problems(flags) == [] and leakage_problems(data, flags) == []
+    long = pd.read_parquet(tmp_path / "results.parquet")
+    assert set(long.loc[long["id"] == "tfidf+tabpfn-2.5", "leakage"]) == {"possible"}
+    assert long.loc[long["id"] == "tfidf+ridge", "leakage"].isna().all()
+    assert parquet_problems(data, tmp_path / "results.parquet") == []
+    for folds in [pd.read_parquet(tmp_path / "results_per_fold.parquet"), pd.read_csv(tmp_path / "results_per_fold.csv")]:
+        assert (folds.loc[folds["id"] == "tfidf+tabpfn-2.5", "leakage"] == "possible").all()
+        assert folds.loc[folds["id"] == "tfidf+ridge", "leakage"].isna().all()
+    assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == []
+    assert leakage_problems(data, {}) == ["tfidf+tabpfn-2.5: leakage fields do not match flags.json"]
+    assert leakage_problems(data, {**flags, "ridge": {"leakage": "possible", "pr": 3}}) == [
+        "tfidf+ridge: leakage fields do not match flags.json"]
+    assert flags_problems([]) and flags_problems({"Bad Name": {"leakage": "possible", "pr": 1}})
+    for bad in [{"leakage": "none", "pr": 1}, {"leakage": "possible", "pr": None}, {"leakage": "possible"},
+                {"leakage": "possible", "pr": 1, "note": "x"}, "possible"]:
+        assert flags_problems({"m": bad}), bad
+    tabpfn["leakage_pr"] = "12"
+    assert problems(data) == ['tfidf+tabpfn-2.5: leakage must be "possible" with leakage_pr, the model pull request']
 
 
 def test_import_paper_rows():

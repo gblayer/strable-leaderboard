@@ -18,6 +18,12 @@ seconds over the table's rows). A view with fewer fold rows than expected is sho
 incomplete tag. ``hw`` lists the hardware the rows ran on, when recorded. The page computes the
 ranking and the Pareto front from this file.
 
+Leakage flags: when site/flags.json sits next to the output (``{"<model>": {"leakage": "possible",
+"pr": N}}``, written by the dispatcher from the model pull request's label), every pipeline of a
+flagged model gets ``"leakage": "possible"`` and ``"leakage_pr": N``, and the Parquet and per-fold
+files a ``leakage`` column ("possible" or empty). ``--check`` validates flags.json's shape and that
+the JSON carries exactly its flags.
+
 results.parquet holds the same numbers for all views in long format, one row per pipeline and view,
 with its place on the Pareto front, for download. results_per_fold.parquet and .csv hold one row per
 pipeline, table and outer fold with a score (PER_FOLD columns). ``--check`` also compares the
@@ -38,6 +44,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+from strable_leaderboard import SLUG  # noqa: E402
 from strable_leaderboard.data import MANIFEST  # noqa: E402
 from strable_leaderboard.encoders import NAMES  # noqa: E402
 from strable_leaderboard.metrics import VARIANTS, VIEWS, expected_folds, pareto_front, per_1k  # noqa: E402
@@ -52,8 +59,11 @@ COLUMNS = {
     "median_time_per_1k_s": "median over the same fold rows of the total run time (encoding, training, prediction) in s per 1,000 samples",
     "fold_rows": "fold rows present; fewer than fold_rows_expected means incomplete",
     "pareto_front": "the score is strictly higher than that of every faster pipeline of the view",
+    "leakage": "possible when the model's documentation suggests its pre-training data may include web tables; "
+               "the review on the model's pull request quotes the evidence",
 }
-PER_FOLD = ["id", "encoder", "learner", "variant", "table", "task", "fold", "score", "total_s", "n_rows", "time_per_1k_s"]
+PER_FOLD = ["id", "encoder", "learner", "variant", "table", "task", "fold", "score", "total_s", "n_rows", "time_per_1k_s",
+            "leakage"]
 PAPER = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())  # display names of imported pipelines
 
 
@@ -61,6 +71,46 @@ def card_of(model: str) -> dict:
     """The card in models/, else a paper learner's name."""
     path = ROOT / "models" / model / "model.yaml"
     return yaml.safe_load(path.read_text()) if path.exists() else {"name": PAPER["learners"].get(model, model)}
+
+
+def flags_path(json_path: Path) -> Path:
+    return json_path.with_name("flags.json")
+
+
+def read_flags(path: Path) -> dict:
+    """Per model folder, {"leakage": "possible", "pr": N}; empty when the file is absent."""
+    return json.loads(path.read_text()) if path.exists() else {}
+
+
+def flags_problems(flags) -> list[str]:
+    """What is wrong with the shape of a flags.json."""
+    if not isinstance(flags, dict):
+        return ["flags.json must map model folders to {\"leakage\": \"possible\", \"pr\": N}"]
+    out = []
+    for model, flag in flags.items():
+        if not SLUG.match(model):
+            out.append(f"flags.json: {model!r} is not a model folder name")
+        pr = flag.get("pr") if isinstance(flag, dict) else None
+        if (not isinstance(flag, dict) or set(flag) != {"leakage", "pr"} or flag["leakage"] != "possible"
+                or not isinstance(pr, int) or isinstance(pr, bool) or pr < 1):
+            out.append(f"flags.json: {model} must be {{\"leakage\": \"possible\", \"pr\": <pull request number>}}")
+    return out
+
+
+def model_of(pid: str) -> str:
+    """The results file's stem of a pipeline id, ``[<encoder>+]<model>[:<variant>]``."""
+    return pid.split(":")[0].split("+")[-1]
+
+
+def leakage_problems(data: dict, flags: dict) -> list[str]:
+    """The JSON must carry exactly the flags: leakage and leakage_pr on every pipeline of a flagged model only."""
+    out = []
+    for p in data["pipelines"]:
+        flag = flags.get(model_of(p["id"]))
+        want = {"leakage": "possible", "leakage_pr": flag["pr"]} if flag else {}
+        if {k: p[k] for k in ("leakage", "leakage_pr") if k in p} != want:
+            out.append(f"{p['id']}: leakage fields do not match flags.json")
+    return out
 
 
 def folds_expected() -> dict:
@@ -86,7 +136,8 @@ def per_fold(rows: pd.DataFrame, record: dict) -> pd.DataFrame:
     """One pipeline's fold rows in PER_FOLD columns. Only rows with a score count; check_results flags the others."""
     rows = per_1k(rows[rows["score"].notna()])
     out = rows.drop(columns="total_s", errors="ignore").rename(columns={"total": "total_s", "total_per_1k": "time_per_1k_s"})
-    out = out.assign(id=record["id"], encoder=record["enc"], learner=record["lrn"])
+    out = out.assign(id=record["id"], encoder=record["enc"], learner=record["lrn"],
+                     leakage=pd.Series(record.get("leakage"), index=out.index, dtype="string"))
     return out[PER_FOLD].sort_values(["table", "fold"]).reset_index(drop=True)
 
 
@@ -96,6 +147,7 @@ def _num(x):
 
 def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=None) -> dict:
     expected = folds_expected()
+    flags = read_flags(flags_path(out))
     pipelines, folds = [], []
     paths = [results_dir / f"{m}.csv" for m in sorted(models)] if models else sorted(results_dir.glob("*.csv"))
     for path in paths:
@@ -112,6 +164,8 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
             hw = sorted(set(rows["hardware"].astype(str)) - {"paper", "nan"})  # imported rows record no hardware
             if hw:
                 record["hw"] = ", ".join(hw)
+            if path.stem in flags:
+                record.update(leakage=flags[path.stem]["leakage"], leakage_pr=flags[path.stem]["pr"])
             folds.append(per_fold(rows, record))
             record.update(summarize(folds[-1], expected))
             pipelines.append(record)
@@ -140,8 +194,8 @@ def long_table(data: dict) -> pd.DataFrame:
             rows.append({"version": data["version"], "date": data["built"], "view": view, "view_name": VIEW_NAMES[view],
                          "id": p["id"], "encoder": p["enc"], "learner": p["lrn"], "kind": p["kind"], "variant": p["variant"],
                          "median_score": score, "median_time_per_1k_s": time, "fold_rows": n, "fold_rows_expected": expected,
-                         "pareto_front": p["id"] in front})
-    return pd.DataFrame(rows)
+                         "pareto_front": p["id"] in front, "leakage": p.get("leakage")})
+    return pd.DataFrame(rows).astype({"leakage": "string"}) if rows else pd.DataFrame(rows)
 
 
 def write_parquet(data: dict, out: Path) -> None:
@@ -195,6 +249,9 @@ def problems(data: dict) -> list[str]:
     ids = [p.get("id") for p in data["pipelines"]]
     if len(set(ids)) != len(ids):
         out.append("duplicate pipeline ids")
+    for p in data["pipelines"]:
+        if ("leakage" in p or "leakage_pr" in p) and (p.get("leakage") != "possible" or not isinstance(p.get("leakage_pr"), int)):
+            out.append(f"{p.get('id')}: leakage must be \"possible\" with leakage_pr, the model pull request")
     expected = folds_expected()
     for p in data["pipelines"]:
         if not p.get("lrn") or p.get("kind") not in ("modular", "e2e"):
@@ -224,6 +281,9 @@ if __name__ == "__main__":
     if args.check:
         data = json.loads(args.check.read_text())
         found = problems(data)
+        if not found and flags_path(args.check).exists():
+            flags = read_flags(flags_path(args.check))
+            found = flags_problems(flags) or leakage_problems(data, flags)
         if not found and args.check.with_suffix(".parquet").exists():
             found = parquet_problems(data, args.check.with_suffix(".parquet"))
         if not found and per_fold_path(args.check).exists():
