@@ -32,6 +32,7 @@ def test_build_site_data(tmp_path):
     full = _complete_results()
     tuned = full[full["table"] != A_REGRESSION_TABLE].assign(variant="tuned", fit_s=None, predict_s=None, total_s=3.0,
                                                              hardware="paper")
+    tuned.loc[tuned["task"] != "regression", "score"] = [float("nan")] + [0.6] * 95  # a fold without a score
     pd.concat([full, tuned]).to_csv(results / "ridge.csv", index=False)
     (results / "versions.yaml").write_text("- version: v0.1.0\n  date: 2026-11-15\n  note: First version\n")
     data = build(results, tmp_path / "results.json")
@@ -45,7 +46,7 @@ def test_build_site_data(tmp_path):
     assert p["both"][2:] == [324, 324] and p["reg"][2:] == [228, 228] and p["clf"][2:] == [96, 96]
     assert t["id"] == "tfidf+ridge:tuned" and t["variant"] == "tuned" and t["paper"] is True
     assert t["reg"][1] > 0  # paper rows: their total run time
-    assert t["reg"][2:] == [225, 228] and t["clf"][2:] == [96, 96]  # one table missing: incomplete in reg only
+    assert t["reg"][2:] == [225, 228] and t["clf"][2:] == [95, 96]  # a table missing in reg, a score in clf: both incomplete
     assert problems(data) == []
     long = pd.read_parquet(tmp_path / "results.parquet")  # all views, one row per pipeline and view
     assert len(long) == 6 and set(long["view"]) == {"both", "reg", "clf"} and long["pareto_front"].dtype == bool

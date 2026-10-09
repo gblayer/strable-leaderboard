@@ -3,7 +3,7 @@
     python -m strable_leaderboard.check_results results/<model>.csv
 
 One row per (encoder, variant, table, outer fold). Prints the problems found and the coverage
-per view (fold rows present out of those expected), and exits non-zero on any problem. Missing
+per view (fold rows with a score out of those expected), and exits non-zero on any problem. Missing
 tables or folds are not a problem: the board shows the pipeline with its coverage and an
 incomplete tag. The Checks workflow runs it on every results pull request, and the Claude
 review reads its output.
@@ -54,6 +54,8 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
     dup = df.duplicated(["encoder", "variant", "table", "fold"]).sum()
     if dup:
         problems.append(f"{dup} duplicate (encoder, variant, table, fold) rows")
+    if df["score"].isna().any():
+        problems.append(f"{df['score'].isna().sum()} rows without a score")
     if not df["fold"].isin(range(N_OUTER)).all():
         problems.append("fold must be 0, 1 or 2")
     for col in ["hardware", "package", "protocol_version", "date"]:
@@ -80,7 +82,7 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
         problems.append("n_train or n_test disagree with the manifest's folds")
 
     coverage, expected = [], expected_folds(tables)
-    for (encoder, variant), g in known.groupby(["encoder", "variant"]):
+    for (encoder, variant), g in known[known["score"].notna()].groupby(["encoder", "variant"]):
         for view, view_tasks in VIEWS.items():
             n = int(g["task"].isin(view_tasks).sum())
             coverage.append(f"{encoder:<22} {variant:<8} {view:<15} {n}/{expected[view]} folds"

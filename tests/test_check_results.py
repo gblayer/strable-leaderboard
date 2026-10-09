@@ -38,6 +38,11 @@ def test_problems_are_reported(tmp_path):
     assert any("R² cannot exceed 1" in p for p in problems)
     assert any("n_train or n_test" in p for p in problems)
     assert any(line.endswith("both            4/6 folds incomplete") for line in coverage)
+    df.loc[1, "score"] = float("nan")  # a fold without a score: a problem, and not a covered fold
+    df.to_csv(path, index=False)
+    problems, coverage = check(path, MANIFEST)
+    assert "1 rows without a score" in problems
+    assert any(line.endswith("both            3/6 folds incomplete") for line in coverage)
 
 
 def test_paper_rows_need_only_a_total_time(tmp_path):

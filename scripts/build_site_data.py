@@ -64,8 +64,11 @@ def folds_expected() -> dict:
 
 
 def summarize(rows: pd.DataFrame, expected: dict) -> dict:
-    """Per view: [median score, median total s per 1K samples, fold rows, fold rows expected] or None."""
-    rows = per_1k(rows)
+    """Per view: [median score, median total s per 1K samples, fold rows, fold rows expected] or None.
+
+    Only rows with a score count; check_results flags the others.
+    """
+    rows = per_1k(rows[rows["score"].notna()])
     out = {}
     for view, tasks in VIEWS.items():
         r = rows[rows["task"].isin(tasks)]
