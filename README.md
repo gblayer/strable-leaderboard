@@ -18,7 +18,7 @@ The board currently holds the paper's 75 Figure 4a pipelines, version v0.1.0-pre
 
 ## Submit a model
 
-<!-- The page's "Submit a pipeline" button links to this heading (#submit-a-model): keep its text. -->
+<!-- The page's "Submit a model" button links to this heading (#submit-a-model): keep its text. -->
 
 You submit code, not results.
 

@@ -320,7 +320,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
       </nav>
       <div class="nav-btns">
-        <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-model">Submit a pipeline</a>
+        <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-model">Submit a model</a>
         <button type="button" class="btn ghost" id="cite-btn" aria-haspopup="dialog" aria-controls="cite-dialog">Cite</button>
       </div>
     </div>
@@ -1055,7 +1055,7 @@ const TOUR = [
   { sel: '#cite-btn', block: 'start',
     text: 'Cite opens the BibTeX of the STRABLE paper, with a button to copy it.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
-    text: 'Adding a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
+    text: 'Submit a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
 ];
 let tour = null;
 function clearFocus() { document.querySelectorAll('.tour-focus').forEach((n) => n.classList.remove('tour-focus')); }
