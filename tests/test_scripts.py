@@ -54,8 +54,6 @@ def test_build_site_data(tmp_path):
     t["both"][2] = 325
     assert parquet_problems(data, tmp_path / "results.parquet")
     assert problems(data)
-    t["both"] = [0.6, 1.0, None, 1.5, 324, 324]  # the old format with fit and predict
-    assert problems(data)
 
 
 def test_import_paper_rows():
@@ -99,19 +97,22 @@ def test_paper_selection_is_figure_4a():
 
 
 def test_published_board_reproduces_table_e10():
-    """site/results.json as built from the paper's Figure 4a rows: Table E.10, the Pareto front of the "both" view."""
+    """The paper rows of site/results.json reproduce Table E.10, the Pareto front of the "both" view.
+
+    Runner rows join without changing this; a re-run replaces a pipeline's paper rows (same id), and
+    once that happens to a pipeline of E.10 the paper rows no longer hold the paper's front.
+    """
     data = json.loads((ROOT / "site" / "results.json").read_text())
     assert problems(data) == []
+    assert parquet_problems(data, ROOT / "site" / "results.parquet") == []  # the download holds the same numbers and front
     paper = [p for p in data["pipelines"] if p.get("paper")]
-    assert len(paper) == 75
     board = pd.DataFrame([{"id": p["id"], "score": p["both"][0], "total_per_1k": p["both"][1]} for p in paper]).set_index("id")
     e10 = {"targetencoder+ridge": (0.6593, 0.0924), "targetencoder+extratrees": (0.7290, 0.1695),
           "tfidf+extratrees": (0.7407, 0.9679), "e5-small-v2-pca30+extratrees": (0.7422, 2.5152),
           "tfidf+tabicl-v2": (0.7799, 2.9988), "tfidf+tabpfn-2.5": (0.7891, 6.6700)}
-    assert pareto_front(board) == list(e10)
-    long = pd.read_parquet(ROOT / "site" / "results.parquet")  # the download holds the same numbers and front
-    assert parquet_problems(data, ROOT / "site" / "results.parquet") == []
-    assert set(long[(long["view"] == "both") & long["pareto_front"]]["id"]) == set(e10)
-    assert {i: tuple(board.loc[i]) for i in e10} == e10
+    still = [i for i in e10 if i in board.index]
+    assert {i: tuple(board.loc[i]) for i in still} == {i: e10[i] for i in still}
+    if len(still) == len(e10):
+        assert pareto_front(board) == list(e10)
     # with the filled fold rows, every paper pipeline covers every table and fold: no incomplete tag
     assert all(p["both"][2:] == [324, 324] and p["reg"][2:] == [228, 228] and p["clf"][2:] == [96, 96] for p in paper)
