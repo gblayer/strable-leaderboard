@@ -500,8 +500,15 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
           <a class="linkbtn" id="dl-parquet" href="results.parquet" download>Parquet · all views</a>
         </div>
       </div>
+      <div class="dl">
+        <span class="cap" id="dl-raw-lbl">Raw results, per table and fold</span>
+        <div class="dl-btns" role="group" aria-labelledby="dl-raw-lbl">
+          <a class="linkbtn" href="results_per_fold.csv" download>CSV</a>
+          <a class="linkbtn" href="results_per_fold.parquet" download>Parquet</a>
+        </div>
+      </div>
     </div>
-    <p class="note">The plot follows the Task chosen above; the CSV, JSON and XLSX rankings follow the Task and Sort. The Parquet file holds all three views at once, one row per pipeline and view. <span class="form-msg" id="dl-msg" role="status"></span></p>
+    <p class="note">The plot follows the Task chosen above; the CSV, JSON and XLSX rankings follow the Task and Sort. The Parquet file holds all three views at once, one row per pipeline and view. The raw results hold every fold: one row per pipeline, table and outer fold, with its score and run time. <span class="form-msg" id="dl-msg" role="status"></span></p>
   </section>
 
   <section class="history" id="history" aria-labelledby="history-title">
@@ -1081,7 +1088,7 @@ const TOUR = [
   { sel: '#history', block: 'center',
     text: 'Version history lists what changed in each version. The version chip at the top shows the current one.' },
   { sel: '#paper-use', block: 'center',
-    text: 'Using the leaderboard in your paper: download the plot (SVG, PNG, JPEG, PDF) or the ranking (CSV, JSON, XLSX) of the current view, named with the version and date. The Parquet file holds all views.' },
+    text: 'Using the leaderboard in your paper: download the plot (SVG, PNG, JPEG, PDF) or the ranking (CSV, JSON, XLSX) of the current view, named with the version and date. The Parquet file holds all views, the raw results every fold.' },
   { sel: '#cite-btn', block: 'start',
     text: 'Cite opens the BibTeX of the STRABLE paper, with a button to copy it.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
