@@ -276,7 +276,7 @@ def test_jobs_run_from_the_commit_the_model_started_on(clone):
 
 
 def test_public_text_has_no_absolute_paths():
-    text = 'File "/data/parietal/store4/x/models/m/model.py", line 3\nsee /home/me/.cache/a.log and cache/logs/1_2.out'
+    text = 'File "/data/lab/x/models/m/model.py", line 3\nsee /home/me/.cache/a.log and cache/logs/1_2.out'
     out = dispatch.public(text, 1000)
     assert "/data/" not in out and "/home/" not in out and ".../model.py" in out and "cache/logs/1_2.out" in out
     assert dispatch.public("x" * 5000, 1500) == "x" * 1500
