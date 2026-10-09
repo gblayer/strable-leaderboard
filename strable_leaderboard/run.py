@@ -12,7 +12,7 @@ nothing else. This process checks them, scores them and writes the row to
 ``<out>/<model>/<encoder>/<table>/<fold>.json``, a folder the child cannot see. An existing row is
 skipped, so a job array can be resubmitted after a preemption.
 
-Time, measured here and never by the model (docs/protocol.md, "Time"): two warm-up children run
+Time, measured here and never by the model: two warm-up children run
 first; the wall-clock time of the second is the start-up overhead O. The timed child fits on the
 training rows and predicts the test rows; its wall-clock time is T. Then
 ``total_s = encoding + max(T - O, 0.001)``, where encoding is the table's cached language-model
