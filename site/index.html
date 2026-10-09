@@ -305,7 +305,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 .tour-bar { height: 3px; background: color-mix(in srgb, var(--bg) 22%, transparent); border-radius: 2px; overflow: hidden; }
 .tour-bar i { display: block; height: 100%; width: 0; background: var(--mark); }
 .tour-focus { outline: 3px solid var(--mark); outline-offset: 6px; border-radius: var(--r-card); }
-.ctl.tour-focus { border-radius: 999px; }
+.ctl.tour-focus, .btn.tour-focus, .linkbtn.tour-focus { border-radius: 999px; }
 </style>
 <style>[hidden]{display:none!important}</style>
 </head>
@@ -558,7 +558,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 
 <div class="tour" id="tour" role="dialog" aria-live="polite" aria-label="Demo tour" hidden>
   <div class="tour-top">
-    <span class="tour-count" id="tour-count">Demo 1/6</span>
+    <span class="tour-count" id="tour-count">Demo 1/9</span>
     <div class="tour-ctl">
       <button type="button" id="tour-prev">Back</button>
       <button type="button" id="tour-play">Pause</button>
@@ -1083,7 +1083,7 @@ $('ideas-form').addEventListener('submit', (ev) => {
   $('ideas-msg').textContent = $('ideas-text').value.trim() ? 'Preview only. Nothing was sent.' : 'Write your suggestion first.';
 });
 
-/* ---------- demo tour: task, sort, model types, Pareto plot, adding a model ---------- */
+/* ---------- demo tour: task, sort, table, plot, refresh, history, downloads, cite, adding a model ---------- */
 const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
     text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
@@ -1093,8 +1093,14 @@ const TOUR = [
     text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned, anonymous, closed, paper and incomplete rows, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
     text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
+  { sel: '#refresh', block: 'center',
+    text: 'Refresh fetches the latest results without reloading the page.' },
   { sel: '#history', block: 'center',
-    text: 'Version history lists what changed in each version. The version chip at the top shows the current one, and Refresh fetches the latest results.' },
+    text: 'Version history lists what changed in each version. The version chip at the top shows the current one.' },
+  { sel: '#paper-use', block: 'center',
+    text: 'Using the leaderboard in your paper: download the plot (SVG, PNG, JPEG, PDF) or the ranking (CSV, JSON, XLSX) of the current view, named with the version and date. The Parquet file holds all views.' },
+  { sel: '#cite-btn', block: 'start',
+    text: 'Cite opens the BibTeX of the STRABLE paper, with a button to copy it.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
     text: 'Adding a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
 ];
