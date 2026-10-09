@@ -17,9 +17,10 @@ class Model(StrableModel):
 
     def fit(self, X, y):
         # Build your estimator with its default configuration.
-        # Use self.seed, self.device ("cpu" or "cuda") and self.n_jobs.
+        # Use self.seed (never a number of your own), self.device ("cpu" or "cuda") and self.n_jobs.
         # Load weights from self.weights_dir: there is no network during the run.
-        # Early stopping may use: fit_idx, val_idx = self.validation_split(y)
+        # Never split or cross-validate yourself: X, y are the paper's outer training rows.
+        # Early stopping may only use: fit_idx, val_idx = self.validation_split(y)
         if self.task != "regression":
             self.classes_ = np.unique(y)
         raise NotImplementedError("train your model here")

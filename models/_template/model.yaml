@@ -1,4 +1,5 @@
-# Model card. Every field is required unless marked optional. The board derives its tags from it.
+# Model card. Every field is required unless marked optional, and every value below is a placeholder:
+# the smoke test fails until each one is replaced by this model's own. The board derives its tags from it.
 
 name: My Model                  # shown on the board
 version: "1.0"                  # one folder per version: models/my-model-1.0
@@ -9,10 +10,10 @@ access: open                    # open | closed
 hardware: gpu                   # gpu | cpu
 gpu_memory_gb: 24               # optional: what the runner must reserve
 
-package: my-model==1.0.0        # the code, same pin as requirements.txt
+package: my-model==1.0.0        # the code, same pin as requirements.txt and env/requirements.txt
 checkpoint:                     # the weights, or null if the model has none
   repo: my-org/my-model         # Hugging Face repository
-  revision: 0123456789abcdef    # commit hash, never a branch or tag
+  revision: 0123456789abcdef    # the full 40-character commit hash, never a branch or tag
 licence: Apache-2.0             # code and weights
 trained_on_strable: []          # STRABLE tables seen in pre-training or tuning, or []
 
