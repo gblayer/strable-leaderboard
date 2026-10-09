@@ -14,51 +14,46 @@ If you benchmark on STRABLE, [star this repository](https://github.com/gblayer/s
 
 **Leaderboard:** https://gblayer.github.io/strable-leaderboard/
 
-**Status: pre-launch.** Protocol, cross-validation folds, the model contract with its smoke test, the review automation and the site are here. The first results come with the launch set in November 2026.
+The board currently holds the paper's 75 Figure 4a pipelines, version v0.1.0-pre.
 
 ## Submit a model
 
-Clone this repository, then tell your coding agent:
+<!-- The page's "Submit a pipeline" button links to this heading (#submit-a-model): keep its text. -->
+
+You submit code, not results.
+
+1. **Fork** the repository on GitHub: your own copy, since you cannot push to this one.
+2. **Add one folder**, `models/<name>/`, with `model.py`, `model.yaml` and `requirements.txt`, starting from [models/_template/](models/_template/). No container, no bash script. Packages must be the pinned versions listed in `env/requirements.txt`, the shared environment. Your coding agent can do it; tell it:
+   ```
+   Add my model to the STRABLE leaderboard, test it, and open a pull request.
+   ```
+   It follows [AGENTS.md](AGENTS.md) and [.claude/skills/add-model/SKILL.md](.claude/skills/add-model/SKILL.md).
+3. **Run the smoke test:** `python -m strable_leaderboard.smoke models/<name>`.
+4. **Open a pull request** from your fork.
+
+**What happens next.** Automatic checks run and Claude reviews the pull request twice. If everything passes, it is merged automatically; otherwise the maintainer reviews it. After the merge we run the model on all 108 tables × 3 folds and the board updates. Details: [docs/submitting.md](docs/submitting.md).
+
+## Check your model locally
 
 ```
-Add my model to the STRABLE leaderboard, test it, and open a pull request.
+pip install -e ".[smoke]" -r models/<name>/requirements.txt
+python -m strable_leaderboard.smoke models/<name>
 ```
 
-It follows [.claude/skills/add-model/SKILL.md](.claude/skills/add-model/SKILL.md). By hand, and for closed or anonymous models: [docs/submitting.md](docs/submitting.md), which also has the diagram of what happens to a pull request.
-
-You submit code, not results. After the merge we run the model on all 108 tables and the board updates.
-
-## Issues and ideas
-
-[Open an issue](../../issues/new/choose) for a bug, a wrong score, a table problem or a feature.
+The first line installs this package, the smoke-test tools and your model's packages. The second runs your model on outer fold 0 of three small tables and checks its card and predictions; it does not compute leaderboard scores.
 
 ## Layout
 
 | Path | |
 |---|---|
-| [docs/plan.md](docs/plan.md) | How the leaderboard works and what comes next |
-| [docs/protocol.md](docs/protocol.md) | Data, cross-validation, score, time, encoders, hardware, result records |
-| [docs/submitting.md](docs/submitting.md) | Submitting: the contract, the model card, versions, open/closed/anonymous, examples |
-| [docs/automation.md](docs/automation.md) | Checks, Claude review, the runner, issues, safety, setup |
-| [docs/site.md](docs/site.md) | Where the site lives, hosting, visits, design |
-| [docs/decisions.md](docs/decisions.md) | Every decision, with its date |
-| [docs/research.md](docs/research.md) | Notes on TabArena, the paper and other leaderboards |
-| [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
-| [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, model contract, smoke test, one run (`run.py`), results check |
-| [scripts/](scripts/) | Runner: prepare, make_tasks, run_array, gather_results; import_paper_results; build_site_data |
-| [site/results.json](site/results.json) | The aggregates the page shows; per-fold results stay private |
 | [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a working example |
-| [site/index.html](site/index.html) | The page served at https://gblayer.github.io/strable-leaderboard/ |
-| [.github/workflows/](.github/workflows/) | Checks, Claude review, Claude on issues, Pages deployment |
+| [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, the model contract and the smoke test |
+| [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
+| [docs/protocol.md](docs/protocol.md) | Data, cross-validation, score, time, encoders, hardware |
+| [docs/submitting.md](docs/submitting.md) | The contract, the model card, versions, examples |
+| [AGENTS.md](AGENTS.md) | Where coding agents start |
 
-## Develop
-
-```
-pip install -e ".[dev]"
-pytest
-python -m strable_leaderboard.smoke models/ridge
-python -m strable_leaderboard.run models/ridge --encoder tfidf --table drug-ndc --fold 0 --device cpu
-```
+Maintainer and infrastructure files: `scripts/`, `site/`, `tests/`, `docs/`.
 
 ## Contact
 
@@ -77,3 +72,7 @@ Gioia Blayer, gioia.blayer@inria.fr
       url={https://arxiv.org/abs/2605.12292},
 }
 ```
+
+## Issues and ideas
+
+[Open an issue](../../issues/new/choose) for a bug, a wrong score, a table problem or a feature.
