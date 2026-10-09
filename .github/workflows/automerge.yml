@@ -1,0 +1,54 @@
+name: Auto-merge gate
+
+# Merges a pull request only when every condition of scripts/automerge_gate.py holds: both Claude
+# reviews say MERGE and claude-approved is set, Checks passed on the same head commit, the diff is
+# exactly one new models/<name>/ folder (or only site/results.json opened by gblayer), nothing
+# protected changes, and the head did not move. Otherwise: label needs-maintainer and one comment
+# "@gblayer your review is needed: <reason>". No message on success.
+#
+# Runs on the base branch with the built-in GITHUB_TOKEN; the pull request's code is never checked
+# out. A merge made with GITHUB_TOKEN starts no push workflow, so the gate starts Pages itself when
+# site/ changed (pages.yml has workflow_dispatch).
+on:
+  workflow_run:
+    workflows: ["Claude review", "Checks"]
+    types: [completed]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: write        # merge
+  pull-requests: write   # labels, comments, merge
+  issues: write          # labels and comments go through the issues API
+  actions: write         # read workflow runs, start pages.yml
+
+concurrency:
+  group: automerge-${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+jobs:
+  triage:
+    # Every pull request, at once: a scope problem needs the maintainer whatever the reviews say,
+    # including pull requests that the review and Checks workflows never see (.github/ only, say).
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4  # the base branch only
+      - name: Scope check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: python3 scripts/automerge_gate.py triage --pr "$PR"
+
+  gate:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4  # the base branch only
+      - name: Gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: python3 scripts/automerge_gate.py gate --sha "$SHA"

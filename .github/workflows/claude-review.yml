@@ -6,7 +6,8 @@ name: Claude review
 #
 # pull_request_target runs with this repository's secrets, so the pull request's code is never
 # checked out here: Claude reads it through the GitHub API. The Checks workflow runs the code
-# separately, without secrets. Claude comments and labels; a maintainer merges.
+# separately, without secrets. Claude comments and labels; it never merges. The Auto-merge gate
+# workflow runs when this one completes and decides, in code, whether to merge.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
@@ -23,8 +24,24 @@ permissions:
 env:
   TOOLS: --allowedTools "Read,Grep,Glob,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr comment:*),Bash(gh pr edit:*)"
 
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
+  reset:
+    # A new commit: the verdict labels the bots set for the previous commit no longer hold.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4  # the base branch only
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: python3 scripts/automerge_gate.py reset --pr "$PR"
+
   review:
+    needs: reset
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
