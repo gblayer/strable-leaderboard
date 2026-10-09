@@ -1,17 +1,20 @@
 name: Auto-merge gate
 
-# Merges a pull request only when every condition of scripts/automerge_gate.py holds: both Claude
-# reviews say MERGE and claude-approved is set, Checks passed on the same head commit, the diff is
-# exactly one new models/<name>/ folder (or only site/results.json opened by gblayer), nothing
-# protected changes, and the head did not move. Otherwise: label needs-maintainer and one comment
+# Merges a pull request only when every condition of scripts/automerge_gate.py holds: the commit
+# status "Claude review" of the head commit is success (both reviews of that commit say MERGE and
+# claude-approved is set), Checks passed on the same head commit, the diff is exactly one new
+# models/<name>/ folder (or only site/results.json opened by gblayer), nothing protected changes, and
+# the head did not move. Otherwise: label needs-maintainer and one comment per commit
 # "@gblayer your review is needed: <reason>". No message on success.
 #
+# The gate runs from two places: the last job of claude-review.yml, and here when Checks completes,
+# whichever comes last decides. A triage job checks the scope of every pull request at once.
 # Runs on the base branch with the built-in GITHUB_TOKEN; the pull request's code is never checked
 # out. A merge made with GITHUB_TOKEN starts no push workflow, so the gate starts Pages itself when
 # site/ changed (pages.yml has workflow_dispatch).
 on:
   workflow_run:
-    workflows: ["Claude review", "Checks"]
+    workflows: ["Checks"]
     types: [completed]
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -21,6 +24,7 @@ permissions:
   pull-requests: write   # labels, comments, merge
   issues: write          # labels and comments go through the issues API
   actions: write         # read workflow runs, start pages.yml
+  statuses: read         # the "Claude review" commit status
 
 concurrency:
   group: automerge-${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}

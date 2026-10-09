@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-from automerge_gate import decide, scope_problems  # noqa: E402
+from automerge_gate import decide, review_status, scope_problems  # noqa: E402
 
 SHA = "a" * 40
 MODEL_FILES = ["models/extratrees/model.py", "models/extratrees/model.yaml", "models/extratrees/requirements.txt"]
@@ -27,8 +27,13 @@ def comments(one="MERGE", two="agrees with 1/2: **MERGE**", author="github-actio
     ]
 
 
-def gate(p=None, files=MODEL_FILES, cs=None, review=None, checks=None, existing=frozenset({"ridge"})):
-    return decide(p or pr(), files, comments() if cs is None else cs, review or run(), checks or run(), set(existing))
+def gate(p=None, files=MODEL_FILES, status="success", checks=None, existing=frozenset({"ridge"})):
+    st = None if status is None else {"state": status, "description": f"review {status}"}
+    return decide(p or pr(), files, st, checks or run(), set(existing))
+
+
+def verdict(cs=None, labels=("claude-approved",)):
+    return review_status(comments() if cs is None else cs, set(labels), "2026-10-09T10:00:00Z")[0]
 
 
 def test_clean_model_merges():
@@ -62,14 +67,22 @@ def test_scope_one_new_model_folder():
 
 
 def test_reviews_must_both_say_merge():
-    assert gate(cs=comments(one="FIX"))[0] == "needs"
-    assert gate(cs=comments(two="disagrees with 1/2: missed X. Recommendation: **FIX**"))[0] == "needs"
-    assert gate(cs=[])[0] == "needs"
+    assert verdict() == "success"
+    assert verdict(cs=comments(one="FIX")) == "failure"
+    assert verdict(cs=comments(two="disagrees with 1/2: missed X. Recommendation: **FIX**")) == "failure"
+    assert verdict(cs=[]) == "failure"
+    assert verdict(labels=()) == "failure"
 
 
 def test_review_comments_from_humans_or_older_rounds_do_not_count():
-    assert gate(cs=comments(author="contributor"))[0] == "needs"
-    assert gate(cs=comments(at="2026-10-09T09:00:00Z"))[0] == "needs"  # before this commit's review run
+    assert verdict(cs=comments(author="contributor")) == "failure"
+    assert verdict(cs=comments(at="2026-10-09T09:00:00Z")) == "failure"  # before this round started
+
+
+def test_review_status_of_the_head_commit():
+    assert gate(status="failure") == ("needs", "review failure")
+    assert gate(status="pending")[0] == "wait"
+    assert gate(status=None)[0] == "wait"  # a new commit has no status until its round starts
 
 
 def test_labels():
@@ -81,12 +94,6 @@ def test_checks_must_pass_on_the_head():
     assert gate(checks=run(conclusion="failure"))[0] == "needs"
     assert gate(checks=run(status="in_progress"))[0] == "wait"
     assert gate(checks=run(sha="b" * 40))[0] == "wait"
-
-
-def test_head_moved_since_the_review_waits_for_the_new_review():
-    assert gate(review=run(sha="b" * 40))[0] == "wait"
-    assert gate(review=run(status="in_progress"))[0] == "wait"
-    assert gate(review=run(conclusion="failure"))[0] == "needs"
 
 
 def test_closed_pull_requests_are_left_alone():

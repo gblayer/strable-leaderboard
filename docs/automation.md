@@ -40,7 +40,7 @@ A pull request changing `site/results.json`: `python scripts/build_site_data.py 
 1. **Review 1/2** reads the diff and the check results, then posts one comment of at most eight lines: a recommendation, **MERGE**, **FIX** or **REJECT**, the checklist line, and one line per problem with its fix.
 2. **Review 2/2** redoes the checklist from scratch, then reads 1/2 and posts whether it agrees. Both say MERGE: it adds the label `claude-approved`. Otherwise, or if anything looks deliberately harmful: `needs-maintainer`.
 
-Before review 1/2, a first job removes `claude-approved` and `needs-maintainer` if a bot set them on an earlier commit, so each commit gets a fresh verdict. A label set by the maintainer stays.
+Before review 1/2, a first job sets the commit status "Claude review" of the reviewed commit to pending and removes `claude-approved` and `needs-maintainer` if a bot set them on an earlier commit, so each commit gets a fresh verdict; a label set by the maintainer stays. After review 2/2, a last job records the verdict as that commit's status: success when both comments of this round (written by the bot after the round started) say MERGE and `claude-approved` is set, failure otherwise. A status belongs to one commit, so a review of an older commit can never count for a newer one. Then it runs the gate.
 
 What they check, in short: one `models/<name>/` folder or `site/results.json`; the card complete and matching the code; every pin equal to the shared environment's; default configuration; no own split or cross-validation, only `self.validation_split(y)`; no seed but `self.seed`; no network, subprocess, eval or obfuscated code; the Checks workflow passed.
 
@@ -48,13 +48,13 @@ The review never runs the code: it is triggered by `pull_request_target`, which 
 
 ## 3. Auto-merge gate
 
-`.github/workflows/automerge.yml` runs `scripts/automerge_gate.py` when the Claude review or the Checks workflow completes. The conditions are code, not Claude's judgement. A pull request is merged only if:
+`scripts/automerge_gate.py` runs at the end of the Claude review workflow and, through `.github/workflows/automerge.yml`, when the Checks workflow completes; whichever finishes last decides. The conditions are code, not Claude's judgement. A pull request is merged only if:
 
-1. both Claude review comments of the review run on the current head say MERGE (comments written by the bot, after that run started), and review 2/2 added `claude-approved`; `needs-maintainer` is not set;
+1. the commit status "Claude review" of the current head is success: both Claude review comments of that commit's round say MERGE and review 2/2 added `claude-approved`; `needs-maintainer` is not set;
 2. the Checks workflow succeeded on the current head commit;
 3. the diff touches exactly one new `models/<name>/` folder, or only `site/results.json` in a pull request opened by `gblayer`;
 4. nothing under `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/` or `splits/` changes;
-5. the head commit did not change since the reviews; the merge itself, `gh pr merge --merge --match-head-commit <sha>`, fails if it moved.
+5. the head commit did not change since the reviews: the status and the Checks run must belong to the current head, and the merge itself, `gh pr merge --merge --match-head-commit <sha>`, fails if it moved.
 
 The merge uses the built-in `GITHUB_TOKEN`. A merge made with that token starts no push workflow, so when `site/` changed the gate starts the Pages workflow itself with `gh workflow run pages.yml`.
 

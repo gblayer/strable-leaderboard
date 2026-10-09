@@ -1,11 +1,17 @@
 """The auto-merge gate: merge a pull request only when every condition holds, in code, not by Claude.
 
-    python scripts/automerge_gate.py gate --sha <head sha>     # after "Claude review" or "Checks" completes
-    python scripts/automerge_gate.py triage --pr <number>      # on every pull request event: scope only
-    python scripts/automerge_gate.py reset --pr <number>       # a new commit: drop the bot's old verdict labels
+    python scripts/automerge_gate.py reset --pr N --sha S      # review starts: old bot labels off, status pending
+    python scripts/automerge_gate.py verdict --pr N --sha S --run-id R   # review ends: status, then the gate
+    python scripts/automerge_gate.py gate --sha S              # Checks completed: the gate
+    python scripts/automerge_gate.py triage --pr N             # every pull request event: scope only
 
-Run by .github/workflows/automerge.yml and claude-review.yml with the built-in GITHUB_TOKEN, on
+Run by .github/workflows/claude-review.yml and automerge.yml with the built-in GITHUB_TOKEN, on
 the base branch: the pull request's code is never checked out, only read through the API.
+
+The review of a commit is recorded as a commit status, context "Claude review", on that commit:
+pending while the reviews run, success when both review comments of that run say MERGE and
+claude-approved is set, failure otherwise. A status belongs to one commit, so a new push starts
+without one, and the gate never mixes a review of an old commit with the current head.
 
 A pull request is merged (`gh pr merge --merge --match-head-commit <sha>`) only if
 1. both Claude review comments of the review run on the current head say MERGE, and review 2/2
@@ -34,7 +40,8 @@ BOTS = {"github-actions[bot]", "claude[bot]"}
 PROTECTED = (".github/", ".claude/", "strable_leaderboard/", "scripts/", "splits/")
 SLUG = re.compile(r"^[a-z0-9][a-z0-9.-]*$")
 APPROVED, NEEDS = "claude-approved", "needs-maintainer"
-REVIEW_WORKFLOW, CHECKS_WORKFLOW = "claude-review.yml", "checks.yml"
+CHECKS_WORKFLOW = "checks.yml"
+REVIEW_CONTEXT = "Claude review"
 
 
 def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> list[str]:
@@ -82,9 +89,20 @@ def says_merge(one: str | None, two: str | None) -> bool:
                 and "disagrees" not in two and "**MERGE**" in two)
 
 
-def decide(pr: dict, paths: list[str], comments: list[dict], review_run: dict | None, checks_run: dict | None,
+def review_status(comments: list[dict], labels: set[str], since: str) -> tuple[str, str]:
+    """("success" | "failure", description) for the review run that started at ``since``."""
+    one, two = review_verdicts(comments, since)
+    if not says_merge(one, two):
+        return "failure", "the two Claude reviews of this commit do not both say MERGE"
+    if APPROVED not in labels:
+        return "failure", f"review 2/2 did not add {APPROVED}"
+    return "success", "both Claude reviews say MERGE"
+
+
+def decide(pr: dict, paths: list[str], status: dict | None, checks_run: dict | None,
            existing_models: set[str]) -> tuple[str, str]:
-    """("merge" | "wait" | "needs" | "skip", reason)."""
+    """("merge" | "wait" | "needs" | "skip", reason). ``status``: the "Claude review" commit status
+    of the current head, or None; ``checks_run``: the latest Checks run of the current head."""
     if pr["state"] != "open":
         return "skip", "closed"
     if pr.get("draft"):
@@ -93,20 +111,17 @@ def decide(pr: dict, paths: list[str], comments: list[dict], review_run: dict | 
     if scope:
         return "needs", "; ".join(scope)
     sha = pr["head"]["sha"]
-    if not review_run or review_run["head_sha"] != sha or review_run["status"] != "completed":
+    if not status or status["state"] == "pending":
         return "wait", "the Claude review of this commit has not finished"
-    if review_run["conclusion"] != "success":
-        return "needs", f"the Claude review workflow ended with {review_run['conclusion']}"
+    if status["state"] != "success":
+        return "needs", status.get("description") or "the Claude review did not pass"
     if not checks_run or checks_run["head_sha"] != sha or checks_run["status"] != "completed":
         return "wait", "Checks on this commit have not finished"
     if checks_run["conclusion"] != "success":
         return "needs", f"Checks ended with {checks_run['conclusion']} on {sha[:7]}"
-    one, two = review_verdicts(comments, review_run["run_started_at"])
-    if not says_merge(one, two):
-        return "needs", "the two Claude reviews of this commit do not both say MERGE"
     labels = {label["name"] for label in pr["labels"]}
     if APPROVED not in labels:
-        return "needs", f"review 2/2 did not add {APPROVED}"
+        return "needs", f"the label {APPROVED} is missing"
     if NEEDS in labels:
         return "needs", f"the label {NEEDS} is set"
     return "merge", sha
@@ -131,6 +146,16 @@ def latest_run(workflow: str, sha: str) -> dict | None:
     return max(runs, key=lambda r: r["run_started_at"], default=None)
 
 
+def commit_status(sha: str) -> dict | None:
+    """The latest "Claude review" status of a commit (the API lists newest first)."""
+    return next((s for s in api(f"commits/{sha}/statuses?per_page=100") if s["context"] == REVIEW_CONTEXT), None)
+
+
+def set_status(sha: str, state: str, description: str) -> None:
+    gh("api", "--method", "POST", f"repos/{REPO}/statuses/{sha}", "-f", f"state={state}",
+       "-f", f"context={REVIEW_CONTEXT}", "-f", f"description={description[:140]}")
+
+
 def existing_models() -> set[str]:
     return {item["name"] for item in api("contents/models?ref=main") if item["type"] == "dir"}
 
@@ -149,9 +174,8 @@ def needs_maintainer(pr: dict, reason: str) -> None:
 
 
 def gate(pr: dict) -> str:
-    verdict, reason = decide(pr, changed_paths(pr["number"]),
-                             api(f"issues/{pr['number']}/comments?per_page=100", paginate=True),
-                             latest_run(REVIEW_WORKFLOW, pr["head"]["sha"]), latest_run(CHECKS_WORKFLOW, pr["head"]["sha"]),
+    sha = pr["head"]["sha"]
+    verdict, reason = decide(pr, changed_paths(pr["number"]), commit_status(sha), latest_run(CHECKS_WORKFLOW, sha),
                              existing_models())
     print(f"#{pr['number']} {pr['head']['sha'][:7]}: {verdict} ({reason})")
     if verdict == "needs":
@@ -167,9 +191,10 @@ def gate(pr: dict) -> str:
     return verdict
 
 
-def reset(number: int) -> None:
-    """A new commit: remove claude-approved and needs-maintainer when a bot set them, so that the new
-    review round decides afresh. A label the maintainer set by hand stays."""
+def reset(number: int, sha: str) -> None:
+    """A review round starts on ``sha``: status pending, and claude-approved and needs-maintainer
+    removed when a bot set them for an older commit. A label the maintainer set by hand stays."""
+    set_status(sha, "pending", "the two Claude reviews are running")
     events = api(f"issues/{number}/events?per_page=100", paginate=True)
     last = {}
     for e in events:
@@ -182,14 +207,34 @@ def reset(number: int) -> None:
             print(f"#{number}: removed {name}")
 
 
+def verdict(number: int, sha: str, run_id: str, reviews_ran: bool) -> None:
+    """The review round of ``sha`` ended: record its verdict as the commit status, then gate."""
+    pr = api(f"pulls/{number}")
+    if not reviews_ran:
+        state, description = "failure", "the Claude review jobs failed or were skipped"
+    else:
+        since = api(f"actions/runs/{run_id}")["run_started_at"]
+        labels = {label["name"] for label in pr["labels"]}
+        state, description = review_status(api(f"issues/{number}/comments?per_page=100", paginate=True), labels, since)
+    set_status(sha, state, description)
+    print(f"#{number} {sha[:7]}: review {state} ({description})")
+    if pr["head"]["sha"] == sha:  # otherwise a newer commit has its own round
+        gate(pr)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("mode", choices=["gate", "triage", "reset"])
+    parser.add_argument("mode", choices=["gate", "triage", "reset", "verdict"])
     parser.add_argument("--pr", type=int)
     parser.add_argument("--sha")
+    parser.add_argument("--run-id")
+    parser.add_argument("--reviews-failed", action="store_true")
     args = parser.parse_args(argv)
     if args.mode == "reset":
-        reset(args.pr)
+        reset(args.pr, args.sha)
+        return 0
+    if args.mode == "verdict":
+        verdict(args.pr, args.sha, args.run_id, not args.reviews_failed)
         return 0
     if args.mode == "triage":
         pr = api(f"pulls/{args.pr}")
