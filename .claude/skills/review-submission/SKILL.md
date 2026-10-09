@@ -42,8 +42,8 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 
 ## B. A results update, `site/results.json`
 
-- Opened by `gblayer` (the maintainer, whose repository token the dispatcher uses), and only `site/results.json` changes.
-- The Checks workflow passed: it validates the file's shape, unique ids, score and time ranges.
+- Opened by `gblayer` (the maintainer, whose repository token the dispatcher uses), and only `site/results.json` and `site/results.parquet` change.
+- The Checks workflow passed: it validates the file's shape, unique ids, score and time ranges, and that the Parquet holds the same numbers.
 - The version went up by one patch and the first history line names what changed.
 - Existing pipelines keep their numbers unless the history line says they were re-run.
 - New rows are plausible: scores in range, times within an order of magnitude of similar rows; note outliers rather than block.

@@ -282,8 +282,8 @@ def test_board_is_built_from_published_and_paper_files_only(tmp_path):
     for model, hardware in [("ridge", "paper"), ("half-run", "cpu"), ("published", "cpu"), ("new", "cpu")]:
         pd.DataFrame({"hardware": [hardware]}).to_csv(tmp_path / f"{model}.csv", index=False)
     site = tmp_path / "results.json"
-    site.write_text(json.dumps({"pipelines": [{"id": "tfidf+published"}, {"id": "ridge"}]}))
-    assert dispatch.board_models(tmp_path, site, "new") == ["new", "published", "ridge"]
+    site.write_text(json.dumps({"pipelines": [{"id": "tfidf+published"}, {"id": "ridge"}, {"id": "tfidf+tuned:tuned"}]}))
+    assert dispatch.board_models(tmp_path, site, "new") == ["new", "published", "ridge", "tuned"]
 
 
 def test_token_file_must_exist_and_be_private(tmp_path):

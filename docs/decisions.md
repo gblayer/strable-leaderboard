@@ -1,6 +1,6 @@
 # Decisions
 
-Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September to 1 October 2026.
+Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September to 1 October 2026, and since.
 
 ## Product
 
@@ -23,10 +23,15 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 09-30 | The default task view is "Both": R² and AUC averaged over all 108 tables |
 | 10-01 | Per table, the mean over folds, then an R² below 0 counts as 0. Reversed later that day: raw values, exactly as in the paper |
 | 10-01 | One score, no normalization. Elo and improvability are not shown |
-| 10-01 | Two times per pipeline: fit (embedding plus training) per 1,000 training rows and predict (embedding plus prediction) per 1,000 test rows. The default view is the total, fit plus predict seconds per 1,000 table rows, as in the paper |
+| 10-01 | Two times per pipeline: fit (embedding plus training) per 1,000 training rows and predict (embedding plus prediction) per 1,000 test rows. The default view is the total, fit plus predict seconds per 1,000 table rows, as in the paper. Replaced 10-08 by the total only |
 | 10-01 | No hardware column: hovering a row shows whether it used the GPU |
-| 10-09 | Runner rows carry one total time, measured by the trusted parent from outside the sandboxed model process, minus the measured start-up overhead. The model never sees the test labels and never times or scores itself, so fit and predict are no longer timed apart |
 | 10-01 | One red frame around the top three rows of the current order, and a ring around them in the plot |
+| 10-08 | Score is the median over fold rows of R² (regression) and AUC (classification), as in Figure 4a; time is also a median over fold rows. Replaces the mean over tables |
+| 10-08 | Time: total run time per 1K samples only, as in Figure 4a; no fit or predict views |
+| 10-08 | A pipeline is shown in every view where it has rows, with an "incomplete" tag, without counts, when tables or folds are missing. Replaces "must cover every table and fold or not be ranked" |
+| 10-09 | Multiclass AUC keeps the paper's softmax over the predicted probabilities, so re-runs stay comparable with the imported paper rows |
+| 10-09 | The 17 fold rows missing from four paper pipelines are filled (12 re-run with the paper's code, 5 finished in April but never compiled); every paper pipeline covers 324 fold rows. The incomplete tag stays for future rows |
+| 10-09 | Runner rows carry one total time, measured by the trusted parent from outside the sandboxed model process, minus the measured start-up overhead. The model never sees the test labels and never times or scores itself, so fit and predict are no longer timed apart |
 
 ## Models
 
@@ -40,6 +45,9 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-01 | The model card has no family field |
 | 10-01 | Access is open or closed. Anonymous is closed with the name hidden |
 | 10-01 | The card carries `variant: default`; tuned and tuned-ensembled rows come later from their own folders |
+| 10-08 | All 75 pipelines of the paper's Figure 4a are imported, listed one by one in `scripts/paper_selection.yaml`, Mambular included although incomplete (317/324 folds). Not the OHE CT=30 Ridge runs, not TabPFN-3/3.5 |
+| 10-08 | Paper encoders get honest ids and names: "E5-small-v2 · PCA-30", "LLaMA-3.1-8B · SS+PCA-30", "Qwen-3-8B · first-30" and so on. Only the paper's Tf-Idf is the leaderboard's `tfidf`; a PCA-30 row never takes a first-30 id |
+| 10-08 | The paper's tuned rows (XGBoost, ExtraTrees, CatBoost) are imported with `variant: tuned` and shown with a "tuned" tag; result records, site data and page carry the variant |
 
 ## Site
 
@@ -64,6 +72,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-04 | A rank is cited as "STRABLE leaderboard vX.Y.Z, date"; every version is a tagged commit of site/results.json |
 | 10-01 | The hero art uses invented company names only |
 | 10-01 | The README carries the site's palette and type through an SVG banner; the leaderboard URL goes in the README and the repository's About box |
+| 10-09 | No CITATION.cff: the README ends with the paper's BibTeX |
 
 ## Infrastructure
 

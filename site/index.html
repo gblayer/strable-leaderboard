@@ -6,7 +6,7 @@
 <!-- Visit counter: create a free account at https://www.goatcounter.com with the code "strable",
      then remove the comment marks around the next line. No cookies, no banner needed. -->
 <!-- <script data-goatcounter="https://strable.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script> -->
-<title>STRABLE Leaderboard Preview</title>
+<title>STRABLE Leaderboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300..800&display=swap">
@@ -35,7 +35,7 @@
   --mark: #8E2A33; --mark-muted: #AC9C90;
   --hdr: #223631; --hdr-ink: #F3E6DA;
   /* Pine Grove panel: the same in both themes */
-  --pine: #223631; --pine-line: #4F6B63; --pine-edge: #6F8A82; --pine-ink: #F3E6DA; --pine-ink-2: #C3CDC7; --pine-field: #1A2A26; --pine-hint: #9FB0A8;
+  --pine: #223631; --pine-line: #4F6B63; --pine-ink: #F3E6DA; --pine-ink-2: #C3CDC7;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -108,12 +108,15 @@ section { scroll-margin-top: 76px; }
 }
 .btn:hover { transform: translateY(-1px); filter: brightness(1.12); }
 .btn:active { transform: translateY(1px); }
+.btn.ghost { background: transparent; color: var(--head); }
+.nav-btns { display: flex; gap: 10px; }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } .btn:hover, .btn:active { transform: none; } }
 
 .hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 28px 44px; align-items: center; padding-block: 14px 8px; }
 .eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0; color: var(--accent-2); }
 .updated { font: 500 13px/1 var(--f-mono); color: var(--ink-3); }
 .ver { font: 600 12.5px/1 var(--f-mono); color: var(--accent-ink); background: var(--accent); padding: 6px 9px; border-radius: 999px; }
+.ver:empty { display: none; }
 .ver-link { font-size: 14px; color: var(--ink-2); text-underline-offset: 3px; }
 .ver-link:hover { color: var(--ink); }
 .hero h1 {
@@ -184,8 +187,6 @@ section { scroll-margin-top: 76px; }
 table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); font-size: 14.5px; font-variant-numeric: tabular-nums; }
 .hs th { font: 700 13px/1.2 var(--f-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); text-align: left; padding: 16px 12px 11px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: bottom; }
 .hs th small { display: block; font: 500 12px/1.2 var(--f-body); color: var(--ink-3); letter-spacing: 0.02em; text-transform: none; margin-top: 3px; }
-.hs th.on { color: var(--ink); }
-.hs th.on span { text-decoration: underline; text-decoration-color: var(--mark); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .hs th.num, .hs td.num { text-align: right; }
 .hs td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .hs tbody tr:last-child td { border-bottom: 0; }
@@ -204,12 +205,13 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .tag.e2e { color: var(--accent-2); border-color: var(--accent-2); }
 .tag.anon { color: var(--mark); border-color: var(--mark); }
 .tag.closed { color: var(--ink-2); border-color: var(--ink-3); }
+.tag.tuned { color: var(--accent); border-color: var(--accent); }
+.tag.incomplete { color: var(--ink-2); border-style: dashed; border-color: var(--ink-3); }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
 .star path { fill: var(--mark); }
 .score { color: var(--ink); font-weight: 600; }
 .time { color: var(--ink-2); white-space: nowrap; }
-.time.on { color: var(--ink); font-weight: 600; }
 .hw { font: 600 10px/1 var(--f-mono); letter-spacing: 0.08em; color: var(--ink-3); white-space: nowrap; }
 .group td { font: 700 12.5px/1.3 var(--f-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); padding: 16px 10px 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
 .tbl-foot { padding: 10px 14px; border-top: 1px solid var(--line); }
@@ -246,8 +248,14 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .tip b { font-weight: 600; font-size: 13px; }
 .tip .muted { opacity: 0.8; }
 
-/* ---------- version history ---------- */
-.history { margin-top: 44px; display: grid; gap: 14px; }
+/* ---------- downloads, version history ---------- */
+.history, .paper-use { margin-top: 44px; display: grid; gap: 14px; }
+.dl-list { display: grid; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); }
+.dl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 13px 16px; border-bottom: 1px solid var(--line); }
+.dl:last-child { border-bottom: 0; }
+.dl .cap { min-width: 9em; }
+.dl-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 .history-sub { margin: 6px 0 0; color: var(--ink-3); font-size: 14.5px; }
 .history-sub span { font-family: var(--f-mono); color: var(--ink-2); }
 .history ol { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); }
@@ -261,22 +269,19 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .ask .label { color: var(--pine-ink-2); margin: 0; }
 .ask h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(24px, 2.6vw, 32px); letter-spacing: -0.02em; line-height: 1.1; margin: 10px 0 0; text-wrap: balance; }
 .ask > div > p { margin: 0; color: var(--pine-ink-2); max-width: 30em; }
-.ask .cap { color: var(--pine-ink-2); }
 .ask :focus-visible { outline-color: var(--pine-ink); }
-.ask .input { background: var(--pine-field); color: var(--pine-ink); border-color: var(--pine-edge); }
-.ask .input::placeholder { color: var(--pine-hint); opacity: 1; }
 .ask .btn { background: var(--pine-ink); color: var(--pine); border-color: var(--pine-ink); }
-.ask .form-msg { color: var(--pine-ink); }
-.ask .fine { color: var(--pine-ink-2); }
-.ask .fine a { color: var(--pine-ink); text-underline-offset: 3px; }
-.form { display: grid; gap: 10px; align-content: start; min-width: 0; }
-.field { display: grid; gap: 6px; min-width: 0; }
-.input { font: 15px var(--f-mono); padding: 12px 14px; border: 1.5px solid var(--ink-3); background: var(--bg); color: var(--ink); border-radius: 12px; width: 100%; min-height: 46px; }
-textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-family: var(--f-body); font-size: 16px; }
+.ask-go { display: grid; gap: 14px; align-content: center; justify-items: start; min-width: 0; }
 .form-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
 .form-msg { font: 500 13px/1.4 var(--f-mono); margin: 0; min-height: 1.4em; }
-.fine { font-size: 13px; margin: 0; }
 
+/* ---------- cite dialog ---------- */
+.modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--ink) 45%, transparent); }
+.dialog { width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto; display: grid; gap: 12px; padding: 18px 20px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r-card); }
+.dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.dialog-x { appearance: none; cursor: pointer; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: 400 20px/1 var(--f-body); }
+.dialog-x:hover { border-color: var(--ink-3); }
+.bib { margin: 0; padding: 12px 14px; overflow-x: auto; font: 12.5px/1.55 var(--f-mono); white-space: pre; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
 
 /* ---------- demo tour ---------- */
 .tour { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(660px, calc(100% - 32px)); z-index: 60; background: var(--ink); color: var(--bg); border-radius: 14px; box-shadow: 0 0 0 3px var(--mark); padding: 14px 16px 12px; display: grid; gap: 10px; }
@@ -291,7 +296,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 .tour-bar { height: 3px; background: color-mix(in srgb, var(--bg) 22%, transparent); border-radius: 2px; overflow: hidden; }
 .tour-bar i { display: block; height: 100%; width: 0; background: var(--mark); }
 .tour-focus { outline: 3px solid var(--mark); outline-offset: 6px; border-radius: var(--r-card); }
-.ctl.tour-focus { border-radius: 999px; }
+.ctl.tour-focus, .btn.tour-focus, .linkbtn.tour-focus { border-radius: 999px; }
 </style>
 <style>[hidden]{display:none!important}</style>
 </head>
@@ -316,13 +321,16 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
         <a href="https://arxiv.org/abs/2605.12292">Paper</a>
         <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
       </nav>
-      <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-new-model">Submit a pipeline</a>
+      <div class="nav-btns">
+        <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-model">Submit a pipeline</a>
+        <button type="button" class="btn ghost" id="cite-btn" aria-haspopup="dialog" aria-controls="cite-dialog">Cite</button>
+      </div>
     </div>
   </header>
 
   <section class="hero" aria-labelledby="hero-title">
     <div>
-      <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip">v0.1.1</span><a class="ver-link" href="#history">Version history</a><span class="updated" id="updated"></span><button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button></p>
+      <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip"></span><a class="ver-link" href="#history">Version history</a><span class="updated" id="updated"></span><button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button></p>
       <h1 id="hero-title">STRABLE</h1>
       <p class="expand"><span class="xp"><b>STR</b>ing-t<b>ABLE</b></span><span class="ipa">/ˈstreɪ.bəl/</span><span class="say">stray-buhl</span></p>
       <p class="lede">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. New models come out all the time, so the board does not list all ~445 pipelines from <a href="https://arxiv.org/abs/2605.12292">the paper</a>.</p>
@@ -330,7 +338,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
         <li><b>108</b> tables</li>
         <li><b>76</b> regression</li>
         <li><b>32</b> classification</li>
-        <li><b id="stat-n">0</b> pipelines</li>
+        <li><b id="stat-n">–</b> pipelines</li>
       </ul>
     </div>
     <div class="art-wrap">
@@ -411,14 +419,6 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
             <button type="button" id="task-clf" data-task="clf" aria-pressed="false">Classification · AUC</button>
           </div>
         </div>
-        <div class="ctl" id="ctl-time">
-          <span class="cap" id="time-lbl">Time</span>
-          <div class="seg" role="group" aria-labelledby="time-lbl">
-            <button type="button" id="time-both" data-time="both" aria-pressed="true">Both</button>
-            <button type="button" id="time-fit" data-time="fit" aria-pressed="false">Fit</button>
-            <button type="button" id="time-pred" data-time="pred" aria-pressed="false">Predict</button>
-          </div>
-        </div>
         <div class="ctl" id="ctl-sort">
           <span class="cap" id="sort-lbl">Sort</span>
           <div class="seg" role="group" aria-labelledby="sort-lbl">
@@ -437,33 +437,60 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
             <thead>
               <tr>
                 <th scope="col">Rank</th>
-                <th scope="col">Pipeline<small>default configs</small></th>
-                <th scope="col" class="num"><span id="th-metric">Score</span><small id="th-metric-sub">mean</small></th>
-                <th scope="col" class="num" id="th-fit"><span>Fit</span><small>s / 1K rows</small></th>
-                <th scope="col" class="num" id="th-pred"><span>Predict</span><small>s / 1K rows</small></th>
+                <th scope="col">Pipeline<small>default configs unless tuned</small></th>
+                <th scope="col" class="num"><span id="th-metric">Score</span><small id="th-metric-sub">median</small></th>
+                <th scope="col" class="num" id="th-time"><span>Time</span><small>total s / 1K samples, median</small></th>
               </tr>
             </thead>
             <tbody id="rows"></tbody>
           </table>
         </div>
-        <div class="tbl-foot" id="tbl-foot">
-          <p class="note">Placeholder numbers: the pipeline names come from the paper, the scores and times do not.</p>
+        <div class="tbl-foot" id="tbl-foot" hidden>
+          <p class="note" role="status">Could not load the results. Try ↻ Refresh, or reload the page later.</p>
         </div>
       </div>
 
       <div class="card plot-card" id="plot-card">
         <div class="plot-head">
-          <h3 class="card-title" id="plot-title">Score vs fit time</h3>
+          <h3 class="card-title" id="plot-title">Score vs total run time</h3>
           <ul class="legend">
-            <li><span class="sw sw-on"></span>Pareto-optimal</li>
-            <li><span class="sw sw-off"></span>Not on the front</li>
+            <li><span class="sw sw-on"></span>On the Pareto Front</li>
+            <li><span class="sw sw-off"></span>Not on the Pareto Front</li>
             <li><span class="sw sw-top"></span>Top 3 in this order</li>
-            <li><span class="sw sw-line"></span>Pareto front</li>
+            <li><span class="sw sw-line"></span>Pareto Front</li>
           </ul>
         </div>
         <div id="plot"></div>
       </div>
     </div>
+  </section>
+
+  <section class="paper-use" id="paper-use" aria-labelledby="paper-use-title">
+    <div>
+      <h2 class="title" id="paper-use-title">Using the leaderboard in your paper</h2>
+      <p class="history-sub">Download the current board, with the version and date, to include it in a paper. Current view: <span id="dl-view"></span></p>
+    </div>
+    <div class="dl-list">
+      <div class="dl">
+        <span class="cap" id="dl-plot-lbl">Pareto plot</span>
+        <div class="dl-btns" role="group" aria-labelledby="dl-plot-lbl">
+          <button type="button" class="linkbtn" data-dl="svg">SVG</button>
+          <button type="button" class="linkbtn" data-dl="png">PNG</button>
+          <button type="button" class="linkbtn" data-dl="jpeg">JPEG</button>
+          <button type="button" class="linkbtn" data-dl="pdf">PDF</button>
+        </div>
+      </div>
+      <div class="dl">
+        <span class="cap" id="dl-table-lbl">Ranking table</span>
+        <div class="dl-btns" role="group" aria-labelledby="dl-table-lbl">
+          <button type="button" class="linkbtn" data-dl="csv">CSV</button>
+          <button type="button" class="linkbtn" data-dl="json">JSON</button>
+          <button type="button" class="linkbtn" data-dl="xlsx">XLSX</button>
+          <a class="linkbtn" id="dl-parquet" href="results.parquet" download>Parquet · all views</a>
+        </div>
+      </div>
+    </div>
+    <p class="note">The plot and the CSV, JSON and XLSX tables follow the Task and Sort chosen above. The Parquet file holds all three views at once, one row per pipeline and view. <span class="form-msg" id="dl-msg" role="status"></span></p>
   </section>
 
   <section class="history" id="history" aria-labelledby="history-title">
@@ -479,28 +506,39 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
       <p class="label">Help us improve STRABLE</p>
       <h2 id="ideas-title">Which feature would you like to see on STRABLE?</h2>
     </div>
-    <form class="form" id="ideas-form" novalidate>
-      <div class="field">
-        <label class="cap" for="ideas-text">Your suggestion</label>
-        <textarea class="input" id="ideas-text" name="text" rows="2" placeholder="For example: show results for tables that are mostly free text"></textarea>
-      </div>
-      <div class="field">
-        <label class="cap" for="ideas-email">Your email, optional</label>
-        <input class="input" id="ideas-email" name="email" type="email" autocomplete="off" placeholder="Only if you would like a reply">
-      </div>
-      <div class="form-row">
-        <button class="btn" type="submit">Send suggestion</button>
-        <p class="form-msg" id="ideas-msg" role="status"></p>
-      </div>
-      <p class="fine">Suggestions go to gioia.blayer@inria.fr. Prefer GitHub? <a href="https://github.com/gblayer/strable-leaderboard/issues/new/choose">Open an issue</a>.</p>
-    </form>
+    <div class="ask-go">
+      <p>Tell us in a GitHub issue: a feature, a bug, or a question about the board.</p>
+      <a class="btn" href="https://github.com/gblayer/strable-leaderboard/issues/new/choose">Open an issue</a>
+    </div>
   </section>
 
 </div>
 
+<div class="modal" id="cite-modal" hidden>
+  <div class="dialog" id="cite-dialog" role="dialog" aria-modal="true" aria-labelledby="cite-title">
+    <div class="dialog-head">
+      <h2 class="card-title" id="cite-title">Cite STRABLE</h2>
+      <button type="button" class="dialog-x" id="cite-close" aria-label="Close">×</button>
+    </div>
+<pre class="bib" id="bib" tabindex="0" aria-label="BibTeX">@misc{blayer2026strablebenchmarkingtabularmachine,
+      title={STRABLE: Benchmarking Tabular Machine Learning with Strings},
+      author={Gioia Blayer and Myung Jun Kim and Félix Lefebvre and Lennart Purucker and Alan Arazi and Eilam Shapira and Roi Reichart and Frank Hutter and Marine Le Morvan and David Holzmüller and Gaël Varoquaux},
+      year={2026},
+      eprint={2605.12292},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2605.12292},
+}</pre>
+    <div class="form-row">
+      <button type="button" class="linkbtn" id="cite-copy">Copy</button>
+      <p class="form-msg" id="cite-msg" role="status"></p>
+    </div>
+  </div>
+</div>
+
 <div class="tour" id="tour" role="dialog" aria-live="polite" aria-label="Demo tour" hidden>
   <div class="tour-top">
-    <span class="tour-count" id="tour-count">Demo 1/6</span>
+    <span class="tour-count" id="tour-count">Demo 1/9</span>
     <div class="tour-ctl">
       <button type="button" id="tour-prev">Back</button>
       <button type="button" id="tour-play">Pause</button>
@@ -514,44 +552,22 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 </div>
 
 <script>
-/* Placeholder pipelines. Per task: [score, fit seconds per 1K training rows, predict seconds per 1K rows].
-   kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU" or "CPU", shown in the tooltip.
-   Optional flags: anon (codename, name never revealed), closed (named, weights not public).
-   The real site loads the same records from results.json, see refresh(). */
-let DATA = [
-  { id: 'te-ridge', enc: 'TargetEncoder', lrn: 'Ridge', kind: 'modular', hw: 'CPU', reg: [0.612, 0.06, 0.01], clf: [0.842, 0.05, 0.01] },
-  { id: 'te-et', enc: 'TargetEncoder', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.684, 0.16, 0.03], clf: [0.871, 0.14, 0.03] },
-  { id: 'tfidf-et', enc: 'Tf-Idf', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.697, 0.85, 0.20], clf: [0.879, 0.75, 0.18] },
-  { id: 'tfidf-xgb', enc: 'Tf-Idf', lrn: 'XGBoost', kind: 'modular', hw: 'CPU', reg: [0.689, 3.6, 0.15], clf: [0.883, 3.2, 0.14] },
-  { id: 'tfidf-tabicl', enc: 'Tf-Idf', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.733, 0.40, 4.2], clf: [0.902, 0.36, 3.8] },
-  { id: 'tfidf-tabpfn', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.744, 0.45, 9.5], clf: [0.906, 0.40, 8.4] },
-  { id: 'minilm-tabicl', enc: 'MiniLM-L6-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.722, 1.9, 5.4], clf: [0.893, 1.7, 4.9] },
-  { id: 'minilm-tabpfn', enc: 'MiniLM-L6-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.733, 1.9, 10.8], clf: [0.897, 1.7, 9.6] },
-  { id: 'llama-tabicl', enc: 'LLaMA-3.1-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.736, 145, 150], clf: [0.892, 130, 134] },
-  { id: 'llama-tabpfn', enc: 'LLaMA-3.1-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.741, 145, 156], clf: [0.895, 130, 139] },
-  { id: 'contexttab', enc: '', lrn: 'ConTextTab', kind: 'e2e', hw: 'GPU', reg: [0.722, 0.6, 24], clf: [0.884, 0.55, 21] },
-  { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', hw: 'GPU', reg: [0.668, 46, 2.8], clf: [0.873, 42, 2.5] },
-  { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.5, 0.25], clf: [0.868, 8.6, 0.22] }
-];
-let VERSION = 'v0.1.1', BUILT = '2026-10-01', PLACEHOLDER = true;
-let HISTORY = [
-  { version: 'v0.1.1', note: 'Re-ran CatBoost on 3 tables after a timing fix. Other scores unchanged. Example entry.' },
-  { version: 'v0.1.0', note: 'First public version: 13 pipelines on 108 tables, default configs. Example entry.' }
-];
-const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-model';
+/* Pipelines from results.json, see loadResults(). Per task (both, reg, clf): [median score, median
+   total s per 1K samples, fold rows, fold rows expected] or null. kind: "modular" or "e2e" (reads raw
+   strings itself), variant: "default" or "tuned", hw: what it ran on, shown in the tooltip.
+   Optional flags: paper (imported from the paper), anon (codename, name never revealed), closed
+   (named, weights not public). Empty until the file has loaded. */
+let DATA = [], HISTORY = [], VERSION = '', BUILT = '', LOADED = false;  // HISTORY: results/versions.yaml
+const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model';  // the README heading "Submit a model"
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TASKS = {
-  both: { metric: 'Score', colSub: 'R² and AUC, mean', axis: 'Mean score, R² and AUC' },
-  reg: { metric: 'R²', colSub: 'mean', axis: 'Mean R²' },
-  clf: { metric: 'AUC', colSub: 'mean', axis: 'Mean AUC' }
+  both: { metric: 'Score', colSub: 'R² & AUC, median', axis: 'Median score (R² & AUC)' },
+  reg: { metric: 'R²', colSub: 'median', axis: 'Median R²' },
+  clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC' }
 };
-const TIMES = {
-  both: { name: 'Fit + predict', title: 'Score vs fit + predict time', axis: 'Fit + predict time, s per 1K rows, log scale', fastest: 'FASTEST ON THE FRONT ' },
-  fit: { name: 'Fit', title: 'Score vs fit time', axis: 'Fit time: embedding + training, s per 1K rows, log scale', fastest: 'FASTEST TO FIT ON THE FRONT ' },
-  pred: { name: 'Predict', title: 'Score vs predict time', axis: 'Predict time: embedding + prediction, s per 1K rows, log scale', fastest: 'FASTEST TO PREDICT ON THE FRONT ' }
-};
-const state = { task: 'both', time: 'both', sort: 'pareto', hot: null };
+const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
+const state = { task: 'both', sort: 'pareto', hot: null };
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -559,19 +575,18 @@ const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls)
 const SVGNS = 'http://www.w3.org/2000/svg';
 const sv = (tag, attrs) => { const n = document.createElementNS(SVGNS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
-/* One row per pipeline for the chosen task. A pipeline without results for that task is left out.
-   A missing time (null) means the pipeline was imported from the paper with a total time only:
-   it is shown as "—" and takes no part in the Pareto front of that time. */
+/* One row per pipeline for the chosen task: median score and median total run time per 1K samples.
+   A pipeline without results for that task is left out. A pipeline with fewer fold rows than the
+   task has is tagged incomplete. */
 const num = (v) => (v == null || Number.isNaN(v) ? NaN : v);
-function items(task, time) {
+function items(task) {
   const rows = [];
   for (const d of DATA) {
-    let v = d[task];
-    if (task === 'both' && !v && d.reg && d.clf) v = [(N_REG * d.reg[0] + N_CLF * d.clf[0]) / N_ALL, (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL, (N_REG * d.reg[2] + N_CLF * d.clf[2]) / N_ALL];
+    const v = d[task];
     if (!v) continue;
-    const s = v[0], fit = num(v[1]), pred = num(v[2]);
-    const total = v.length > 3 && v[3] != null ? v[3] : fit + pred;  // paper rows carry a total only
-    rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw, s: s, fit: fit, pred: pred, t: time === 'fit' ? fit : time === 'pred' ? pred : total });
+    rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw,
+      tuned: d.variant === 'tuned', paper: !!d.paper, incomplete: v.length > 3 && v[2] < v[3],
+      s: v[0], t: num(v[1]) });
   }
   return rows;
 }
@@ -588,11 +603,18 @@ function ordered(list, sort, front) {
   if (sort === 'time') return [...list].sort((a, b) => nan(a.t) - nan(b.t) || b.s - a.s);
   return list.filter((d) => front.has(d.id)).sort(byScore).concat(list.filter((d) => !front.has(d.id)).sort(byScore));
 }
+const topSet = (rows, front) => new Set(rows.slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id));
 function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 const fmtS = (v) => v.toFixed(3);
 function fmtN(t) { if (Number.isNaN(t)) return '—'; if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
 const fmtT = (t) => fmtN(t) + ' s';
-function pipeName(d) { return d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn; }
+const PAPER_TIP = 'From the paper: timed by the paper\'s code on mixed hardware, including the hyperparameter search for tuned rows. '
+  + 'Other rows are timed by the runner on the reference node, so time comparisons between the two are approximate.';
+const TAGS = [['e2e', 'end-to-end', (d) => d.kind === 'e2e'], ['tuned', 'tuned', (d) => d.tuned], ['anon', 'anonymous', (d) => d.anon],
+  ['closed', 'closed', (d) => d.closed && !d.anon], ['paper', 'paper', (d) => d.paper, PAPER_TIP], ['incomplete', 'incomplete', (d) => d.incomplete]];
+const tagsOf = (d) => TAGS.filter((t) => t[2](d));
+function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
+function timeText(d) { return 'total run time ' + fmtT(d.t) + ' per 1K samples'; }
 
 function starSvg() {
   const s = sv('svg', { class: 'star', viewBox: '0 0 11 11', 'aria-hidden': 'true' });
@@ -604,10 +626,8 @@ function renderTable(list, front, rows) {
   const tbody = $('rows'); tbody.textContent = '';
   const T = TASKS[state.task];
   $('th-metric').textContent = T.metric; $('th-metric-sub').textContent = T.colSub;
-  $('th-fit').classList.toggle('on', state.time !== 'pred');
-  $('th-pred').classList.toggle('on', state.time !== 'fit');
   const nOn = rows.filter((d) => front.has(d.id)).length;
-  const nTop = state.sort === 'pareto' ? Math.min(3, nOn) : 3;  // one red frame around the first rows
+  const nTop = topSet(rows, front).size;  // one red frame around the first rows
   let group = null;
   rows.forEach((d, i) => {
     if (state.sort === 'pareto') {
@@ -615,25 +635,23 @@ function renderTable(list, front, rows) {
       if (g !== group) {
         group = g;
         const gr = el('tr', 'group'); const td = el('td');
-        td.colSpan = 5;
-        td.textContent = g === 'on' ? '★ Pareto front · ' + nOn : 'Not on the front · ' + (rows.length - nOn);
+        td.colSpan = 4;
+        td.textContent = g === 'on' ? '★ Pareto Front · ' + nOn : 'Not on the Pareto Front · ' + (rows.length - nOn);
         gr.appendChild(td); tbody.appendChild(gr);
       }
     }
     const tr = el('tr', 'row' + (i < nTop ? ' top' : '') + (i === 0 ? ' top-first' : '') + (i === nTop - 1 ? ' top-last' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
-    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', fit ' + fmtT(d.fit) + ', predict ' + fmtT(d.pred) + ' per 1K rows, runs on ' + d.hw + (front.has(d.id) ? ', Pareto-optimal' : ''));
+    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + ', ' + (d.paper ? 'from the paper' : 'runs on ' + d.hw) + (d.incomplete ? ', incomplete' : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
-    if (d.kind === 'e2e') { p.appendChild(el('span', 'lrn', d.lrn)); p.appendChild(el('span', 'tag e2e', 'END-TO-END')); }
-    else { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); p.appendChild(el('span', 'lrn', d.lrn)); }
-    if (d.anon) p.appendChild(el('span', 'tag anon', 'ANONYMOUS'));
-    else if (d.closed) p.appendChild(el('span', 'tag closed', 'CLOSED'));
+    if (d.kind !== 'e2e') { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); }
+    p.appendChild(el('span', 'lrn', d.lrn));
+    for (const [cls, name, , tip] of tagsOf(d)) { const t = el('span', 'tag ' + cls, name.toUpperCase()); if (tip) t.title = tip; p.appendChild(t); }
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
     tr.appendChild(el('td', 'num score', fmtS(d.s)));
-    tr.appendChild(el('td', 'num time' + (state.time !== 'pred' ? ' on' : ''), fmtN(d.fit)));
-    tr.appendChild(el('td', 'num time' + (state.time !== 'fit' ? ' on' : ''), fmtN(d.pred)));
+    tr.appendChild(el('td', 'num time', fmtN(d.t)));
     tr.addEventListener('pointerenter', () => setHot(d.id));
     tr.addEventListener('pointerleave', () => setHot(null));
     tr.addEventListener('focus', () => setHot(d.id));
@@ -655,7 +673,7 @@ function renderPlot(list, front, top) {
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   list = list.filter((d) => !Number.isNaN(d.t));
   if (!list.length) return;
-  const T = TASKS[state.task], TM = TIMES[state.time];
+  const T = TASKS[state.task];
   const tMin = Math.min(...list.map((d) => d.t)), tMax = Math.max(...list.map((d) => d.t));
   const x0 = Math.floor(Math.log10(tMin)), x1 = Math.ceil(Math.log10(tMax));
   const sMin = Math.min(...list.map((d) => d.s)), sMax = Math.max(...list.map((d) => d.s));
@@ -666,7 +684,7 @@ function renderPlot(list, front, top) {
 
   const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img' });
   const fr = list.filter((d) => front.has(d.id)).sort((a, b) => a.t - b.t);
-  svg.setAttribute('aria-label', 'Scatter of ' + T.axis + ' against ' + TM.name.toLowerCase() + ' time per 1K rows, log scale. The ideal corner is top left. Pareto front: ' + fr.map(pipeName).join(', ') + '.');
+  svg.setAttribute('aria-label', 'Scatter of ' + T.axis + ' against ' + TIME_AXIS + '. The ideal corner is top left. Pareto Front: ' + fr.map(pipeName).join(', ') + '.');
   const defs = sv('defs', {});
   const mk = sv('marker', { id: 'better-head', viewBox: '0 0 10 10', refX: '6', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' });
   mk.appendChild(sv('path', { class: 'better-head', d: 'M0 0 L10 5 L0 10 z' }));
@@ -685,7 +703,7 @@ function renderPlot(list, front, top) {
     const tx = sv('text', { x: x, y: H - m.b + 18, 'text-anchor': k === x1 ? 'end' : k === x0 ? 'start' : 'middle' });
     tx.textContent = (v >= 1 ? v.toLocaleString('en-US') : String(v)) + ' s'; ax.appendChild(tx);
   }
-  const xt = sv('text', { class: 'ttl', x: m.l + iw / 2, y: H - 6, 'text-anchor': 'middle' }); xt.textContent = TM.axis; ax.appendChild(xt);
+  const xt = sv('text', { class: 'ttl', x: m.l + iw / 2, y: H - 6, 'text-anchor': 'middle' }); xt.textContent = TIME_AXIS; ax.appendChild(xt);
   const yt = sv('text', { class: 'ttl', x: 12, y: m.t + ih / 2, 'text-anchor': 'middle', transform: 'rotate(-90 12 ' + (m.t + ih / 2) + ')' });
   yt.textContent = T.axis; ax.appendChild(yt);
   svg.appendChild(ax);
@@ -754,8 +772,8 @@ function showTip(id) {
   tip.textContent = '';
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
   tip.appendChild(l1);
-  tip.appendChild(el('div', null, 'fit ' + fmtT(g.d.fit) + '  ·  predict ' + fmtT(g.d.pred) + ' per 1K rows'));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + ' · runs on ' + g.d.hw + (g.on ? ' · ★ Pareto-optimal' : '')));
+  tip.appendChild(el('div', null, timeText(g.d)));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + (g.d.paper ? ' · from the paper' : ' · runs on ' + g.d.hw) + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -781,7 +799,7 @@ function renderTicker(list, front) {
   const top = state.task === 'both' ? 'TOP SCORE ' : 'TOP ' + TASKS[state.task].metric + ' ';
   const msgs = [
     [top, fmtS(best.s), ' · ' + pipeName(best)],
-    [TIMES[state.time].fastest, pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K rows'],
+    ['FASTEST ON THE PARETO FRONT ', pipeName(fr[0]), ' · ' + fmtT(fr[0].t) + ' per 1K samples'],
     ['★ PARETO FRONT ', String(fr.length), ' pipelines'],
     ['VERSION ', VERSION, ' · ' + N_ALL + ' tables · ' + N_REG + ' regression · ' + N_CLF + ' classification']
   ];
@@ -791,52 +809,221 @@ function renderTicker(list, front) {
 }
 
 function render() {
-  const list = items(state.task, state.time);
+  const list = items(state.task);
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
-  renderPlot(list, front, new Set(rows.slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id)));
+  renderPlot(list, front, topSet(rows, front));
   renderTicker(list, front);
   $('stat-n').textContent = String(list.length);
   $('ver-chip').textContent = VERSION;
-  $('plot-title').textContent = TIMES[state.time].title;
   ['both', 'reg', 'clf'].forEach((k) => $('task-' + k).setAttribute('aria-pressed', String(state.task === k)));
-  ['both', 'fit', 'pred'].forEach((k) => $('time-' + k).setAttribute('aria-pressed', String(state.time === k)));
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
+  $('dl-view').textContent = VIEW_NAMES[state.task] + ', ' + SORT_NAMES[state.sort];
 }
 
 document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; render(); }));
-document.querySelectorAll('[data-time]').forEach((b) => b.addEventListener('click', () => { state.time = b.dataset.time; render(); }));
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
 
 /* results.json, built from results/ after each merge, sits next to this page. It is read at start
-   and whenever Refresh is clicked, so the board updates without a page reload. Without it, the
-   placeholder rows above stay. */
+   and whenever Refresh is clicked, so the board updates without a page reload. If it cannot be read
+   before any data has loaded, a message under the table says so. */
 function setUpdated(text) { $('updated').textContent = text; }
 async function loadResults() {
   try {
     const r = await fetch('results.json', { cache: 'no-store' });
     if (!r.ok) return false;
     const j = await r.json();
-    DATA = j.pipelines; VERSION = j.version; BUILT = j.built; HISTORY = j.history || []; PLACEHOLDER = false;
-    return true;
+    DATA = j.pipelines; VERSION = j.version; BUILT = j.built; HISTORY = j.history || [];
+    return (LOADED = true);
   } catch (e) { return false; }
 }
 function renderHistory() {
+  $('tbl-foot').hidden = LOADED;
+  document.querySelectorAll('[data-dl]').forEach((b) => { b.disabled = !LOADED; });
+  $('dl-parquet').hidden = !LOADED;
+  if (!LOADED) return;
   $('cite').textContent = 'STRABLE leaderboard ' + VERSION + ', ' + BUILT + ', ' + SITE;
   const ol = $('history-list'); ol.textContent = '';
   for (const h of HISTORY) { const li = el('li'); li.appendChild(el('b', null, h.version)); li.appendChild(el('span', null, h.note)); ol.appendChild(li); }
-  $('tbl-foot').hidden = !PLACEHOLDER;
+  $('dl-parquet').download = 'strable-leaderboard_' + VERSION + '_' + BUILT + '_all-views.parquet';
 }
-async function refresh() {
+async function refresh(checked) {
   const btn = $('refresh'); btn.disabled = true; btn.textContent = 'Refreshing…';
-  await loadResults();
+  const ok = await loadResults(), at = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   render(); renderHistory();
-  setUpdated('Updated ' + BUILT + ', checked ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+  setUpdated(!LOADED ? '' : 'Updated ' + BUILT + (!checked ? '' : (ok ? ', checked ' : ', could not check at ') + at));
   btn.disabled = false; btn.textContent = '↻ Refresh';
 }
-$('refresh').addEventListener('click', refresh);
+$('refresh').addEventListener('click', () => refresh(true));
 
+/* Cite: a dialog with the paper's BibTeX. Esc, × or a click outside closes it; Tab stays inside. */
+const BIB = $('bib').textContent;
+let citeReturn = null;
+function openCite() {
+  citeReturn = document.activeElement;
+  $('cite-modal').hidden = false; $('cite-msg').textContent = ''; $('cite-copy').textContent = 'Copy';
+  $('cite-copy').focus();
+}
+function closeCite() {
+  if ($('cite-modal').hidden) return;
+  $('cite-modal').hidden = true;
+  if (citeReturn && citeReturn.focus) citeReturn.focus();
+}
+function selectBib() { const r = document.createRange(); r.selectNodeContents($('bib')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+async function copyBib() {
+  let ok = false;
+  try { await navigator.clipboard.writeText(BIB); ok = true; } catch (e) {
+    selectBib(); try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+  }
+  if (ok) { $('cite-copy').textContent = 'Copied'; $('cite-msg').textContent = 'BibTeX copied to the clipboard.'; }
+  else { selectBib(); $('cite-msg').textContent = 'Selected: press Ctrl+C or ⌘C to copy.'; }
+}
+$('cite-btn').addEventListener('click', openCite);
+$('cite-close').addEventListener('click', closeCite);
+$('cite-copy').addEventListener('click', copyBib);
+$('cite-modal').addEventListener('click', (ev) => { if (ev.target === $('cite-modal')) closeCite(); });
+$('cite-modal').addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') { ev.stopPropagation(); closeCite(); return; }
+  if (ev.key !== 'Tab') return;
+  const f = [$('cite-close'), $('bib'), $('cite-copy')], i = f.indexOf(document.activeElement);
+  ev.preventDefault();
+  f[(i + (ev.shiftKey ? f.length - 1 : 1) + f.length) % f.length].focus();
+});
+
+
+/* ---------- downloads: the plot and the ranking of the current view ---------- */
+const VIEW_NAMES = { both: 'Both (R² & AUC)', reg: 'Regression (R²)', clf: 'Classification (AUC)' };
+const SORT_NAMES = { pareto: 'Pareto Front first', score: 'by score', time: 'by time' };
+const COLUMNS = {
+  rank: 'position in the current order',
+  pipeline: 'encoder + learner, or the learner alone for end-to-end pipelines',
+  variant: 'default configuration, or tuned',
+  tags: 'end-to-end, tuned, anonymous, closed, paper, incomplete',
+  median_score: { both: 'median over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification), as in the paper\'s Figure 4a',
+    reg: 'median R² over the 76 regression tables x 3 outer folds', clf: 'median ROC-AUC over the 32 classification tables x 3 outer folds' },
+  median_time_per_1k_s: 'median over the same fold rows of the total run time (encoding, training, prediction) in seconds per 1,000 samples',
+  pareto_front: 'yes when the score is strictly higher than that of every faster pipeline'
+};
+/* Libraries for PDF and XLSX, loaded only when those buttons are clicked. */
+const LIBS = {
+  jspdf: ['https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js', 'sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3'],
+  svg2pdf: ['https://cdn.jsdelivr.net/npm/svg2pdf.js@2.8.1/dist/svg2pdf.umd.min.js', 'sha384-7hc/mtl4lyRUMzYFqHxwNbYZwh27MESE5AWa2nEuVChLn8bCQcrn18OgGv9uHgzz'],
+  xlsx: ['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw']
+};
+const libs = {};
+function loadLib(name) {
+  return libs[name] || (libs[name] = new Promise((ok, fail) => {
+    const s = document.createElement('script');
+    s.src = LIBS[name][0]; s.integrity = LIBS[name][1]; s.crossOrigin = 'anonymous';
+    s.onload = ok; s.onerror = () => { delete libs[name]; fail(new Error('could not load ' + name)); };
+    document.head.appendChild(s);
+  }));
+}
+const viewKey = () => state.task + (state.sort === 'pareto' ? '' : '-by-' + state.sort);
+const fileName = (ext) => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey() + '.' + ext;
+function saveFile(name, blob) {
+  const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* The ranking of the current view, as on the page. */
+function exportRows() {
+  const list = items(state.task), front = paretoSet(list);
+  return ordered(list, state.sort, front).map((d, i) => ({
+    rank: i + 1, pipeline: d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn, variant: d.tuned ? 'tuned' : 'default',
+    tags: tagsOf(d).map((t) => t[1]).join('; '), median_score: d.s, median_time_per_1k_s: Number.isNaN(d.t) ? null : d.t,
+    pareto_front: front.has(d.id) ? 'yes' : 'no' }));
+}
+function exportMeta() {
+  const columns = Object.assign({}, COLUMNS, { median_score: COLUMNS.median_score[state.task] });
+  return { board: 'STRABLE leaderboard', version: VERSION, date: BUILT, view: VIEW_NAMES[state.task] + ', ' + SORT_NAMES[state.sort],
+    url: SITE, columns: columns, citation: BIB };
+}
+function csvText() {
+  const m = exportMeta(), rows = exportRows(), cols = Object.keys(rows[0]);
+  const q = (v) => (v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
+  const head = ['board', 'version', 'date', 'view', 'url'].map((k) => '# ' + k + ': ' + m[k])
+    .concat(cols.map((c) => '# ' + c + ': ' + m.columns[c]), '# citation:', BIB.split('\n').map((l) => '#   ' + l));
+  return head.concat(cols.join(','), rows.map((r) => cols.map((c) => q(r[c])).join(','))).join('\n') + '\n';
+}
+const jsonText = () => JSON.stringify(Object.assign(exportMeta(), { rows: exportRows() }), null, 1) + '\n';
+async function xlsxBlob() {
+  await loadLib('xlsx');
+  const m = exportMeta(), wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportRows()), 'Leaderboard');
+  const about = [['board', m.board], ['version', m.version], ['date', m.date], ['view', m.view], ['url', m.url]]
+    .concat(Object.entries(m.columns), [['citation', BIB]]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(about), 'About');
+  return new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+/* The plot of the current view as a standalone SVG: light colours on white, styles written on each
+   element (the page's CSS does not travel with the file), a line with the version at the bottom. */
+const PAPER_INK = { bg: '#FFFFFF', ink: '#13273F', ink2: '#34465E', ink3: '#4C5767', line: '#D4BBA6', mark: '#8E2A33', muted: '#AC9C90' };
+const MONO = "'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace", SANS = "Outfit, system-ui, 'Segoe UI', sans-serif";
+function exportSvg() {
+  const src = $('plot').querySelector('svg');
+  if (!src) throw new Error('no plot to export');
+  const svg = src.cloneNode(true), c = PAPER_INK, W = +svg.getAttribute('width'), H0 = +svg.getAttribute('height'), H = H0 + 24;
+  const set = (sel, attrs) => svg.querySelectorAll(sel).forEach((n) => { for (const k in attrs) n.setAttribute(k, attrs[k]); });
+  svg.setAttribute('xmlns', SVGNS); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('height', H);
+  svg.querySelectorAll('.hot').forEach((n) => n.classList.remove('hot'));
+  set('.ax text', { fill: c.ink2, 'font-family': MONO, 'font-size': 13 });
+  set('.ax .ttl', { fill: c.ink, 'font-weight': 'bold', 'font-size': 14 });  // bold, not 600: PDF fonts know bold only
+  set('.grid-l', { stroke: c.line, 'stroke-width': 1, 'shape-rendering': 'crispEdges' });
+  set('.frontier', { fill: 'none', stroke: c.mark, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'square' });
+  set('.pt', { fill: c.muted, stroke: c.bg, 'stroke-width': 2 });
+  set('.pt.on', { fill: c.mark });
+  set('.top-ring', { fill: 'none', stroke: c.mark, 'stroke-width': 2 });
+  set('.better', { fill: 'none', stroke: c.ink3, 'stroke-width': 1.5 });
+  set('.better-head', { fill: c.ink3 });
+  set('.better-t', { fill: c.ink, 'font-family': SANS, 'font-size': 15, 'font-weight': 'bold' });
+  set('.plabel', { fill: c.ink, 'font-family': MONO, 'font-size': 13.5, 'font-weight': 'bold' });
+  svg.querySelectorAll('.plabel').forEach((t) => {  // a white halo drawn under each label
+    const h = t.cloneNode(true); h.setAttribute('fill', c.bg); h.setAttribute('stroke', c.bg); h.setAttribute('stroke-width', 4); h.setAttribute('stroke-linejoin', 'round');
+    t.parentNode.insertBefore(h, t);
+  });
+  svg.querySelectorAll('[class]').forEach((n) => n.removeAttribute('class'));  // no page CSS in the file
+  svg.querySelector('marker').id = 'better-head-export';  // the PDF copy sits in the page next to the original
+  svg.querySelector('[marker-end]').setAttribute('marker-end', 'url(#better-head-export)');
+  svg.insertBefore(sv('rect', { x: 0, y: 0, width: W, height: H, fill: c.bg }), svg.firstChild);
+  const foot = sv('text', { x: W - 8, y: H - 8, 'text-anchor': 'end', fill: c.ink3, 'font-family': MONO, 'font-size': 11 });
+  foot.textContent = 'STRABLE leaderboard ' + VERSION + ', ' + BUILT + ' · ' + VIEW_NAMES[state.task];
+  svg.appendChild(foot);
+  return { node: svg, text: new XMLSerializer().serializeToString(svg), W: W, H: H };
+}
+async function rasterBlob(type) {
+  const { text, W, H } = exportSvg(), k = 3;
+  const img = new Image();
+  await new Promise((ok, fail) => { img.onload = ok; img.onerror = () => fail(new Error('the browser could not draw the plot')); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text); });
+  const cv = document.createElement('canvas'); cv.width = W * k; cv.height = H * k;
+  const g = cv.getContext('2d'); g.fillStyle = PAPER_INK.bg; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+  return new Promise((ok, fail) => cv.toBlob((b) => (b ? ok(b) : fail(new Error('the browser could not encode the image'))), type, 0.95));
+}
+async function pdfBlob() {
+  await loadLib('jspdf'); await loadLib('svg2pdf');  // svg2pdf.js extends the jsPDF loaded first
+  const { node, W, H } = exportSvg();
+  const box = el('div'); box.style.cssText = 'position:absolute;left:-10000px;top:0'; box.appendChild(node); document.body.appendChild(box);
+  try {
+    const doc = new window.jspdf.jsPDF({ orientation: W > H ? 'landscape' : 'portrait', unit: 'pt', format: [W, H] });
+    await doc.svg(node, { x: 0, y: 0, width: W, height: H });
+    return doc.output('blob');
+  } finally { box.remove(); }
+}
+const EXPORTS = {
+  svg: async () => new Blob([exportSvg().text], { type: 'image/svg+xml' }), png: () => rasterBlob('image/png'),
+  jpeg: () => rasterBlob('image/jpeg'), pdf: pdfBlob, xlsx: xlsxBlob,
+  csv: async () => new Blob([csvText()], { type: 'text/csv;charset=utf-8' }), json: async () => new Blob([jsonText()], { type: 'application/json' })
+};
+document.querySelectorAll('[data-dl]').forEach((b) => b.addEventListener('click', async () => {
+  const kind = b.dataset.dl, name = fileName(kind === 'jpeg' ? 'jpg' : kind), msg = $('dl-msg');
+  b.disabled = true; msg.textContent = kind === 'pdf' || kind === 'xlsx' ? 'Preparing ' + kind.toUpperCase() + '…' : '';
+  try { saveFile(name, await EXPORTS[kind]()); msg.textContent = 'Saved ' + name + '.'; }
+  catch (e) { msg.textContent = 'Could not make the ' + kind.toUpperCase() + ' file: ' + e.message + '.'; }
+  b.disabled = false;
+}));
 
 /* In-page links scroll inside the page instead of navigating the frame. */
 document.addEventListener('click', (ev) => {
@@ -855,25 +1042,24 @@ function placeCaret() {
 placeCaret();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeCaret);
 
-$('ideas-form').addEventListener('submit', (ev) => {
-  ev.preventDefault();
-  $('ideas-msg').textContent = $('ideas-text').value.trim() ? 'Preview only. Nothing was sent.' : 'Write your suggestion first.';
-});
-
-/* ---------- demo tour: task, sort, time, model types, Pareto plot, adding a model ---------- */
+/* ---------- demo tour: task, sort, table, plot, refresh, history, downloads, cite, adding a model ---------- */
 const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
     text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
-  { sel: '#ctl-time', block: 'center', time: 'pred',
-    text: 'Time. Pick which time the plot and the Pareto order use: fit plus predict, or either alone. The underlined column is the one in use.' },
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of any order get a red frame, here and in the plot.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
-    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, anonymous and closed rows, a star marks the Pareto front, and hovering a row lights its point in the plot.' },
-  { sel: '#plot-card', block: 'center', hot: 'tfidf-tabpfn',
-    text: 'The plot: score against time, log scale. The line is the Pareto front and the arrow points to the ideal corner. Hover a point for its numbers.' },
+    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned, anonymous, closed, paper and incomplete rows, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
+  { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
+    text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
+  { sel: '#refresh', block: 'center',
+    text: 'Refresh fetches the latest results without reloading the page.' },
   { sel: '#history', block: 'center',
-    text: 'Version history lists what changed in each version. The version chip at the top shows the current one, and Refresh fetches the latest results.' },
+    text: 'Version history lists what changed in each version. The version chip at the top shows the current one.' },
+  { sel: '#paper-use', block: 'center',
+    text: 'Using the leaderboard in your paper: download the plot (SVG, PNG, JPEG, PDF) or the ranking (CSV, JSON, XLSX) of the current view, named with the version and date. The Parquet file holds all views.' },
+  { sel: '#cite-btn', block: 'start',
+    text: 'Cite opens the BibTeX of the STRABLE paper, with a button to copy it.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
     text: 'Adding a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
 ];
@@ -884,7 +1070,7 @@ function startBar() {
   if (tour && tour.playing) { b.style.transition = 'width 7000ms linear'; b.style.width = '100%'; }
 }
 function applyStep(s) {
-  state.task = s.task || 'both'; state.time = s.time || 'both'; state.sort = s.sort || 'pareto';
+  state.task = s.task || 'both'; state.sort = s.sort || 'pareto';
   state.hot = s.hot || null;
   render();
 }
@@ -912,7 +1098,7 @@ function nextStep() { if (!tour) return; if (tour.i < TOUR.length - 1) { tour.i+
 function prevStep() { if (tour && tour.i > 0) { tour.i--; showStep(); } }
 function startTour() {
   if (tour) return;
-  tour = { i: 0, playing: true, timer: null, saved: { task: state.task, time: state.time, sort: state.sort } };
+  tour = { i: 0, playing: true, timer: null, saved: { task: state.task, sort: state.sort } };
   $('tour').hidden = false; $('tour-play').textContent = 'Pause';
   showStep();
 }
@@ -921,7 +1107,7 @@ function endTour() {
   clearTimeout(tour.timer); clearFocus();
   const s0 = tour.saved; tour = null;
   $('tour').hidden = true;
-  state.task = s0.task; state.time = s0.time; state.sort = s0.sort; state.hot = null; render();
+  state.task = s0.task; state.sort = s0.sort; state.hot = null; render();
 }
 $('demo-btn').addEventListener('click', startTour);
 $('tour-next').addEventListener('click', nextStep);
@@ -934,7 +1120,7 @@ $('tour-play').addEventListener('click', () => {
   startBar();
 });
 document.addEventListener('keydown', (e) => {
-  if (!tour) return;
+  if (!tour || !$('cite-modal').hidden) return;
   const tag = (e.target && e.target.tagName) || '';
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   if (e.key === 'Escape') endTour();
@@ -946,17 +1132,13 @@ document.addEventListener('keydown', (e) => {
   const toks = (location.hash || '').replace('#', '').split('.');
   if (toks.indexOf('reg') >= 0) state.task = 'reg';
   if (toks.indexOf('clf') >= 0) state.task = 'clf';
-  if (toks.indexOf('fit') >= 0) state.time = 'fit';
-  if (toks.indexOf('predict') >= 0) state.time = 'pred';
   if (toks.indexOf('score') >= 0) state.sort = 'score';
   if (toks.indexOf('time') >= 0) state.sort = 'time';
-  render(); renderHistory();
-  setUpdated('Updated ' + BUILT);
-  loadResults().then((ok) => { if (ok) { render(); renderHistory(); setUpdated('Updated ' + BUILT); } });
+  refresh(false);
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();
 let rz = null;
-new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task, state.time); if (list.length) { const front = paretoSet(list); renderPlot(list, front, new Set(ordered(list, state.sort, front).slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id))); } }); }).observe($('plot'));
+new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task); if (list.length) { const front = paretoSet(list); renderPlot(list, front, topSet(ordered(list, state.sort, front), front)); } }); }).observe($('plot'));
 </script>
 
 </body>

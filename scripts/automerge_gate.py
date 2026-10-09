@@ -28,6 +28,7 @@ from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 BOTS = {"github-actions[bot]", "claude[bot]"}
 CHECKS_WORKFLOW = "checks.yml"
 REVIEW_CONTEXT = "Claude review"
+RESULTS_FILES = {"site/results.json", "site/results.parquet"}  # what a results pull request changes
 REPO = os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO)
 
 
@@ -35,7 +36,7 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
     """Conditions 3 and 4 on every path the pull request adds, changes, removes or renames."""
     if not paths:
         return ["the diff is empty"]
-    if set(paths) == {"site/results.json"}:
+    if "site/results.json" in paths and set(paths) <= RESULTS_FILES:
         return [] if author == MAINTAINER else [f"a results update opened by {author}, not by {MAINTAINER}"]
     out = []
     outside = sorted(p for p in paths if not (p.startswith("models/") and p.count("/") >= 2))

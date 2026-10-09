@@ -12,7 +12,7 @@ name: Checks
 #   failure is reported as a warning: its full smoke test runs on the reference GPU on the
 #   cluster, as the dispatcher's first step after the merge. The model is installed with
 #   env/requirements.txt as constraints, so every package, dependencies included, has the shared
-#   environment's version. A changed site/results.json is validated.
+#   environment's version. A changed site/results.json or .parquet is validated.
 on:
   pull_request:
 
@@ -54,7 +54,7 @@ jobs:
         run: |
           models=$(git diff --name-only "$BASE_SHA" HEAD -- models/ | cut -d/ -f2 | sort -u \
             | grep -E '^[a-z0-9][a-z0-9.-]*$' | grep -v '^_template$' || true)
-          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- site/results.json || true)
+          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- site/results.json site/results.parquet || true)
           echo "models=$(echo $models)" >> "$GITHUB_OUTPUT"
           echo "results=$(echo $results)" >> "$GITHUB_OUTPUT"
           echo "Model folders: ${models:-none}. Results files: ${results:-none}."

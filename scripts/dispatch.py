@@ -104,8 +104,9 @@ def token_file(path: Path = TOKEN_FILE) -> Path:
 
 def board_models(results: Path, site_json: Path, name: str) -> list[str]:
     """What the new board is built from: the models of the published site/results.json, the
-    results files imported from the paper only, and the model being published."""
-    published = {p["id"].split("+")[-1] for p in json.loads(site_json.read_text())["pipelines"]} \
+    results files imported from the paper only, and the model being published. A pipeline id is
+    ``[<encoder>+]<model>[:<variant>]``."""
+    published = {p["id"].split("+")[-1].split(":")[0] for p in json.loads(site_json.read_text())["pipelines"]} \
         if site_json.exists() else set()
     paper = {p.stem for p in results.glob("*.csv")
              if (pd.read_csv(p, usecols=["hardware"])["hardware"].astype(str) == "paper").all()}
@@ -401,7 +402,7 @@ class Dispatcher:
         log(name, "results pull request", number)
 
     def open_results_pr(self, name: str, version: str, note: str, check_output: str, st: dict) -> int:
-        """Branch results/<name> from origin/main with the rebuilt site/results.json, pushed; the PR opened."""
+        """Branch results/<name> from origin/main with the rebuilt site/results.json and .parquet, pushed; the PR opened."""
         branch, wt = f"results/{name}", self.state_dir / "worktrees" / name
         retry(lambda: self.git("fetch", "-q", *FETCH_MAIN))
         self.git("worktree", "remove", "--force", wt, check=False)
@@ -412,7 +413,7 @@ class Dispatcher:
             self.sh(self.python, "scripts/build_site_data.py", "--results", self.root / "results", "--models", *models,
                     cwd=wt)
             self.sh(self.python, "scripts/build_site_data.py", "--check", "site/results.json", cwd=wt)
-            self.git("add", "site/results.json", cwd=wt)
+            self.git("add", "site/results.json", "site/results.parquet", cwd=wt)
             self.git("commit", "-m", f"Results: {note} ({version})", cwd=wt)
             retry(lambda: self.git("push", "--force", REMOTE, f"HEAD:refs/heads/{branch}", cwd=wt))
         finally:

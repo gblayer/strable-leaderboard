@@ -109,8 +109,9 @@ def run(folder: Path, encoder: str, table: str, fold: int, data_dir, cache_dir, 
     score = checked_score(task, y_train, y_test, **out)
     checkpoint = card.get("checkpoint") or {}
     return {
-        "model": folder.name, "encoder": "none" if strings else encoder, "table": table, "task": task, "fold": fold,
-        "score": score, "fit_s": None, "predict_s": None, "total_s": round(encode_s + model_s, 4),
+        "model": folder.name, "encoder": "none" if strings else encoder, "variant": card["variant"], "table": table,
+        "task": task, "fold": fold, "score": score, "fit_s": None, "predict_s": None,
+        "total_s": round(encode_s + model_s, 4),
         "n_train": len(train_idx), "n_test": len(test_idx), "hardware": hardware_name(device),
         "package": card["package"], "checkpoint_revision": checkpoint.get("revision", ""),
         "protocol_version": PROTOCOL, "date": date.today().isoformat(), "leaderboard_version": __version__,

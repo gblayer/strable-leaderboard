@@ -30,7 +30,7 @@ Collected from 29 September to 1 October 2026 while planning the leaderboard.
 
 Mean over five learners, read from Figure 2.
 
-- **Pareto frontier, Table E.8:** TargetEncoder + Ridge 0.6593 at 0.09 s/1K rows; TargetEncoder + ExtraTrees 0.7290 at 0.17; Tf-Idf + ExtraTrees 0.7407 at 0.97; E5-small-v2 + ExtraTrees 0.7422 at 2.5; Tf-Idf + TabICLv2 0.7799 at 3.0; Tf-Idf + TabPFN-2.5 0.7891 at 6.7.
+- **Pareto frontier, Table E.10:** TargetEncoder + Ridge 0.6593 at 0.09 s/1K rows; TargetEncoder + ExtraTrees 0.7290 at 0.17; Tf-Idf + ExtraTrees 0.7407 at 0.97; E5-small-v2 + ExtraTrees 0.7422 at 2.5; Tf-Idf + TabICLv2 0.7799 at 3.0; Tf-Idf + TabPFN-2.5 0.7891 at 6.7.
 - **Runtime:** mixed hardware (V100, A100, A40 GPUs, several CPUs), 842 compute-days in total. LLM embedding time is measured once per table and added to every fold.
 - **Known issues in the paper code at commit 0d5720f:** `src/encoding.py` line 90 has an extra indent, so the `elif encode_method == "tabstar"` branch is a SyntaxError; `estim_configs` lacks TabICL, TabM, RealMLP, TabSTAR, ConTextTab and Mambular; `data_list_wide` has 9 old names and misses 6 tables of the Hugging Face dataset.
 

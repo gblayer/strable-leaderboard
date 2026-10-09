@@ -13,7 +13,7 @@ flowchart TD
   M --> R[Dispatcher on the cluster, every 15 min]
   H --> R
   R --> S[Smoke test on the reference hardware] --> E[Embedding array] --> J[Model array, network cut]
-  J --> P[Results pull request: site/results.json, opened with Gioia's token]
+  J --> P[Results pull request: site/results.json and .parquet, opened with Gioia's token]
   P --> B
   P --> C
   G -- results merged --> W[Pages workflow: the board updates]
@@ -28,7 +28,7 @@ Pull requests merge by themselves only when the gate's conditions all hold; ever
 
 - `pytest` on the pull request's code.
 - For each changed model folder: `python -m strable_leaderboard.check_requirements models/<name>`: every line of `requirements.txt` is `name==version`, and every version equals the shared environment's (`env/requirements.txt`). The model is installed with `env/requirements.txt` as pip constraints, so its dependencies also get the shared environment's versions. Then `python -m strable_leaderboard.smoke models/<name> --device cpu`: fails on any missing or invalid card field, on an unshared pin and on code that a regular-expression hint flags as making its own split, searching hyperparameters or fixing its own seed (a hint only: the review is the real check), then runs outer fold 0 of three small tables. `hardware: gpu` models run it on CPU too; if that fails, the package may need a GPU, so the step falls back to the static checks (`--static`) and reports a warning, and the full smoke test runs on the reference GPU on the cluster as the dispatcher's first step after the merge.
-- A pull request changing `site/results.json`: `python scripts/build_site_data.py --check`, which validates the file's shape, unique ids, score and time ranges.
+- A pull request changing `site/results.json` or `site/results.parquet`: `python scripts/build_site_data.py --check site/results.json`, which validates the file's shape, unique ids, score and time ranges, and that the Parquet next to it holds the same numbers.
 
 ## 2. Claude review
 
@@ -48,7 +48,7 @@ This section is the one place where the gate's conditions are written; the scrip
 
 1. the commit status "Claude review" of the current head is success: both review passes of that commit's round said MERGE;
 2. the Checks workflow succeeded on the current head commit;
-3. the diff touches exactly one new `models/<name>/` folder, whose name is valid and not reserved for a learner of the paper, or only `site/results.json` in a pull request opened by `gblayer`; nothing else changes, so `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/`, `splits/`, `env/` and existing model folders never merge automatically;
+3. the diff touches exactly one new `models/<name>/` folder, whose name is valid and not reserved for a learner of the paper, or only `site/results.json` (with `site/results.parquet`) in a pull request opened by `gblayer`; nothing else changes, so `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/`, `splits/`, `env/` and existing model folders never merge automatically;
 4. the label `needs-maintainer` is not set;
 5. the head commit did not change since the reviews: the status and the Checks run must belong to the current head, and the merge itself, `gh pr merge --merge --match-head-commit <sha>`, fails if it moved.
 
@@ -92,7 +92,7 @@ python scripts/make_tasks.py models/<name> > tasks.txt && bash scripts/run_array
 python scripts/gather_results.py runs results <name> && python -m strable_leaderboard.check_results results/<name>.csv
 ```
 
-**Where results live.** In `results/` of the clone. That folder is gitignored, so the per-fold CSVs never reach GitHub; the public repository gets only `site/results.json`, the aggregates the page shows. Closed and anonymous model folders live in the gitignored `private/`.
+**Where results live.** In `results/` of the clone. That folder is gitignored, so the per-fold CSVs never reach GitHub; the public repository gets only `site/results.json` and `site/results.parquet`, the aggregates the page shows and offers for download. Closed and anonymous model folders live in the gitignored `private/`.
 
 **Cost.** A numeric-only model is 3 encoders × 108 tables × 3 folds = 972 tasks. Embeddings are computed once per encoder and table and kept in `cache/embeddings/`, so a new model adds only its own run time.
 
@@ -108,8 +108,8 @@ There is no bot account. The dispatcher uses a fine-grained token limited to thi
 ## 6. How the board updates
 
 1. The runner writes the new rows into the private results folder.
-2. One line goes to the top of `results/versions.yaml` (`v0.1.3`, the date, "Added TabPFN 2.5"), and `build_site_data.py` writes `site/results.json` on the branch `results/<model>`.
-3. The results pull request is opened; Checks validates the file, Claude reviews it, the gate merges it (opened by `gblayer`, only `site/results.json`) and starts the Pages workflow.
+2. One line goes to the top of `results/versions.yaml` (`v0.1.3`, the date, "Added TabPFN 2.5"), and `build_site_data.py` writes `site/results.json` and `site/results.parquet` on the branch `results/<model>`.
+3. The results pull request is opened; Checks validates the file, Claude reviews it, the gate merges it (opened by `gblayer`, only `site/results.json` and `site/results.parquet`) and starts the Pages workflow.
 4. The dispatcher tags the merge commit with the version, so a ranking claimed in a paper ("first on STRABLE v0.1.3, 2026-11-20") can be checked later.
 5. A visitor who opens the page gets the new file; one who already has it open clicks Refresh.
 

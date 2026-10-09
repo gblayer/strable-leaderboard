@@ -1,0 +1,2037 @@
+{
+ "version": "v0.1.0-pre",
+ "built": "2026-10-09",
+ "history": [
+  {
+   "version": "v0.1.0-pre",
+   "note": "The paper's 75 Figure 4a pipelines, every table and fold; 17 fold rows were completed after publication (12 re-run on 2026-10-08, 5 finished in April but never compiled)"
+  }
+ ],
+ "pipelines": [
+  {
+   "id": "catboost",
+   "enc": "",
+   "lrn": "CatBoost",
+   "kind": "e2e",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7189,
+    1.9725,
+    324,
+    324
+   ],
+   "reg": [
+    0.6135,
+    1.852,
+    228,
+    228
+   ],
+   "clf": [
+    0.8614,
+    2.839,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "catboost:tuned",
+   "enc": "",
+   "lrn": "CatBoost",
+   "kind": "e2e",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7206,
+    153.7756,
+    324,
+    324
+   ],
+   "reg": [
+    0.6239,
+    133.536,
+    228,
+    228
+   ],
+   "clf": [
+    0.8654,
+    389.9631,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "contexttab",
+   "enc": "",
+   "lrn": "ConTextTab",
+   "kind": "e2e",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7578,
+    6.9247,
+    324,
+    324
+   ],
+   "reg": [
+    0.6831,
+    6.1617,
+    228,
+    228
+   ],
+   "clf": [
+    0.8716,
+    10.0097,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "e5-small-v2-pca30+extratrees",
+   "enc": "E5-small-v2 · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7422,
+    2.5152,
+    324,
+    324
+   ],
+   "reg": [
+    0.6499,
+    2.5566,
+    228,
+    228
+   ],
+   "clf": [
+    0.8452,
+    2.4908,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "e5-small-v2-pca30+extratrees:tuned",
+   "enc": "E5-small-v2 · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7618,
+    190.3694,
+    324,
+    324
+   ],
+   "reg": [
+    0.6558,
+    187.4795,
+    228,
+    228
+   ],
+   "clf": [
+    0.8767,
+    196.3839,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "fasttext-pca30+extratrees",
+   "enc": "FastText · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7318,
+    1.339,
+    324,
+    324
+   ],
+   "reg": [
+    0.6454,
+    1.4468,
+    228,
+    228
+   ],
+   "clf": [
+    0.8461,
+    0.8424,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "fasttext-pca30+extratrees:tuned",
+   "enc": "FastText · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7533,
+    181.4158,
+    324,
+    324
+   ],
+   "reg": [
+    0.6531,
+    172.6198,
+    228,
+    228
+   ],
+   "clf": [
+    0.8725,
+    194.8342,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "jasper-0.6b-pca30+extratrees",
+   "enc": "Jasper-0.6B · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7466,
+    7.1104,
+    324,
+    324
+   ],
+   "reg": [
+    0.6366,
+    6.9287,
+    228,
+    228
+   ],
+   "clf": [
+    0.8343,
+    8.1724,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "jasper-0.6b-pca30+extratrees:tuned",
+   "enc": "Jasper-0.6B · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7562,
+    197.6852,
+    324,
+    324
+   ],
+   "reg": [
+    0.6384,
+    193.9766,
+    228,
+    228
+   ],
+   "clf": [
+    0.8758,
+    224.66,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+extratrees",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7304,
+    42.7593,
+    324,
+    324
+   ],
+   "reg": [
+    0.6456,
+    33.8748,
+    228,
+    228
+   ],
+   "clf": [
+    0.8326,
+    95.0187,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+extratrees:tuned",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7561,
+    240.0182,
+    324,
+    324
+   ],
+   "reg": [
+    0.6469,
+    215.8534,
+    228,
+    228
+   ],
+   "clf": [
+    0.8714,
+    329.7297,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+extratrees",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7393,
+    2.1104,
+    324,
+    324
+   ],
+   "reg": [
+    0.6437,
+    2.1449,
+    228,
+    228
+   ],
+   "clf": [
+    0.8461,
+    2.056,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+extratrees:tuned",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7583,
+    183.59,
+    324,
+    324
+   ],
+   "reg": [
+    0.6547,
+    177.8596,
+    228,
+    228
+   ],
+   "clf": [
+    0.8772,
+    190.2019,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+extratrees",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7508,
+    49.3308,
+    324,
+    324
+   ],
+   "reg": [
+    0.6494,
+    41.4309,
+    228,
+    228
+   ],
+   "clf": [
+    0.8349,
+    108.557,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+extratrees:tuned",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7582,
+    260.4655,
+    324,
+    324
+   ],
+   "reg": [
+    0.6484,
+    222.1312,
+    228,
+    228
+   ],
+   "clf": [
+    0.8775,
+    360.638,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "targetencoder+extratrees",
+   "enc": "TargetEncoder",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.729,
+    0.1695,
+    324,
+    324
+   ],
+   "reg": [
+    0.6292,
+    0.1726,
+    228,
+    228
+   ],
+   "clf": [
+    0.8417,
+    0.147,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "targetencoder+extratrees:tuned",
+   "enc": "TargetEncoder",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7289,
+    17.6022,
+    324,
+    324
+   ],
+   "reg": [
+    0.63,
+    16.6572,
+    228,
+    228
+   ],
+   "clf": [
+    0.8614,
+    24.404,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tarte+extratrees",
+   "enc": "Tarte",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6433,
+    5.572,
+    324,
+    324
+   ],
+   "reg": [
+    0.5605,
+    6.0634,
+    228,
+    228
+   ],
+   "clf": [
+    0.816,
+    3.893,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tarte+extratrees:tuned",
+   "enc": "Tarte",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6576,
+    441.1525,
+    324,
+    324
+   ],
+   "reg": [
+    0.5713,
+    448.0081,
+    228,
+    228
+   ],
+   "clf": [
+    0.8249,
+    369.4249,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+extratrees",
+   "enc": "Tf-Idf",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7407,
+    0.9679,
+    324,
+    324
+   ],
+   "reg": [
+    0.6389,
+    1.0667,
+    228,
+    228
+   ],
+   "clf": [
+    0.8467,
+    0.7772,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+extratrees:tuned",
+   "enc": "Tf-Idf",
+   "lrn": "ExtraTrees",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7608,
+    146.6045,
+    324,
+    324
+   ],
+   "reg": [
+    0.6493,
+    147.7053,
+    228,
+    228
+   ],
+   "clf": [
+    0.8749,
+    143.7474,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "mambular",
+   "enc": "",
+   "lrn": "Mambular",
+   "kind": "e2e",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.603,
+    51.4661,
+    324,
+    324
+   ],
+   "reg": [
+    0.5104,
+    69.4135,
+    228,
+    228
+   ],
+   "clf": [
+    0.7941,
+    39.0909,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+realmlp",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "RealMLP",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7452,
+    63.7078,
+    324,
+    324
+   ],
+   "reg": [
+    0.658,
+    56.3099,
+    228,
+    228
+   ],
+   "clf": [
+    0.8566,
+    113.3122,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+realmlp",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "RealMLP",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7621,
+    25.4073,
+    324,
+    324
+   ],
+   "reg": [
+    0.6575,
+    27.4447,
+    228,
+    228
+   ],
+   "clf": [
+    0.859,
+    22.9179,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+realmlp",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "RealMLP",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7537,
+    71.8732,
+    324,
+    324
+   ],
+   "reg": [
+    0.6528,
+    62.4859,
+    228,
+    228
+   ],
+   "clf": [
+    0.8602,
+    128.6099,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+realmlp",
+   "enc": "Tf-Idf",
+   "lrn": "RealMLP",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7749,
+    22.6936,
+    324,
+    324
+   ],
+   "reg": [
+    0.6608,
+    20.9044,
+    228,
+    228
+   ],
+   "clf": [
+    0.8649,
+    26.558,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "e5-small-v2-pca30+ridge",
+   "enc": "E5-small-v2 · PCA-30",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6719,
+    2.0513,
+    324,
+    324
+   ],
+   "reg": [
+    0.5378,
+    1.7026,
+    228,
+    228
+   ],
+   "clf": [
+    0.8196,
+    2.4927,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "fasttext-pca30+ridge",
+   "enc": "FastText · PCA-30",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6728,
+    0.5626,
+    324,
+    324
+   ],
+   "reg": [
+    0.5368,
+    0.5232,
+    228,
+    228
+   ],
+   "clf": [
+    0.8056,
+    0.8688,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "jasper-0.6b-pca30+ridge",
+   "enc": "Jasper-0.6B · PCA-30",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6694,
+    6.6148,
+    324,
+    324
+   ],
+   "reg": [
+    0.5403,
+    6.3646,
+    228,
+    228
+   ],
+   "clf": [
+    0.8232,
+    8.1545,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+ridge",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.679,
+    42.2395,
+    324,
+    324
+   ],
+   "reg": [
+    0.5398,
+    33.8721,
+    228,
+    228
+   ],
+   "clf": [
+    0.8126,
+    95.0452,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+ridge",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6706,
+    1.4308,
+    324,
+    324
+   ],
+   "reg": [
+    0.5389,
+    1.3089,
+    228,
+    228
+   ],
+   "clf": [
+    0.8159,
+    1.8448,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+ridge",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6898,
+    48.9967,
+    324,
+    324
+   ],
+   "reg": [
+    0.5585,
+    41.0,
+    228,
+    228
+   ],
+   "clf": [
+    0.8248,
+    108.5282,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "targetencoder+ridge",
+   "enc": "TargetEncoder",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6593,
+    0.0924,
+    324,
+    324
+   ],
+   "reg": [
+    0.5477,
+    0.0911,
+    228,
+    228
+   ],
+   "clf": [
+    0.8123,
+    0.0943,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tarte+ridge",
+   "enc": "Tarte",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6559,
+    4.3224,
+    324,
+    324
+   ],
+   "reg": [
+    0.5577,
+    4.4631,
+    228,
+    228
+   ],
+   "clf": [
+    0.8343,
+    3.9142,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+ridge",
+   "enc": "Tf-Idf",
+   "lrn": "Ridge",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6689,
+    0.5769,
+    324,
+    324
+   ],
+   "reg": [
+    0.5398,
+    0.5466,
+    228,
+    228
+   ],
+   "clf": [
+    0.8253,
+    0.6343,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+tabicl-v2",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "TabICLv2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7006,
+    45.0411,
+    324,
+    324
+   ],
+   "reg": [
+    0.5837,
+    37.2156,
+    228,
+    228
+   ],
+   "clf": [
+    0.8654,
+    97.0833,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-ss-pca30+tabicl-v2",
+   "enc": "LLaMA-3.1-8B · SS+PCA-30",
+   "lrn": "TabICLv2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6944,
+    45.5012,
+    324,
+    324
+   ],
+   "reg": [
+    0.5829,
+    37.6158,
+    228,
+    228
+   ],
+   "clf": [
+    0.8659,
+    97.9228,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+tabicl-v2",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "TabICLv2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7781,
+    47.4238,
+    324,
+    324
+   ],
+   "reg": [
+    0.6698,
+    39.7436,
+    228,
+    228
+   ],
+   "clf": [
+    0.8745,
+    108.0223,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+tabicl-v2",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "TabICLv2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7324,
+    51.2529,
+    324,
+    324
+   ],
+   "reg": [
+    0.633,
+    42.7569,
+    228,
+    228
+   ],
+   "clf": [
+    0.868,
+    109.6875,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+tabicl-v2",
+   "enc": "Tf-Idf",
+   "lrn": "TabICLv2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7799,
+    2.9988,
+    324,
+    324
+   ],
+   "reg": [
+    0.674,
+    2.6894,
+    228,
+    228
+   ],
+   "clf": [
+    0.8793,
+    3.7486,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+tabm",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "TabM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7645,
+    51.8305,
+    324,
+    324
+   ],
+   "reg": [
+    0.6549,
+    48.2475,
+    228,
+    228
+   ],
+   "clf": [
+    0.8651,
+    102.8635,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+tabm",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "TabM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7612,
+    9.5705,
+    324,
+    324
+   ],
+   "reg": [
+    0.6432,
+    10.2678,
+    228,
+    228
+   ],
+   "clf": [
+    0.8618,
+    6.92,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+tabm",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "TabM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7665,
+    56.5887,
+    324,
+    324
+   ],
+   "reg": [
+    0.6609,
+    52.6087,
+    228,
+    228
+   ],
+   "clf": [
+    0.8646,
+    113.3534,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+tabm",
+   "enc": "Tf-Idf",
+   "lrn": "TabM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7575,
+    8.4822,
+    324,
+    324
+   ],
+   "reg": [
+    0.6388,
+    8.99,
+    228,
+    228
+   ],
+   "clf": [
+    0.8595,
+    6.5976,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "e5-small-v2-pca30+tabpfn-2.5",
+   "enc": "E5-small-v2 · PCA-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.773,
+    8.1521,
+    324,
+    324
+   ],
+   "reg": [
+    0.67,
+    6.7605,
+    228,
+    228
+   ],
+   "clf": [
+    0.8868,
+    12.9806,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "fasttext-pca30+tabpfn-2.5",
+   "enc": "FastText · PCA-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7722,
+    7.4351,
+    324,
+    324
+   ],
+   "reg": [
+    0.6702,
+    6.2726,
+    228,
+    228
+   ],
+   "clf": [
+    0.8846,
+    13.5669,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "jasper-0.6b-pca30+tabpfn-2.5",
+   "enc": "Jasper-0.6B · PCA-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6951,
+    12.7871,
+    324,
+    324
+   ],
+   "reg": [
+    0.6022,
+    11.4586,
+    228,
+    228
+   ],
+   "clf": [
+    0.8718,
+    19.1592,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+tabpfn-2.5",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7186,
+    48.1973,
+    324,
+    324
+   ],
+   "reg": [
+    0.5959,
+    39.302,
+    228,
+    228
+   ],
+   "clf": [
+    0.8711,
+    103.8302,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-ss-pca30+tabpfn-2.5",
+   "enc": "LLaMA-3.1-8B · SS+PCA-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7747,
+    63.0837,
+    324,
+    324
+   ],
+   "reg": [
+    0.6593,
+    56.3595,
+    228,
+    228
+   ],
+   "clf": [
+    0.8794,
+    136.7312,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+tabpfn-2.5",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7741,
+    8.4031,
+    324,
+    324
+   ],
+   "reg": [
+    0.671,
+    7.2718,
+    228,
+    228
+   ],
+   "clf": [
+    0.8867,
+    15.5723,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "nemotron-1b-pca30+tabpfn-2.5",
+   "enc": "Nemotron-1B · PCA-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7764,
+    28.8919,
+    324,
+    324
+   ],
+   "reg": [
+    0.6624,
+    25.8885,
+    228,
+    228
+   ],
+   "clf": [
+    0.8783,
+    60.027,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+tabpfn-2.5",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7851,
+    55.1636,
+    324,
+    324
+   ],
+   "reg": [
+    0.698,
+    45.9383,
+    228,
+    228
+   ],
+   "clf": [
+    0.8837,
+    110.0621,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+tabpfn-2.5",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.717,
+    56.4761,
+    324,
+    324
+   ],
+   "reg": [
+    0.6089,
+    47.0717,
+    228,
+    228
+   ],
+   "clf": [
+    0.8747,
+    117.7715,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "targetencoder+tabpfn-2.5",
+   "enc": "TargetEncoder",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7391,
+    3.3074,
+    324,
+    324
+   ],
+   "reg": [
+    0.6511,
+    2.6223,
+    228,
+    228
+   ],
+   "clf": [
+    0.8663,
+    5.4655,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tarte+tabpfn-2.5",
+   "enc": "Tarte",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7197,
+    16.8834,
+    324,
+    324
+   ],
+   "reg": [
+    0.617,
+    13.2748,
+    228,
+    228
+   ],
+   "clf": [
+    0.8543,
+    25.3109,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+tabpfn-2.5",
+   "enc": "Tf-Idf",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7891,
+    6.67,
+    324,
+    324
+   ],
+   "reg": [
+    0.6962,
+    5.9551,
+    228,
+    228
+   ],
+   "clf": [
+    0.8871,
+    11.8997,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tabstar",
+   "enc": "",
+   "lrn": "TabSTAR",
+   "kind": "e2e",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7608,
+    48.5893,
+    324,
+    324
+   ],
+   "reg": [
+    0.6283,
+    44.6234,
+    228,
+    228
+   ],
+   "clf": [
+    0.8624,
+    66.5539,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "e5-small-v2-pca30+xgboost",
+   "enc": "E5-small-v2 · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7301,
+    2.3891,
+    324,
+    324
+   ],
+   "reg": [
+    0.59,
+    2.119,
+    228,
+    228
+   ],
+   "clf": [
+    0.8558,
+    2.9049,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "e5-small-v2-pca30+xgboost:tuned",
+   "enc": "E5-small-v2 · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7542,
+    207.8061,
+    324,
+    324
+   ],
+   "reg": [
+    0.6432,
+    192.4376,
+    228,
+    228
+   ],
+   "clf": [
+    0.8771,
+    237.3895,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "fasttext-pca30+xgboost",
+   "enc": "FastText · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7053,
+    1.0224,
+    324,
+    324
+   ],
+   "reg": [
+    0.5939,
+    0.8315,
+    228,
+    228
+   ],
+   "clf": [
+    0.8538,
+    1.2609,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "fasttext-pca30+xgboost:tuned",
+   "enc": "FastText · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7461,
+    176.3395,
+    324,
+    324
+   ],
+   "reg": [
+    0.6424,
+    167.2015,
+    228,
+    228
+   ],
+   "clf": [
+    0.8759,
+    193.6158,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "jasper-0.6b-pca30+xgboost",
+   "enc": "Jasper-0.6B · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6772,
+    6.9553,
+    324,
+    324
+   ],
+   "reg": [
+    0.5417,
+    6.5813,
+    228,
+    228
+   ],
+   "clf": [
+    0.8466,
+    8.2847,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "jasper-0.6b-pca30+xgboost:tuned",
+   "enc": "Jasper-0.6B · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.706,
+    226.2836,
+    324,
+    324
+   ],
+   "reg": [
+    0.6117,
+    212.8683,
+    228,
+    228
+   ],
+   "clf": [
+    0.8687,
+    341.6132,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+xgboost",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6916,
+    42.2579,
+    324,
+    324
+   ],
+   "reg": [
+    0.5618,
+    34.9974,
+    228,
+    228
+   ],
+   "clf": [
+    0.8494,
+    94.9017,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-pca30+xgboost:tuned",
+   "enc": "LLaMA-3.1-8B · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7246,
+    245.1193,
+    324,
+    324
+   ],
+   "reg": [
+    0.6087,
+    233.7567,
+    228,
+    228
+   ],
+   "clf": [
+    0.8688,
+    371.3815,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+xgboost",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7081,
+    1.9003,
+    324,
+    324
+   ],
+   "reg": [
+    0.5925,
+    1.5021,
+    228,
+    228
+   ],
+   "clf": [
+    0.8536,
+    2.378,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+xgboost:tuned",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7461,
+    202.178,
+    324,
+    324
+   ],
+   "reg": [
+    0.6396,
+    197.3739,
+    228,
+    228
+   ],
+   "clf": [
+    0.8758,
+    229.2581,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+xgboost",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6642,
+    49.4153,
+    324,
+    324
+   ],
+   "reg": [
+    0.5504,
+    41.2104,
+    228,
+    228
+   ],
+   "clf": [
+    0.8473,
+    108.7465,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-pca30+xgboost:tuned",
+   "enc": "Qwen-3-8B · PCA-30",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.724,
+    248.2769,
+    324,
+    324
+   ],
+   "reg": [
+    0.6142,
+    234.576,
+    228,
+    228
+   ],
+   "clf": [
+    0.8744,
+    309.8339,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "targetencoder+xgboost",
+   "enc": "TargetEncoder",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7101,
+    0.1763,
+    324,
+    324
+   ],
+   "reg": [
+    0.5931,
+    0.1628,
+    228,
+    228
+   ],
+   "clf": [
+    0.8579,
+    0.2149,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "targetencoder+xgboost:tuned",
+   "enc": "TargetEncoder",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7289,
+    18.2468,
+    324,
+    324
+   ],
+   "reg": [
+    0.6226,
+    15.1776,
+    228,
+    228
+   ],
+   "clf": [
+    0.8645,
+    27.2354,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tarte+xgboost",
+   "enc": "Tarte",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6227,
+    5.6456,
+    324,
+    324
+   ],
+   "reg": [
+    0.5167,
+    5.6025,
+    228,
+    228
+   ],
+   "clf": [
+    0.7977,
+    5.7053,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tarte+xgboost:tuned",
+   "enc": "Tarte",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.6894,
+    741.8038,
+    324,
+    324
+   ],
+   "reg": [
+    0.5922,
+    689.1759,
+    228,
+    228
+   ],
+   "clf": [
+    0.8414,
+    1030.7455,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+xgboost",
+   "enc": "Tf-Idf",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7343,
+    0.979,
+    324,
+    324
+   ],
+   "reg": [
+    0.607,
+    0.8073,
+    228,
+    228
+   ],
+   "clf": [
+    0.858,
+    1.1571,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+xgboost:tuned",
+   "enc": "Tf-Idf",
+   "lrn": "XGBoost",
+   "kind": "modular",
+   "variant": "tuned",
+   "hw": "paper",
+   "paper": true,
+   "both": [
+    0.7673,
+    145.895,
+    324,
+    324
+   ],
+   "reg": [
+    0.6493,
+    141.0299,
+    228,
+    228
+   ],
+   "clf": [
+    0.8786,
+    168.7348,
+    96,
+    96
+   ]
+  }
+ ]
+}

@@ -10,7 +10,8 @@ Every numeric-only model is paired with three encoders. Each string column becom
 
 The two language models embed every distinct string of a table once (``embed_table``), as in
 the paper; the embeddings and their extraction time are cached per table. Rows imported from
-the paper may name other encoders; ``NAMES`` gives their display names.
+the paper name other encoders too, such as 30-component PCA of the same models; their ids and
+display names are in ``scripts/paper_selection.yaml``.
 """
 
 from __future__ import annotations
@@ -30,11 +31,7 @@ ENCODERS = {
     "minilm-l6-v2": {"checkpoint": "sentence-transformers/all-MiniLM-L6-v2", "reduction": "first-30"},
     "llama-3.1-8b": {"checkpoint": "meta-llama/Llama-3.1-8B", "reduction": "first-30"},
 }
-NAMES = {
-    "none": "", "tfidf": "Tf-Idf", "minilm-l6-v2": "MiniLM-L6-v2", "llama-3.1-8b": "LLaMA-3.1-8B",
-    "targetencoder": "TargetEncoder", "tarte": "Tarte", "e5-small-v2": "E5-small-v2", "fasttext": "FastText",
-    "qwen-3-8b": "Qwen-3-8B", "jasper-0.6b": "Jasper-0.6B", "nemotron-1b": "Nemotron-1B",
-}
+NAMES = {"none": "", "tfidf": "Tf-Idf", "minilm-l6-v2": "MiniLM-L6-v2", "llama-3.1-8b": "LLaMA-3.1-8B"}
 
 
 def tfidf_encoder(seed: int = SEED):

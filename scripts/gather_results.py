@@ -2,9 +2,9 @@
 
     python scripts/gather_results.py runs $STRABLE_RESULTS [model]
 
-One file per model folder, or for ``model`` only; one row per (encoder, table, fold), sorted.
-Existing rows of the same (encoder, table, fold) are replaced, other rows are kept, so a re-run of
-a few tables updates only those.
+One file per model folder, or for ``model`` only; one row per (encoder, variant, table, fold),
+sorted. Existing rows of the same (encoder, variant, table, fold) are replaced, rows imported from
+the paper included; other rows are kept, so a re-run of a few tables updates only those.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from strable_leaderboard.check_results import COLUMNS  # noqa: E402
 
-KEY = ["encoder", "table", "fold"]
+KEY = ["encoder", "variant", "table", "fold"]
 
 
 def gather(runs: Path, results: Path, only: str | None = None) -> list[Path]:
