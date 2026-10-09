@@ -19,7 +19,7 @@
 # Extra arguments go to sbatch after these, so they win. The job id is
 # printed. Logs go to $STRABLE_LOGS (default logs/), created before submission, since SLURM fails
 # silently on a missing output folder. Finished tasks are skipped, so the same file resubmits after
-# a preemption. Model code runs through scripts/sandbox.sh: network cut, Singularity by default.
+# a preemption. Model code runs through scripts/sandbox.sh: Singularity, network cut.
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=128G
 #SBATCH --requeue
@@ -58,7 +58,7 @@ read -r a b c d < <(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" "$1")
 export PYTHONNOUSERSITE=1 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=$ROOT
 PY=$CACHE/env/bin/python
 DEVICE=cpu; { [ -n "${CUDA_VISIBLE_DEVICES:-}" ] || [ -n "${SLURM_JOB_GPUS:-}" ]; } && DEVICE=cuda
-echo "task $SLURM_ARRAY_TASK_ID on $(hostname): $a $b $c $d (device $DEVICE, sandbox ${STRABLE_SANDBOX:-singularity})"
+echo "task $SLURM_ARRAY_TASK_ID on $(hostname): $a $b $c $d (device $DEVICE)"
 
 case "$a" in
   embed)
