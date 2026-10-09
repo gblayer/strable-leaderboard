@@ -22,7 +22,7 @@ Fill the card without asking the user, from the model's sources, in this order: 
 | `tasks` | Regression, binary, multiclass: what the package supports |
 | `variant` | Always `default` |
 | `access` | `open`. Closed, anonymous or API-only models stop here: point to `docs/submitting.md`, "Open, closed, anonymous" |
-| `hardware` | `gpu` if it needs or is meant for a GPU, else `cpu`. `gpu_memory_gb` (optional) from the docs |
+| `hardware` | `gpu` if it needs or is meant for a GPU, else `cpu` |
 | `package` | `name==version`, the version in `env/requirements.txt` if the package is there |
 | `checkpoint` | Hugging Face `repo` and the full 40-character commit hash of the weights (`huggingface_hub.HfApi().model_info(repo).sha`, or the repository's commit list), never `main`. `null` if there are no weights |
 | `licence` | Code and weights licences, from the repository and the model card |

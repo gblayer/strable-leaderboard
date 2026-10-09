@@ -76,7 +76,6 @@ tasks: [regression, binary, multiclass]
 variant: default                # default now; tuned and tuned-ensembled later
 access: open                    # open | closed
 hardware: gpu                   # gpu | cpu
-gpu_memory_gb: 24               # optional
 
 package: tabpfn==6.0.6          # the code, same pin as requirements.txt
 checkpoint:                     # the weights, or null

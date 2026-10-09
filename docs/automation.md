@@ -61,7 +61,7 @@ Otherwise the gate adds `needs-maintainer` and comments once per commit: "@gblay
 
 ## 4. Runner
 
-The runner works in the repository clone on the cluster's shared storage, on `main`, under the maintainer's account. One task = one model, one encoder, one table, one outer fold.
+The runner works from the repository clone on the cluster's shared storage, under the maintainer's account; the clone holds `cache/`, `results/`, `runs/` and `private/`. One task = one model, one encoder, one table, one outer fold.
 
 **One shared environment.** Every model runs in the same Python environment, `cache/env`, built by `python scripts/prepare.py` from `env/requirements.txt`: the paper's versions of every package (torch 2.9.1, scikit-learn 1.7.2, skrub 0.6.2, tabpfn 6.0.6, tabicl 2.0.3, sentence-transformers 5.2.3, ...) plus this package. A model's `requirements.txt` only repeats the pins it relies on, at the same versions. A model that needs another version proposes the change to `env/requirements.in` and `env/requirements.txt` in its pull request; the gate then leaves it to the maintainer, who decides whether the whole board moves to that version. `cache/` is gitignored: it holds the env, its Python interpreter, the dataset, the checkpoints, the embeddings, the sandbox image and the dispatcher's state.
 
@@ -71,16 +71,16 @@ The runner works in the repository clone on the cluster's shared storage, on `ma
 */15 * * * * cd <clone> && PYTHONNOUSERSITE=1 cache/env/bin/python scripts/dispatch.py >> cache/dispatch/cron.log 2>&1
 ```
 
-Each pass takes a lock, pulls `main`, and moves every model one step, keeping its state in `cache/dispatch/<model>.json`:
+Each pass takes a lock, fetches `main` and moves every model one step, keeping its state in `cache/dispatch/<model>.json`. It never pulls or changes the clone's working copy, which may be on any branch: it reads the models from a checkout of `origin/main`, records the commit of `main` when a model starts, and runs every job of that model from a checkout of that commit, `cache/dispatch/checkouts/<sha>` (a `git worktree`; private folders are copied in). A push to `main` or an edit in the clone therefore never changes the code of a model in flight; checkouts no model uses are removed. GitHub and git network calls are tried three times, after 10 and 20 seconds, before a model is marked failed.
 
 | Step | What happens |
 |---|---|
 | approve | `models/<name>/`: the pull request that added it was merged by `gblayer`, or by the gate with `claude-approved`. `private/<name>/`: closed models, approved by being there |
-| prepare | `scripts/prepare.py` downloads the checkpoint; the pins must match the shared environment |
-| smoke | the smoke test as a 30-minute job on the reference hardware, sandboxed |
+| prepare | `scripts/prepare.py` downloads the checkpoint, refused above 20 GB unless the maintainer lists the folder in `LARGE_CHECKPOINTS` in that script; the pins must match the shared environment |
+| smoke | `run.py --smoke` as a 30-minute job on the reference hardware: the parent and the sandboxed child of section 8 on fold 0 of three small tables |
 | embed | numeric-only models: one array computes the missing language-model embeddings, before any model task, so tasks never race to write the same cache file |
-| run | `make_tasks.py` and the job array; resubmitted once if tasks are left (finished tasks are skipped) |
-| publish | `gather_results.py`, `check_results`, a line in `results/versions.yaml`, `build_site_data.py` on a branch `results/<model>` from `origin/main`, push, and the results pull request, which goes through Checks, the two reviews and the gate like any other. One results pull request at a time |
+| run | `make_tasks.py` and the job array, submitted at most twice (the second time only the tasks left) |
+| publish | `gather_results.py` for this model only, `check_results`, a line in `results/versions.yaml`, then on a branch `results/<model>` from `origin/main` `build_site_data.py` from the models already in the published `site/results.json`, the files imported from the paper and this model, push, and the results pull request, which goes through Checks, the review and the gate like any other. If anything fails, `results/` is put back as it was. One results pull request at a time |
 | published | merged: the version is tagged; closed: nothing more |
 
 A failure stops the model and sends one notification (section 5). Deleting `cache/dispatch/<model>.json` retries it from the start.
@@ -92,12 +92,12 @@ python scripts/prepare.py models/<name>                          # login node: e
 echo "smoke models/<name>" > smoke.txt && bash scripts/run_array.sh smoke.txt
 python -m strable_leaderboard.embed --list --cache-dir cache > embed.txt && bash scripts/run_array.sh embed.txt
 python scripts/make_tasks.py models/<name> > tasks.txt && bash scripts/run_array.sh tasks.txt
-python scripts/gather_results.py runs results && python -m strable_leaderboard.check_results results/<name>.csv
+python scripts/gather_results.py runs results <name> && python -m strable_leaderboard.check_results results/<name>.csv
 ```
 
 **Where results live.** In `results/` of the clone. That folder is gitignored, so the per-fold CSVs never reach GitHub; the public repository gets only `site/results.json`, the aggregates the page shows. Closed and anonymous model folders live in the gitignored `private/`.
 
-**Cost.** A numeric-only model is 3 encoders × 108 tables × 3 folds = 972 tasks. Embeddings are computed once per encoder and table and kept in `cache/embeddings/`, so a new model adds only its own fit and predict time.
+**Cost.** A numeric-only model is 3 encoders × 108 tables × 3 folds = 972 tasks. Embeddings are computed once per encoder and table and kept in `cache/embeddings/`, so a new model adds only its own run time.
 
 ## 5. Notifications: failures only
 
@@ -138,7 +138,7 @@ Merged contributor code runs on the cluster under the maintainer's account, and 
 1. Secret `CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token` (uses your Claude subscription), or `ANTHROPIC_API_KEY`.
 2. Labels `claude`, `claude-approved`, `needs-maintainer`.
 3. Each workflow sets its own token permissions in its `permissions` block; nothing to change in the settings.
-4. On the cluster, in the clone on `main`: `python scripts/prepare.py` (shared env, data, encoders, sandbox image), `private/runner.env` with the partition flags, the cron line above.
+4. On the cluster, in the clone: `python scripts/prepare.py` (shared env, data, encoders, sandbox image), `private/runner.env` with the partition flags, the cron line above.
 5. The dispatcher's token, on the cluster. On github.com: Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Resource owner `gblayer`; Repository access: *Only select repositories*, `gblayer/strable-leaderboard` only; Repository permissions: Contents read and write, Pull requests read and write, Issues read and write, Metadata read-only (set by default); nothing else, in particular not Workflows; expiration at most one year (put a reminder in the calendar). Store it, readable by you only, without leaving it in the shell history:
    ```
    install -d -m 700 ~/.config/strable && (umask 077; read -rs -p "token: " t && printf '%s\n' "$t" > ~/.config/strable/github_token)

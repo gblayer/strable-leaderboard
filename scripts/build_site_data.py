@@ -1,10 +1,11 @@
 """Build site/results.json from the private results folder, the model cards and its versions.yaml.
 
-    python scripts/build_site_data.py --results $STRABLE_RESULTS
+    python scripts/build_site_data.py --results $STRABLE_RESULTS [--models ridge tabpfn-2.5 ...]
     python scripts/build_site_data.py --check site/results.json
 
 The results folder holds one CSV per model and ``versions.yaml`` (newest first: version, date,
-note). Only the JSON written here is public. ``--check`` validates a JSON file instead, which the
+note). ``--models`` limits the board to those results files (the dispatcher passes the models
+already published, the paper's files and the one being published). Only the JSON written here is public. ``--check`` validates a JSON file instead, which the
 Checks workflow runs on every pull request that changes it.
 
 One record per pipeline, with a [score, fit, predict, total] quadruple per view (both,
@@ -60,11 +61,12 @@ def _num(x):
     return None if x is None or (isinstance(x, float) and math.isnan(x)) else round(float(x), 4)
 
 
-def build(results_dir: Path, out: Path = ROOT / "site" / "results.json") -> dict:
+def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=None) -> dict:
     tables = json.loads(MANIFEST.read_text())["tables"]
     n_tables = {view: sum(1 for m in tables.values() if m["task"] in tasks) for view, tasks in VIEWS.items()}
     pipelines = []
-    for path in sorted(results_dir.glob("*.csv")):
+    paths = [results_dir / f"{m}.csv" for m in sorted(models)] if models else sorted(results_dir.glob("*.csv"))
+    for path in paths:
         card = card_of(path.stem)
         df = pd.read_csv(path)
         for encoder, rows in df.groupby("encoder", sort=True):
@@ -119,6 +121,7 @@ def problems(data: dict) -> list[str]:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--results", type=Path, default=os.environ.get("STRABLE_RESULTS"))
+    parser.add_argument("--models", nargs="+", help="only these results files")
     parser.add_argument("--check", type=Path, help="validate this JSON instead of building")
     args = parser.parse_args()
     if args.check:
@@ -127,4 +130,4 @@ if __name__ == "__main__":
         sys.exit(1 if found else 0)
     if not args.results:
         sys.exit("give --results or set STRABLE_RESULTS")
-    build(args.results)
+    build(args.results, models=args.models)

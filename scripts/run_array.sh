@@ -13,7 +13,7 @@
 # A tasks file holds one kind of line, for one model. Hardware comes from the model card: gpu jobs
 # get $STRABLE_SBATCH_GPU (one GPU of the reference type), cpu jobs $STRABLE_SBATCH_CPU (no GPU),
 # both 32 CPUs and 128G. The cluster's partition and node flags live in private/runner.env
-# (gitignored: the repository names no cluster), for example
+# ($STRABLE_RUNNER_ENV; gitignored: the repository names no cluster), for example
 #   STRABLE_SBATCH_GPU="--partition=<gpu partition> --exclude=<other GPU types> --gres=gpu:1"
 #   STRABLE_SBATCH_CPU="--partition=<cpu partition>"
 # Extra arguments go to sbatch after these, so they win. The job id is
@@ -28,17 +28,19 @@ set -euo pipefail
 # SLURM runs a copy of this file from its spool folder, so the clone is passed on in STRABLE_ROOT.
 export STRABLE_ROOT=${STRABLE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 ROOT=$STRABLE_ROOT
-[ -f "$ROOT/private/runner.env" ] && source "$ROOT/private/runner.env"
+RUNNER_ENV=${STRABLE_RUNNER_ENV:-$ROOT/private/runner.env}
+[ -f "$RUNNER_ENV" ] && source "$RUNNER_ENV"
 export STRABLE_CACHE=${STRABLE_CACHE:-$ROOT/cache}
 CACHE=$STRABLE_CACHE
 RUNS=${STRABLE_RUNS:-$ROOT/runs}
+PY=${STRABLE_PYTHON:-$CACHE/env/bin/python}
 
 if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
   TASKS=$(realpath "$1"); shift
   n=$(grep -c . "$TASKS" || true)
   [ "$n" -gt 0 ] || { echo "no tasks in $TASKS" >&2; exit 1; }
   read -r a b _ < "$TASKS"
-  hw_of() { (cd "$ROOT" && awk '/^hardware:/{print $2}' "$1/model.yaml"); }
+  hw_of() { "$PY" -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["hardware"])' "$ROOT/$1/model.yaml"; }
   case "$a" in
     embed) kind=embed; time=04:00:00; hw=gpu ;;
     smoke) kind=smoke; time=00:30:00; hw=$(hw_of "$b") ;;
@@ -58,7 +60,6 @@ fi
 cd "$ROOT"
 read -r a b c d < <(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" "$1")
 export PYTHONNOUSERSITE=1 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=$ROOT
-PY=$CACHE/env/bin/python
 DEVICE=cpu; { [ -n "${CUDA_VISIBLE_DEVICES:-}" ] || [ -n "${SLURM_JOB_GPUS:-}" ]; } && DEVICE=cuda
 echo "task $SLURM_ARRAY_TASK_ID on $(hostname): $a $b $c $d (device $DEVICE)"
 

@@ -59,19 +59,25 @@ def clone(tmp_path, monkeypatch):
     for f in bin_dir.iterdir():
         f.chmod(0o755)
     monkeypatch.setenv("PATH", f"{bin_dir}:{Path(sys.executable).parent}:/usr/bin:/bin")
-    d = dispatch.Dispatcher(root=root, cache=tmp_path / "cache", gh=FakeGitHub(), python=sys.executable)
+    d = dispatch.Dispatcher(root=root, cache=tmp_path / "cache", gh=FakeGitHub(), python=sys.executable, ref="main")
     d.todo = ["models/extratrees tfidf t1 0", "models/extratrees tfidf t1 1"]
     d.embeddings = []
-    monkeypatch.setattr(d, "missing_tasks", lambda folder: list(d.todo))
+    monkeypatch.setattr(d, "missing_tasks", lambda folder, code: list(d.todo))
     monkeypatch.setattr(d, "missing_embeddings", lambda: list(d.embeddings))
-    monkeypatch.setattr(d, "prepare", lambda folder: (True, "ok"))
-    monkeypatch.setattr(d, "check_results", lambda csv: (True, "coverage ok"))
+    monkeypatch.setattr(d, "prepare", lambda folder, code: (True, "ok"))
+    monkeypatch.setattr(d, "check_results", lambda csv, code: (True, "coverage ok"))
     d.published = []
     monkeypatch.setattr(d, "open_results_pr", lambda *a: d.published.append(a) or 9)
     monkeypatch.setattr(d, "tag", lambda *a: None)
-    monkeypatch.setattr("gather_results.gather", lambda runs, results: [])
+    monkeypatch.setattr("gather_results.gather", lambda runs, results, only=None: [])
     d.tmp = tmp_path
     return d
+
+
+def commit(root):
+    for args in (["add", "."], ["commit", "-q", "-m", "change"]):
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=root, check=True,
+                       capture_output=True)
 
 
 def state(d):
@@ -86,48 +92,51 @@ def finish_smoke(d, rc="0"):
 
 def test_full_path_without_messages_on_success(clone):
     d = clone
-    d.run(pull=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "smoke" and state(d)["pr"] == 3
     sbatch = (d.tmp / "sbatch.log").read_text()
     assert "--partition=cpuq" in sbatch and "--time=00:30:00" in sbatch and "gpu" not in sbatch
     assert (d.cache / "logs").is_dir()  # created before submission
 
     (d.tmp / "queue").write_text("4242\n")  # still running: nothing moves
-    d.run(pull=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "smoke"
 
     (d.tmp / "queue").unlink()
     finish_smoke(d)
-    d.run(pull=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "run" and state(d)["n_tasks"] == 2
     assert (d.state_dir / "extratrees.run.txt").read_text().splitlines() == d.todo
 
     d.todo = []
-    d.run(pull=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "published" and state(d)["version"] == "v0.1.0"
     assert yaml.safe_load((d.root / "results" / "versions.yaml").read_text())[0]["note"] == "Added ExtraTrees sklearn-1.7"
 
     d.gh.results_pr = {"number": 9, "state": "closed", "merged_at": "x", "merge_commit_sha": "abc"}
-    d.run(pull=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "done"
     assert d.gh.posts == []  # no notification on success
 
 
 def test_gpu_model_smokes_on_the_reference_gpu(clone):
     d = clone
-    card = dict(CARD, hardware="gpu")
-    (d.root / "models" / "extratrees" / "model.yaml").write_text(yaml.safe_dump(card))
-    d.run(pull=False)
+    (d.root / "models" / "extratrees" / "model.yaml").write_text(yaml.safe_dump(dict(CARD, hardware="gpu")))
+    d.run(fetch=False)
+    assert not (d.tmp / "sbatch.log").read_text().count("gpuq")  # the working copy is not what runs
+    (d.state_dir / "extratrees.json").unlink()
+    commit(d.root)
+    d.run(fetch=False)
     sbatch = (d.tmp / "sbatch.log").read_text()
     assert "--partition=gpuq --gres=gpu:1" in sbatch
 
 
 def test_smoke_failure_notifies_once(clone):
     d = clone
-    d.run(pull=False)
+    d.run(fetch=False)
     finish_smoke(d, rc="1")
-    d.run(pull=False)
-    d.run(pull=False)
+    d.run(fetch=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "failed"
     (path, data), = d.gh.posts
     assert path == "/dispatches" and data["event_type"] == "smoke-failed"
@@ -136,33 +145,33 @@ def test_smoke_failure_notifies_once(clone):
 
 def test_run_is_resubmitted_once_then_fails(clone):
     d = clone
-    d.run(pull=False)
+    d.run(fetch=False)
     finish_smoke(d)
-    d.run(pull=False)  # first submission
-    d.run(pull=False)  # tasks left: one resubmission
-    assert state(d)["step"] == "run" and state(d)["retries"] == 1 and d.gh.posts == []
-    d.run(pull=False)
+    d.run(fetch=False)  # first submission
+    d.run(fetch=False)  # tasks left: the second submission
+    assert state(d)["step"] == "run" and state(d)["submissions"] == 2 and d.gh.posts == []
+    d.run(fetch=False)
     assert state(d)["step"] == "failed" and d.gh.posts[0][1]["event_type"] == "run-failed"
 
 
 def test_embeddings_come_first_and_are_shared(clone):
     d = clone
     d.embeddings = ["embed llama-3.1-8b t1"]
-    d.run(pull=False)
+    d.run(fetch=False)
     finish_smoke(d)
-    d.run(pull=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "embed"
     assert (d.state_dir / "_embed.embed.txt").read_text().strip() == "embed llama-3.1-8b t1"
     assert "--gres=gpu:1" in (d.tmp / "sbatch.log").read_text().splitlines()[-1]
     d.embeddings = []
-    d.run(pull=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "run"
 
 
 def test_unapproved_merge_never_runs(clone):
     d = clone
     d.gh.merged_by = "someone-else"
-    d.run(pull=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "unapproved" and not (d.tmp / "sbatch.log").exists()
 
 
@@ -187,12 +196,12 @@ def test_only_one_results_pull_request_at_a_time(clone):
     d = clone
     d.state_dir.mkdir(parents=True)
     (d.state_dir / "other.json").write_text(json.dumps({"step": "published"}))
-    d.run(pull=False)
+    d.run(fetch=False)
     finish_smoke(d)
-    d.run(pull=False)
+    d.run(fetch=False)
     d.todo = []
-    d.run(pull=False)
-    d.run(pull=False)
+    d.run(fetch=False)
+    d.run(fetch=False)
     assert state(d)["step"] == "publish" and d.published == []
 
 
@@ -203,13 +212,78 @@ def test_lock_blocks_a_second_pass(clone):
     d.state_dir.mkdir(parents=True)
     with open(d.state_dir / ".lock", "w") as held:
         fcntl.flock(held, fcntl.LOCK_EX)
-        assert d.run(pull=False) == 0
+        assert d.run(fetch=False) == 0
     assert not (d.state_dir / "extratrees.json").exists()
 
 
 def test_next_version(clone):
     assert clone.next_version([]) == "v0.1.0"
     assert clone.next_version([{"version": "v0.1.9"}]) == "v0.1.10"
+    assert clone.next_version([{"version": "v0.1.0-pre"}]) == "v0.1.0"
+    with pytest.raises(ValueError):
+        clone.next_version([{"version": "first"}])
+
+
+def test_jobs_run_from_the_commit_the_model_started_on(clone):
+    d = clone
+    d.run(fetch=False)
+    start = state(d)["commit"]
+    assert "STRABLE_ROOT" not in d.env  # set per submission, never the clone
+    (d.root / "scripts" / "later.txt").write_text("a later push\n")
+    commit(d.root)
+    finish_smoke(d)
+    d.run(fetch=False)
+    assert state(d)["commit"] == start and state(d)["step"] == "run"
+    assert (d.state_dir / "checkouts" / start / "scripts" / "run_array.sh").exists()
+    assert not (d.state_dir / "checkouts" / start / "scripts" / "later.txt").exists()
+    d.todo = []
+    d.run(fetch=False)
+    d.gh.results_pr = {"number": 9, "state": "closed", "merged_at": "x", "merge_commit_sha": "abc"}
+    d.run(fetch=False)  # done: only the head's checkout is left
+    head = d.git("rev-parse", "main").stdout.strip()
+    assert state(d)["step"] == "done" and [p.name for p in (d.state_dir / "checkouts").iterdir()] == [head] != [start]
+
+
+def test_public_text_has_no_absolute_paths():
+    text = 'File "/data/parietal/store4/x/models/m/model.py", line 3\nsee /home/me/.cache/a.log and cache/logs/1_2.out'
+    out = dispatch.public(text, 1000)
+    assert "/data/" not in out and "/home/" not in out and ".../model.py" in out and "cache/logs/1_2.out" in out
+    assert dispatch.public("x" * 5000, 1500) == "x" * 1500
+    assert "https://github.com/a/b" in dispatch.public("https://github.com/a/b", 100)
+
+
+def test_retry_waits_on_network_errors_only(monkeypatch):
+    import urllib.error
+
+    monkeypatch.setattr(dispatch.time, "sleep", lambda s: None)
+    calls = []
+
+    def flaky():
+        calls.append(1)
+        if len(calls) < 3:
+            raise urllib.error.URLError("timed out")
+        return "ok"
+
+    assert dispatch.retry(flaky) == "ok" and len(calls) == 3
+    calls.clear()
+
+    def refused():
+        calls.append(1)
+        raise urllib.error.HTTPError("u", 422, "exists", {}, None)
+
+    with pytest.raises(urllib.error.HTTPError):
+        dispatch.retry(refused)
+    assert len(calls) == 1
+
+
+def test_board_is_built_from_published_and_paper_files_only(tmp_path):
+    import pandas as pd
+
+    for model, hardware in [("ridge", "paper"), ("half-run", "cpu"), ("published", "cpu"), ("new", "cpu")]:
+        pd.DataFrame({"hardware": [hardware]}).to_csv(tmp_path / f"{model}.csv", index=False)
+    site = tmp_path / "results.json"
+    site.write_text(json.dumps({"pipelines": [{"id": "tfidf+published"}, {"id": "ridge"}]}))
+    assert dispatch.board_models(tmp_path, site, "new") == ["new", "published", "ridge"]
 
 
 def test_token_file_must_exist_and_be_private(tmp_path):
@@ -228,7 +302,9 @@ def test_git_reads_the_token_file_not_the_store(clone, tmp_path):
     path = tmp_path / "github_token"
     path.write_text("github_pat_x\n")
     path.chmod(0o600)
-    env = dict(clone.env, STRABLE_GH_TOKEN_FILE=str(path))
+    env = dict(clone.git_env, STRABLE_GH_TOKEN_FILE=str(path))
     out = subprocess.run(["git", "credential", "fill"], input="protocol=https\nhost=github.com\n\n", env=env,
                          capture_output=True, text=True, check=True).stdout
-    assert "password=github_pat_x" in out
+    used_the_file = "password=github_pat_x\n" in out
+    del out  # whatever git returned must never reach a failure message
+    assert used_the_file, "git did not read the token file"

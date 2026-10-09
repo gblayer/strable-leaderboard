@@ -14,7 +14,7 @@ import yaml
 
 REQUIRED = ["name", "version", "handles_strings", "tasks", "variant", "access", "hardware", "package", "checkpoint",
             "licence", "trained_on_strable"]
-OPTIONAL = ["gpu_memory_gb", "code", "paper", "anonymous"]
+OPTIONAL = ["code", "paper", "anonymous"]
 VARIANTS = {"default"}  # tuned and tuned-ensembled come later
 ACCESS = {"open", "closed"}
 HARDWARE = {"gpu", "cpu"}
@@ -65,8 +65,6 @@ def card_problems(card) -> list[str]:
             unknown = sorted(set(map(str, seen)) - set(json.loads(MANIFEST.read_text())["tables"]))
             if unknown:
                 out.append(f"trained_on_strable names unknown tables {unknown[:5]}")
-    if "gpu_memory_gb" in card and not (isinstance(card["gpu_memory_gb"], (int, float)) and card["gpu_memory_gb"] > 0):
-        out.append("gpu_memory_gb must be a positive number")
     for key in ["code", "paper"]:
         if key in card and not (isinstance(card[key], str) and card[key].startswith(("https://", "http://"))):
             out.append(f"{key} must be a URL")
