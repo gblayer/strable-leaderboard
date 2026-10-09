@@ -34,5 +34,5 @@ for v in PYTHONNOUSERSITE HF_HUB_OFFLINE TRANSFORMERS_OFFLINE HF_DATASETS_OFFLIN
 done
 export SINGULARITYENV_XDG_CACHE_HOME=/tmp/.cache SINGULARITYENV_HF_HOME=/tmp/hf
 # --workdir puts /tmp, /var/tmp and the (empty) home on node disk instead of a 64 MB tmpfs.
-singularity exec --containall --cleanenv --net --network none --workdir "$TMP" "${nv[@]}" "${binds[@]}" --pwd "$OUT" \
+singularity --quiet exec --containall --cleanenv --net --network none --workdir "$TMP" "${nv[@]}" "${binds[@]}" --pwd "$OUT" \
   "$IMG" "$@"
