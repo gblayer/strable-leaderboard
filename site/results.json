@@ -14,8 +14,6 @@
    "lrn": "CatBoost",
    "kind": "e2e",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7189,
     1.9725,
@@ -41,8 +39,6 @@
    "lrn": "CatBoost",
    "kind": "e2e",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7206,
     153.7756,
@@ -68,8 +64,6 @@
    "lrn": "ConTextTab",
    "kind": "e2e",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7578,
     6.9247,
@@ -95,8 +89,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7422,
     2.5152,
@@ -122,8 +114,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7618,
     190.3694,
@@ -149,8 +139,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7318,
     1.339,
@@ -176,8 +164,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7533,
     181.4158,
@@ -203,8 +189,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7466,
     7.1104,
@@ -230,8 +214,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7562,
     197.6852,
@@ -257,8 +239,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7304,
     42.7593,
@@ -284,8 +264,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7561,
     240.0182,
@@ -311,8 +289,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7393,
     2.1104,
@@ -338,8 +314,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7583,
     183.59,
@@ -365,8 +339,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7508,
     49.3308,
@@ -392,8 +364,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7582,
     260.4655,
@@ -419,8 +389,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.729,
     0.1695,
@@ -446,8 +414,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7289,
     17.6022,
@@ -473,8 +439,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6433,
     5.572,
@@ -500,8 +464,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6576,
     441.1525,
@@ -527,8 +489,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7407,
     0.9679,
@@ -554,8 +514,6 @@
    "lrn": "ExtraTrees",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7608,
     146.6045,
@@ -581,8 +539,6 @@
    "lrn": "Mambular",
    "kind": "e2e",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.603,
     51.4661,
@@ -608,8 +564,6 @@
    "lrn": "RealMLP",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7452,
     63.7078,
@@ -635,8 +589,6 @@
    "lrn": "RealMLP",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7621,
     25.4073,
@@ -662,8 +614,6 @@
    "lrn": "RealMLP",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7537,
     71.8732,
@@ -689,8 +639,6 @@
    "lrn": "RealMLP",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7749,
     22.6936,
@@ -716,8 +664,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6719,
     2.0513,
@@ -743,8 +689,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6728,
     0.5626,
@@ -770,8 +714,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6694,
     6.6148,
@@ -797,8 +739,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.679,
     42.2395,
@@ -824,8 +764,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6706,
     1.4308,
@@ -851,8 +789,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6898,
     48.9967,
@@ -878,8 +814,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6593,
     0.0924,
@@ -905,8 +839,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6559,
     4.3224,
@@ -932,8 +864,6 @@
    "lrn": "Ridge",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6689,
     0.5769,
@@ -959,8 +889,6 @@
    "lrn": "TabICLv2",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7006,
     45.0411,
@@ -986,8 +914,6 @@
    "lrn": "TabICLv2",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6944,
     45.5012,
@@ -1013,8 +939,6 @@
    "lrn": "TabICLv2",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7781,
     47.4238,
@@ -1040,8 +964,6 @@
    "lrn": "TabICLv2",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7324,
     51.2529,
@@ -1067,8 +989,6 @@
    "lrn": "TabICLv2",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7799,
     2.9988,
@@ -1094,8 +1014,6 @@
    "lrn": "TabM",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7645,
     51.8305,
@@ -1121,8 +1039,6 @@
    "lrn": "TabM",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7612,
     9.5705,
@@ -1148,8 +1064,6 @@
    "lrn": "TabM",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7665,
     56.5887,
@@ -1175,8 +1089,6 @@
    "lrn": "TabM",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7575,
     8.4822,
@@ -1202,8 +1114,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.773,
     8.1521,
@@ -1229,8 +1139,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7722,
     7.4351,
@@ -1256,8 +1164,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6951,
     12.7871,
@@ -1283,8 +1189,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7186,
     48.1973,
@@ -1310,8 +1214,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7747,
     63.0837,
@@ -1337,8 +1239,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7741,
     8.4031,
@@ -1364,8 +1264,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7764,
     28.8919,
@@ -1391,8 +1289,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7851,
     55.1636,
@@ -1418,8 +1314,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.717,
     56.4761,
@@ -1445,8 +1339,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7391,
     3.3074,
@@ -1472,8 +1364,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7197,
     16.8834,
@@ -1499,8 +1389,6 @@
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7891,
     6.67,
@@ -1526,8 +1414,6 @@
    "lrn": "TabSTAR",
    "kind": "e2e",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7608,
     48.5893,
@@ -1553,8 +1439,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7301,
     2.3891,
@@ -1580,8 +1464,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7542,
     207.8061,
@@ -1607,8 +1489,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7053,
     1.0224,
@@ -1634,8 +1514,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7461,
     176.3395,
@@ -1661,8 +1539,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6772,
     6.9553,
@@ -1688,8 +1564,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.706,
     226.2836,
@@ -1715,8 +1589,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6916,
     42.2579,
@@ -1742,8 +1614,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7246,
     245.1193,
@@ -1769,8 +1639,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7081,
     1.9003,
@@ -1796,8 +1664,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7461,
     202.178,
@@ -1823,8 +1689,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6642,
     49.4153,
@@ -1850,8 +1714,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.724,
     248.2769,
@@ -1877,8 +1739,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7101,
     0.1763,
@@ -1904,8 +1764,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7289,
     18.2468,
@@ -1931,8 +1789,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6227,
     5.6456,
@@ -1958,8 +1814,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.6894,
     741.8038,
@@ -1985,8 +1839,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "default",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7343,
     0.979,
@@ -2012,8 +1864,6 @@
    "lrn": "XGBoost",
    "kind": "modular",
    "variant": "tuned",
-   "hw": "paper",
-   "paper": true,
    "both": [
     0.7673,
     145.895,

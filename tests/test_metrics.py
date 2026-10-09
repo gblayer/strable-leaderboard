@@ -7,7 +7,8 @@ from strable_leaderboard.metrics import expected_folds, fold_score, pareto_front
 
 def test_total_time_per_1k_samples():
     runner = pd.DataFrame({"fit_s": [1.0], "predict_s": [0.5], "total_s": [np.nan], "n_train": [1000], "n_test": [500]})
-    assert per_1k(runner)["total_per_1k"].iloc[0] == pytest.approx(1.0)  # (1.0 + 0.5) s over 1,500 rows
+    out = per_1k(runner).iloc[0]
+    assert out["total_per_1k"] == pytest.approx(1.0) and out["total"] == 1.5 and out["n_rows"] == 1500  # 1.5 s over 1,500 rows
     paper = runner.assign(fit_s=None, predict_s=None, total_s=3.0)  # rows imported from the paper
     assert per_1k(paper)["total_per_1k"].iloc[0] == pytest.approx(2.0)
 

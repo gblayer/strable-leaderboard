@@ -48,14 +48,16 @@ def fold_score(task: str, y_true, y_pred=None, proba=None, classes=None) -> floa
 
 
 def per_1k(results: pd.DataFrame) -> pd.DataFrame:
-    """Add the total run time per 1,000 samples (table rows) to fold rows.
+    """Add the total run time (``total``, s), the table rows (``n_rows``) and the total run time per
+    1,000 samples (``total_per_1k``) to fold rows.
 
     ``results`` has ``n_train, n_test`` and ``total_s``, or ``fit_s`` and ``predict_s`` whose sum
     is the total.
     """
     split = results["fit_s"] + results["predict_s"] if "fit_s" in results else np.nan
     total = results["total_s"].fillna(split) if "total_s" in results else split
-    return results.assign(total_per_1k=total / (results["n_train"] + results["n_test"]) * 1000)
+    n_rows = results["n_train"] + results["n_test"]
+    return results.assign(total=total, n_rows=n_rows, total_per_1k=total / n_rows * 1000)
 
 
 def pareto_front(board: pd.DataFrame) -> list[str]:
