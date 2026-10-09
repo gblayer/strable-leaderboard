@@ -12,16 +12,17 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300..800&display=swap">
 <script>
 (function () {
-  var root = document.documentElement;
-  (location.hash || '').replace('#', '').split('.').forEach(function (t) {
-    if (t === 'dark' || t === 'light') root.setAttribute('data-theme', t);
-  });
+  var t = null;
+  try { t = localStorage.getItem('strable-theme'); } catch (e) {}
+  (location.hash || '').replace('#', '').split('.').forEach(function (h) { if (h === 'dark' || h === 'light') t = h; });
+  if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
 })();
 </script>
 <style>
 /* Layout, one column: nav, hero (name, pronunciation, spreadsheet art), ticker, controls, the board
    (table beside the Pareto plot), version history, a Pine Grove suggestion panel.
-   Everything stacks under 1000px. The theme follows the system, or #dark / #light in the URL. */
+   Everything stacks under 1000px. The theme follows the system unless the Auto / Light / Dark control
+   (kept in localStorage) or #dark / #light in the URL says otherwise. */
 :root {
   --f-display: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -93,7 +94,8 @@ section { scroll-margin-top: 76px; }
 .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); border-radius: 6px; }
 .logo-mark { width: 34px; height: 34px; display: block; flex: none; }
 .lm-h { fill: var(--ink); } .lm-c { fill: var(--surface); stroke: var(--line); stroke-width: 1; } .lm-s { fill: var(--accent); }
-.nav-right { display: flex; align-items: center; gap: 24px; }
+.nav-right { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 10px 24px; }
+.seg.theme button { font-size: 12px; padding: 6px 10px; min-height: 28px; }
 .nav-links { display: flex; gap: 24px; font-size: 16.5px; color: var(--ink-2); }
 .nav-links a { text-decoration: none; }
 .nav-links a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
@@ -324,6 +326,11 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         <a class="demo-btn" id="talk-btn" href="#" title="Video coming soon" aria-disabled="true">Talk</a>
         <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
       </nav>
+      <div class="seg theme" role="group" aria-label="Theme">
+        <button type="button" data-theme-set="auto" aria-pressed="true" title="Follow the system setting">Auto</button>
+        <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+        <button type="button" data-theme-set="dark" aria-pressed="false">Dark</button>
+      </div>
       <div class="nav-btns">
         <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-model">Submit a model</a>
         <button type="button" class="btn ghost" id="cite-btn" aria-haspopup="dialog" aria-controls="cite-dialog">Cite</button>
@@ -1027,6 +1034,17 @@ document.querySelectorAll('[data-dl]').forEach((b) => b.addEventListener('click'
   catch (e) { msg.textContent = 'Could not make the ' + kind.toUpperCase() + ' file: ' + e.message + '.'; }
   b.disabled = false;
 }));
+
+/* Theme: Auto follows the system; Light or Dark is remembered in localStorage when the browser allows it. */
+function setTheme(t, save) {
+  const root = document.documentElement;
+  if (t === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
+  document.querySelectorAll('[data-theme-set]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themeSet === t)));
+  if (!save) return;
+  try { if (t === 'auto') localStorage.removeItem('strable-theme'); else localStorage.setItem('strable-theme', t); } catch (e) {}
+}
+document.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet, true)));
+setTheme(document.documentElement.getAttribute('data-theme') || 'auto', false);
 
 /* In-page links scroll inside the page instead of navigating the frame. */
 document.addEventListener('click', (ev) => {
