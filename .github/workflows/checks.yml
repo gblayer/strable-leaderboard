@@ -12,7 +12,8 @@ name: Checks
 #   failure is reported as a warning: its full smoke test runs on the reference GPU on the
 #   cluster, as the dispatcher's first step after the merge. The model is installed with
 #   env/requirements.txt as constraints, so every package, dependencies included, has the shared
-#   environment's version. A changed site/results.json or .parquet is validated.
+#   environment's version. Changed results files (RESULTS_FILES in strable_leaderboard/__init__.py)
+#   are validated.
 on:
   pull_request:
 
@@ -54,7 +55,8 @@ jobs:
         run: |
           models=$(git diff --name-only "$BASE_SHA" HEAD -- models/ | cut -d/ -f2 | sort -u \
             | grep -E '^[a-z0-9][a-z0-9.-]*$' | grep -v '^_template$' || true)
-          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- site/results.json site/results.parquet || true)
+          files=$(python3 -c 'from strable_leaderboard import RESULTS_FILES; print(*RESULTS_FILES)')
+          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- $files || true)
           echo "models=$(echo $models)" >> "$GITHUB_OUTPUT"
           echo "results=$(echo $results)" >> "$GITHUB_OUTPUT"
           echo "Model folders: ${models:-none}. Results files: ${results:-none}."
@@ -104,7 +106,7 @@ jobs:
           done
           exit $status
 
-      - name: Validate site/results.json
+      - name: Validate the results files
         if: steps.changed.outputs.results != ''
         run: |
           set -o pipefail

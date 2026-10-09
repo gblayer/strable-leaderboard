@@ -18,8 +18,8 @@ code of a model in flight. A model is a folder of models/ on main. Its steps:
   embed     numeric-only models: one array fills the missing language-model embeddings.
   run       make_tasks + the job array, submitted at most twice.
   publish   gather_results for this model only, check_results, a line in results/versions.yaml,
-            build_site_data from the models already on the board, the paper's files and this one,
-            on a branch results/<model>, push, open the results pull request (which goes through
+            build_site_data from the models already on the board, the paper's files and this one
+            into the RESULTS_FILES on a branch results/<model>, push, open the results pull request (which goes through
             Checks, the Claude review and the gate like any other).
   published waits for that pull request; merged -> done, and the version is tagged.
 
@@ -54,7 +54,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from strable_leaderboard import APPROVED, MAINTAINER, SLUG  # noqa: E402
+from strable_leaderboard import APPROVED, MAINTAINER, RESULTS_FILES, SLUG  # noqa: E402
 from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 
 REPO = os.environ.get("STRABLE_REPO", DEFAULT_REPO)
@@ -392,7 +392,7 @@ class Dispatcher:
         log(name, "results pull request", number)
 
     def open_results_pr(self, name: str, version: str, note: str, check_output: str, st: dict) -> int:
-        """Branch results/<name> from origin/main with the rebuilt site/results.json and .parquet, pushed; the PR opened."""
+        """Branch results/<name> from origin/main with the rebuilt RESULTS_FILES, pushed; the PR opened."""
         branch, wt = f"results/{name}", self.state_dir / "worktrees" / name
         retry(lambda: self.git("fetch", "-q", *FETCH_MAIN))
         self.git("worktree", "remove", "--force", wt, check=False)
@@ -403,7 +403,7 @@ class Dispatcher:
             self.sh(self.python, "scripts/build_site_data.py", "--results", self.root / "results", "--models", *models,
                     cwd=wt)
             self.sh(self.python, "scripts/build_site_data.py", "--check", "site/results.json", cwd=wt)
-            self.git("add", "site/results.json", "site/results.parquet", cwd=wt)
+            self.git("add", *RESULTS_FILES, cwd=wt)
             self.git("commit", "-m", f"Results: {note} ({version})", cwd=wt)
             retry(lambda: self.git("push", "--force", REMOTE, f"HEAD:refs/heads/{branch}", cwd=wt))
         finally:

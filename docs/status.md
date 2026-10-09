@@ -25,7 +25,7 @@ What exists, what was decided, what is left. Written for Gioia at the end of the
 
 **The runner** (`strable_leaderboard/run.py`, `scripts/`). One task = one model × encoder × table × fold, timed with an untimed warm-up, writing one row. `prepare.py` downloads the dataset, checkpoints and builds the environment; `make_tasks.py` lists what is missing; `run_array.sh` is the SLURM array, requeue-safe; `gather_results.py` assembles `results/<model>.csv`; `check_results.py` validates it; `build_site_data.py` writes `site/results.json` and validates it with `--check`; `import_paper_results.py` converts the paper's `result_comparison` CSVs (scores and total time, hardware "paper"). Language-model embeddings are computed once per table and cached, as in the paper. Ran end to end locally with Ridge + Tf-Idf.
 
-**Storage.** Per-fold CSVs and `versions.yaml` live in `results/`, gitignored, so they stay on the cluster. GitHub holds only `site/results.json`, the aggregates the page shows (what TabArena also publishes).
+**Storage.** Per-fold CSVs and `versions.yaml` live in `results/`, gitignored, so they stay on the cluster. GitHub holds only what `build_site_data.py` writes into `site/`: the aggregates the page shows and the fold rows behind them, for download.
 
 **README and docs.** README with an SVG banner in the site's palette (lettering as outlines, so GitHub renders the typeface), badges, the page address, a star-and-cite line, a closing Citation section with the paper's BibTeX, `AGENTS.md`. Docs: plan, protocol, submitting (with the pull-request diagram and the fork explanation), automation, site, decisions (dated), research.
 

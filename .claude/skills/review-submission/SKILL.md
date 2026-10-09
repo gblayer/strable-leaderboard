@@ -43,7 +43,7 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 
 ## B. A results update, `site/results.json`
 
-- Opened by `gblayer` (the maintainer, whose repository token the dispatcher uses), and only `site/results.json` and `site/results.parquet` change.
+- Opened by `gblayer` (the maintainer, whose repository token the dispatcher uses), and only the results files change: `site/results.json`, `site/results.parquet`, `site/results_per_fold.parquet`, `site/results_per_fold.csv` (`RESULTS_FILES` in `strable_leaderboard/__init__.py`).
 - The Checks workflow passed: it validates the file's shape, unique ids, score and time ranges, and that the Parquet holds the same numbers.
 - The version went up by one patch and the first history line names what changed.
 - Existing pipelines keep their numbers unless the history line says they were re-run.

@@ -38,6 +38,8 @@ def test_clean_model_merges():
 def test_results_update_by_the_maintainer_merges():
     assert gate(p=pr(author="gblayer"), files=["site/results.json"]) == ("merge", SHA)
     assert gate(p=pr(author="gblayer"), files=["site/results.json", "site/results.parquet"]) == ("merge", SHA)
+    every = ["site/results.json", "site/results.parquet", "site/results_per_fold.parquet", "site/results_per_fold.csv"]
+    assert gate(p=pr(author="gblayer"), files=every) == ("merge", SHA)
 
 
 def test_results_parquet_alone_or_with_other_files_needs_review():

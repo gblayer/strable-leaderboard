@@ -22,13 +22,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from strable_leaderboard import APPROVED, MAINTAINER, NEEDS, RESERVED, SLUG  # noqa: E402
+from strable_leaderboard import APPROVED, MAINTAINER, NEEDS, RESERVED, RESULTS_FILES, SLUG  # noqa: E402
 from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 
 BOTS = {"github-actions[bot]", "claude[bot]"}
 CHECKS_WORKFLOW = "checks.yml"
 REVIEW_CONTEXT = "Claude review"
-RESULTS_FILES = {"site/results.json", "site/results.parquet"}  # what a results pull request changes
 REPO = os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO)
 
 
@@ -36,7 +35,7 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
     """Conditions 3 and 4 on every path the pull request adds, changes, removes or renames."""
     if not paths:
         return ["the diff is empty"]
-    if "site/results.json" in paths and set(paths) <= RESULTS_FILES:
+    if "site/results.json" in paths and set(paths) <= set(RESULTS_FILES):
         return [] if author == MAINTAINER else [f"a results update opened by {author}, not by {MAINTAINER}"]
     out = []
     outside = sorted(p for p in paths if not (p.startswith("models/") and p.count("/") >= 2))
