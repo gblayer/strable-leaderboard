@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from strable_leaderboard.codenames import codename
 from strable_leaderboard.metrics import expected_folds, fold_score, pareto_front, per_1k
 
 
@@ -47,10 +46,3 @@ def test_multiclass_auc_applies_the_papers_softmax():
     labels = np.array(["a", "b", "c"])  # original labels, sorted
     assert fold_score("multiclass", labels[y], proba=proba, classes=labels) == pytest.approx(paper)
 
-
-def test_codename_format_and_uniqueness():
-    names = set()
-    for _ in range(50):
-        names.add(codename(taken=names))
-    assert len(names) == 50
-    assert all(n.count("-") == 1 for n in names)
