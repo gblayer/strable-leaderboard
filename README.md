@@ -22,25 +22,27 @@ The board currently holds the paper's 75 Figure 4a pipelines, version v0.1.0-pre
 
 You submit code, not results.
 
-1. **Fork** the repository on GitHub: your own copy, since you cannot push to this one.
-2. **Add one folder**, `models/<name>/`, with `model.py`, `model.yaml` and `requirements.txt`, starting from [models/_template/](models/_template/). No container, no bash script. Packages must be the pinned versions listed in `env/requirements.txt`, the shared environment. Your coding agent can do it; tell it:
+1. **Fork** the repository on GitHub, your own copy since you cannot push to this one, and clone your fork.
+2. **Add one folder**, `models/<name>/`, with `model.py`, `model.yaml` and `requirements.txt`, starting from [models/_template/](models/_template/). One folder per model version, named with lowercase letters, digits, dots and hyphens; the version lives in `model.yaml`, and the names of the paper's learners are reserved ([list](docs/submitting.md)). No container, no bash script: every model runs in one shared environment, and each pin in your `requirements.txt` must equal its version in [env/requirements.txt](env/requirements.txt). A package that is not there: add one line `name==version` to [env/requirements.in](env/requirements.in) in the same pull request; never change an existing pin. Your coding agent can do it; tell it:
    ```
    Add my model to the STRABLE leaderboard, test it, and open a pull request.
    ```
-   It follows [AGENTS.md](AGENTS.md) and [.claude/skills/add-model/SKILL.md](.claude/skills/add-model/SKILL.md).
-3. **Run the smoke test:** `python -m strable_leaderboard.smoke models/<name>`.
-4. **Open a pull request** from your fork.
+   It follows [AGENTS.md](AGENTS.md) (Claude Code reads it through [CLAUDE.md](CLAUDE.md)) and [.claude/skills/add-model/SKILL.md](.claude/skills/add-model/SKILL.md).
+3. **Run the smoke test**, as in [Check your model locally](#check-your-model-locally).
+4. **Open a pull request** from your fork. Only `models/<name>/` may change, plus added lines in `env/requirements.in`.
 
 **What happens next.** Automatic checks run and Claude reviews the pull request twice. If everything passes, it is merged automatically; otherwise the maintainer reviews it. After the merge we run the model on all 108 tables × 3 folds and the board updates. Details: [docs/submitting.md](docs/submitting.md).
 
 ## Check your model locally
 
+With Python 3.12 or later:
+
 ```
-pip install -e ".[smoke]" -r models/<name>/requirements.txt
+pip install -c env/requirements.txt -e ".[smoke]" -r models/<name>/requirements.txt
 python -m strable_leaderboard.smoke models/<name>
 ```
 
-The first line installs this package, the smoke-test tools and your model's packages. The second runs your model on outer fold 0 of three small tables and checks its card and predictions; it does not compute leaderboard scores.
+The first line installs this package, the smoke-test tools and your model's packages, at the shared environment's versions. The second runs your model on outer fold 0 of three small tables and checks its card and predictions; it does not compute leaderboard scores.
 
 ## Layout
 
@@ -49,6 +51,7 @@ The first line installs this package, the smoke-test tools and your model's pack
 | [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a working example (it never runs; the board's Ridge rows come from the paper) |
 | [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, the model contract and the smoke test |
 | [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
+| [env/](env/) | The shared environment every model runs in: `requirements.txt` (pins), `requirements.in` (where new packages are added) |
 | [Paper](https://arxiv.org/abs/2605.12292) | The evaluation protocol: data, cross-validation, scores, time, encoders |
 | [docs/submitting.md](docs/submitting.md) | The contract, the model card, versions, examples |
 | [site/](site/) | The page and its data: `results.json`, `results.parquet`, and every fold in `results_per_fold.csv` and `results_per_fold.parquet` |

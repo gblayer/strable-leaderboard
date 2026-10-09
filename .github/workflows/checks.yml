@@ -1,17 +1,40 @@
 name: Checks
 
-# Runs on every pull request, on GitHub's machines, with a read-only token and no secrets:
-# the smoke test on each changed model folder, and a validation of site/results.json when it changes.
+# Runs on every pull request, on GitHub's machines, with a read-only token and no secrets, so that it
+# can be a required check; steps with nothing to check do nothing. It is the only place where
+# contributor code runs before the merge.
+# - tests: pytest on the pull request's code.
+# - env: in a contributor's pull request, env/requirements.in and env/requirements.txt only gain
+#   lines; no existing pin changes.
+# - models: for each changed model folder, the card, the pins and the code (`smoke --static`),
+#   then the smoke test on CPU. A `hardware: gpu` model gets its smoke test with `--device cpu`
+#   too; if that fails, the package may need a GPU, so only the static checks count here and the
+#   failure is reported as a warning: its full smoke test runs on the reference GPU on the
+#   cluster, as the dispatcher's first step after the merge. The model is installed with
+#   env/requirements.txt as constraints, so every package, dependencies included, has the shared
+#   environment's version. Changed results files (RESULTS_FILES in strable_leaderboard/__init__.py)
+#   are validated.
 on:
   pull_request:
-    paths:
-      - "models/**"
-      - "site/results.json"
 
 permissions:
   contents: read
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install --quiet -c env/requirements.txt -e ".[dev]"
+          pytest -q
+
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -19,10 +42,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: List what this pull request changes
         id: changed
@@ -31,30 +55,60 @@ jobs:
         run: |
           models=$(git diff --name-only "$BASE_SHA" HEAD -- models/ | cut -d/ -f2 | sort -u \
             | grep -E '^[a-z0-9][a-z0-9.-]*$' | grep -v '^_template$' || true)
-          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- site/results.json || true)
+          files=$(python3 -c 'from strable_leaderboard import RESULTS_FILES; print(*RESULTS_FILES)')
+          results=$(git diff --name-only --diff-filter=AM "$BASE_SHA" HEAD -- $files || true)
           echo "models=$(echo $models)" >> "$GITHUB_OUTPUT"
           echo "results=$(echo $results)" >> "$GITHUB_OUTPUT"
           echo "Model folders: ${models:-none}. Results files: ${results:-none}."
 
-      - name: Smoke-test each changed model in its own environment
+      - name: The shared environment only gains packages
+        # A contributor may add lines to env/requirements.in, never change a pin; the maintainer
+        # (the repository's owner) changes pins herself.
+        if: github.event.pull_request.user.login != github.repository_owner
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p /tmp/base-env
+          for f in requirements.in requirements.txt; do git show "$BASE_SHA:env/$f" > "/tmp/base-env/$f"; done
+          pip install --quiet pyyaml
+          python -m strable_leaderboard.check_requirements --base-env /tmp/base-env
+
+      - name: Card, pins, code and smoke test of each changed model
         if: steps.changed.outputs.models != ''
         env:
           MODELS: ${{ steps.changed.outputs.models }}
           HF_HUB_DISABLE_PROGRESS_BARS: "1"
+          PYTHONNOUSERSITE: "1"
         run: |
+          set -o pipefail
           status=0
           for m in $MODELS; do
             [ -d "models/$m" ] || continue
             echo "::group::$m"
             python -m venv "/tmp/env-$m"
-            "/tmp/env-$m/bin/pip" install --quiet -e ".[smoke]" -r "models/$m/requirements.txt"
-            "/tmp/env-$m/bin/python" -m strable_leaderboard.smoke "models/$m" || status=1
+            py="/tmp/env-$m/bin/python"
+            "$py" -m pip install --quiet pyyaml
+            if PYTHONPATH=. "$py" -m strable_leaderboard.check_requirements "models/$m"; then
+              "$py" -m pip install --quiet -c env/requirements.txt -e ".[smoke]" -r "models/$m/requirements.txt"
+              hw=$("$py" -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["hardware"])' "models/$m/model.yaml")
+              if "$py" -m strable_leaderboard.smoke "models/$m" --device cpu | tee -a "$GITHUB_STEP_SUMMARY"; then
+                :
+              elif [ "$hw" = gpu ]; then
+                echo "::warning::$m: the smoke test failed on CPU; only the static checks count here, the reference GPU runs it after the merge"
+                "$py" -m strable_leaderboard.smoke "models/$m" --static | tee -a "$GITHUB_STEP_SUMMARY" || status=1
+              else
+                status=1
+              fi
+            else
+              status=1
+            fi
             echo "::endgroup::"
           done
           exit $status
 
-      - name: Validate site/results.json
+      - name: Validate the results files
         if: steps.changed.outputs.results != ''
         run: |
-          pip install --quiet -e .
+          set -o pipefail
+          pip install --quiet -c env/requirements.txt -e .
           python scripts/build_site_data.py --check site/results.json | tee -a "$GITHUB_STEP_SUMMARY"

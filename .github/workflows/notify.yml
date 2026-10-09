@@ -1,0 +1,39 @@
+name: Notify
+
+# The cluster's dispatcher reports failures with a repository_dispatch event (only failures: nothing
+# is posted on success). This workflow turns it into a comment by github-actions[bot] that mentions
+# @gblayer, so GitHub emails her; a comment made with her own token would not.
+#
+#   POST /repos/gblayer/strable-leaderboard/dispatches
+#   {"event_type": "run-failed", "client_payload": {"pr": 12, "model": "extratrees", "reason": "..."}}
+#
+# Without a pull request number (runner problems) it opens an issue instead.
+on:
+  repository_dispatch:
+    types: [smoke-failed, run-failed, results-failed, runner-failed]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          KIND: ${{ github.event.action }}
+          PR: ${{ github.event.client_payload.pr }}
+          MODEL: ${{ github.event.client_payload.model }}
+          REASON: ${{ github.event.client_payload.reason }}
+        run: |
+          body=$(printf '@gblayer %s for %s:\n\n```\n%s\n```\n' "$KIND" "${MODEL:-the runner}" "$REASON")
+          if [[ "$PR" =~ ^[0-9]+$ ]]; then
+            gh pr comment "$PR" --repo "$REPO" --body "$body"
+            gh pr edit "$PR" --repo "$REPO" --add-label needs-maintainer || true
+          else
+            gh issue create --repo "$REPO" --title "Runner: $KIND" --body "$body"
+          fi

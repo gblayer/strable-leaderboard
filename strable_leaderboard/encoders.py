@@ -16,6 +16,7 @@ display names are in ``scripts/paper_selection.yaml``.
 
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 
@@ -74,8 +75,13 @@ def embed_table(X: pd.DataFrame, encoder: str, table: str, cache_dir: Path, devi
     table_embeddings = pd.DataFrame(vectors[:, :N_DIMS], columns=[f"X{i}" for i in range(N_DIMS)])
     table_embeddings.insert(0, "name", strings)
     folder.mkdir(parents=True, exist_ok=True)
-    table_embeddings.to_parquet(path, index=False)
+    # The parquet file marks the table as done, so it is written last and renamed into place:
+    # a reader never sees half a file. scripts/run_array.sh fills this cache in its own step,
+    # before any model runs, so tasks never race to write the same table.
     time_path.write_text(f"{seconds:.4f}")
+    tmp = path.with_suffix(f".tmp{os.getpid()}")
+    table_embeddings.to_parquet(tmp, index=False)
+    os.replace(tmp, path)
     return table_embeddings, seconds
 
 
@@ -108,14 +114,17 @@ def warm_up(encoder: str) -> None:
 
 
 def encode(X_train, X_test, encoder: str, table: str, cache_dir=None, device: str = "cuda"):
-    """Numeric train and test frames for one encoder, and the embedding seconds for the whole table.
+    """Numeric train and test frames for one encoder, and the seconds the encoding costs.
 
-    The encoder is fitted on the training rows only. The embedding time is 0 for Tf-Idf; for the
-    language models it is the cached extraction time of the table, measured once.
+    The encoder is fitted on the training rows only. The seconds are the table's language-model
+    extraction time, measured once and cached (0 for Tf-Idf), plus fitting and applying the
+    encoder here; reading the cache is not counted.
     """
     if encoder == "tfidf":
         enc, seconds = tfidf_encoder(), 0.0
     else:
         embeddings, seconds = embed_table(pd.concat([X_train, X_test]), encoder, table, Path(cache_dir), device)
         enc = first_dims_encoder(embeddings)
-    return enc.fit_transform(X_train), enc.transform(X_test), seconds
+    t0 = time.perf_counter()
+    X_train, X_test = enc.fit_transform(X_train), enc.transform(X_test)
+    return X_train, X_test, seconds + time.perf_counter() - t0

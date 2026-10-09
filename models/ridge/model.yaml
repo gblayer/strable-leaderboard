@@ -1,12 +1,11 @@
 name: Ridge
-version: "sklearn-1.9"
+version: "sklearn-1.7"
 handles_strings: false
 tasks: [regression, binary, multiclass]
 variant: default
-access: open
 hardware: cpu
 
-package: scikit-learn==1.9.1
+package: scikit-learn==1.7.2
 checkpoint: null
 licence: BSD-3-Clause
 trained_on_strable: []

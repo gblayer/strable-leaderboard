@@ -29,7 +29,7 @@ jobs:
             ISSUE NUMBER: ${{ github.event.issue.number }}
 
             A maintainer asked you to work on this issue. Read it with `gh issue view`.
-            Read AGENTS.md first.
+            Read README.md, docs/submitting.md and docs/automation.md first and respect them.
             Make the smallest change that resolves the issue, run `pytest`, push a branch,
             and comment on the issue with a summary and the link to open the pull request.
-            If the issue is unclear or conflicts with a decision, comment with a question instead.
+            If the issue is unclear or conflicts with those documents, comment with a question instead.

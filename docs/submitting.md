@@ -5,76 +5,85 @@ You submit code, we run it. One pull request adds one folder, `models/<name>/`:
 | File | What it holds |
 |---|---|
 | `model.py` | `class Model(StrableModel)` with `fit`, `predict` and `predict_proba` |
-| `model.yaml` | The model card, below |
-| `requirements.txt` | Exact versions: `tabpfn==6.0.6` |
+| `model.yaml` | The model card, below. Every field filled |
+| `requirements.txt` | The packages the model imports, at exact versions: `tabpfn==6.0.6` |
+
+No container and no environment of your own: every model runs in **one shared Python environment**, the paper's, pinned in [`env/requirements.txt`](../env/requirements.txt) (torch 2.9.1, scikit-learn 1.7.2, skrub 0.6.2, tabpfn 6.0.6, tabicl 2.0.3, sentence-transformers 5.2.3, xgboost 3.1.1, catboost 1.2.8, ...). Each pin in your `requirements.txt` must equal the shared environment's version. If your model needs a package that is not there, ADD one line `name==version` to [`env/requirements.in`](../env/requirements.in) in the same pull request and say why; edit nothing else in `env/`. Never change an existing pin: Checks fails on it. The pull request then waits for the maintainer: the review workflow reports to her which packages the lock would add and whether any existing version would change, and she relocks the environment with `scripts/lock_env.sh` (the paper's full environment, `env/paper-freeze.txt`, as constraints). A model that needs another version of a package already there cannot come through a pull request: open an issue.
 
 `models/_template/` is the starting point, `models/ridge/` a complete example.
+
+**Folder names.** One folder per model version, named with lowercase letters, digits, dots and hyphens (`kumo-tabular-1.0`); the version itself lives in `model.yaml`. These names are reserved for the learners of the paper, which the maintainer adds: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`.
 
 ## How a submission travels
 
 ```mermaid
 flowchart TD
-  A([A model]) --> B{Code and weights public?}
-  B -- yes --> C[Copy models/_template, fill model.py, model.yaml, requirements.txt]
-  C --> D[Smoke test on three small tables]
-  D --> E[Pull request]
+  A([An open model: public code and weights]) --> K[Fork the repository on GitHub, clone your fork]
+  K --> C[Copy models/_template, fill model.py, model.yaml, requirements.txt]
+  C --> D[Smoke test: card, pins, code, three small tables]
+  D --> E[Push a branch to your fork, open a pull request here]
   E --> F[Checks on GitHub, no secrets]
-  E --> G[Claude review 1/2: verdict]
-  G --> H[Claude review 2/2: agrees or not, label]
-  F --> I{Maintainer merges}
-  H --> I
-  B -- "no: closed or anonymous" --> P[Private Hugging Face repo shared with the runner account, card by email]
-  P --> Q[Private repository, codename if anonymous]
-  Q --> R
-  I --> R[Runner: 108 tables x 3 folds on our hardware]
-  R --> S[Results pull request: Checks + Claude review, maintainer merges]
+  E --> G[Claude review: two independent passes]
+  F --> I{Auto-merge gate}
+  G --> I
+  I -- all conditions hold --> R
+  I -- otherwise --> J[The maintainer reviews, merges or asks for changes]
+  J --> R
+  R[Runner: smoke test on our hardware, then 108 tables x 3 folds] --> S[Results pull request, same checks and gate]
   S --> T[Site rebuilds, patch version +1]
 ```
 
-## Three steps
+## Step by step
 
-1. `cp -r models/_template models/<name>` and fill the three files. The folder name carries the version: `tabpfn-2.5`.
-2. Test: `pip install -e ".[dev]" -r models/<name>/requirements.txt && python -m strable_leaderboard.smoke models/<name>`
-3. Push a branch `add-<name>` and open the pull request, title `Add <Name> <version>`.
+You need a GitHub account. You cannot push to this repository, so you work on your own copy of it:
 
-A pull request always comes from a branch, never from `main`. Contributors without write access first **fork** the repository (a copy under their own GitHub account, made with the Fork button), push the branch there and open the pull request from it; GitHub shows that pull request here, with its diff and checks, while the branch itself stays in the fork. Cloning is different: a clone is a copy on your own machine, and you can only push it to repositories you may write to. This is the standard GitHub flow, used by TabArena as well.
+1. **Fork.** On https://github.com/gblayer/strable-leaderboard, click *Fork*. GitHub makes a copy of the repository under your account, `github.com/<you>/strable-leaderboard`, which you can push to.
+2. **Clone your fork** to your machine: `git clone https://github.com/<you>/strable-leaderboard && cd strable-leaderboard`, then `git checkout -b add-<name>`.
+3. **Add the folder.** `cp -r models/_template models/<name>` and fill the three files: one folder per model version, not a reserved name (above). Or tell your coding agent *"Add my model to the STRABLE leaderboard, test it, and open a pull request."*: it follows [`.claude/skills/add-model/SKILL.md`](../.claude/skills/add-model/SKILL.md), fills every card field from the model's package, documentation and paper, and runs the smoke test.
+4. **Test** in the shared environment's versions:
+   ```
+   pip install -c env/requirements.txt -e ".[smoke]" -r models/<name>/requirements.txt
+   python -m strable_leaderboard.smoke models/<name>
+   ```
+   It fails on any missing or invalid card field, on a pin that differs from the shared environment, on wrong prediction shapes, and on code that a regular-expression hint flags as making its own folds or fixing its own seed (a hint only: the Claude review is the real check). Fix every FAIL line. A GPU model runs on CPU too if its package allows it (`--device cpu`, which Checks also tries); if not, run `--static` and say so in the pull request: we run its smoke test on our GPU.
+   Python 3.12 or later.
+5. **Push and open the pull request.** `git push -u origin add-<name>`, then on GitHub open a pull request from your fork's branch to `gblayer/strable-leaderboard`, `main`, titled `Add <Name> <version>`, with the template filled and the smoke test output pasted. Only `models/<name>/` may change, plus added lines in `env/requirements.in`.
 
-Or clone the repository and tell your coding agent: *"Add my model to the STRABLE leaderboard, test it, and open a pull request."* It follows `.claude/skills/add-model/SKILL.md`.
-
-After that: Claude reviews the pull request and posts a verdict, a maintainer merges, the runner computes all 108 tables, and the board updates. See [automation.md](automation.md).
+What happens next is automatic. GitHub runs the Checks; Claude reviews the pull request twice, and a third pass reads the model's paper, Hugging Face card and README to see whether its pre-training data may include STRABLE's tables (real tables from the web, Kaggle, OpenML, open-data portals or STRABLE's sources; synthetic pre-training is no risk). That pass never blocks the merge: when the overlap is possible, the pull request gets the label `pretraining-overlap` with the quoted evidence, and the board tags the model's rows. If both reviews say MERGE, the Checks pass and the diff is exactly your new folder, the pull request merges by itself; otherwise, for example when it adds a package, the maintainer is asked to look. After the merge our runner smoke-tests the model on the reference hardware and starts the 108 tables; it then comments on your pull request with the number of tasks and a rough automatic estimate of when results will be ready. It opens the results pull request when they are, and the board updates. If anything fails, the maintainer is told on your pull request. See [automation.md](automation.md).
 
 ## The model contract
 
 The contract is the interface every model implements, so that the runner can train, time and score all models the same way. It is the class `StrableModel` in `strable_leaderboard/model.py`:
 
 - `handles_strings = True`: `fit` and `predict` receive the raw table, and the row is tagged **end-to-end**. `False`: they receive a numeric table from one of the three string encoders, and the runner pairs the model with all three.
-- `fit(X, y)` trains on the outer training rows. Classification targets are integers 0..K-1; the model sets `self.classes_`.
+- `fit(X, y)` trains on the outer training rows of the paper's folds, which the runner reads from `splits/`. Classification targets are integers 0..K-1; the model sets `self.classes_`.
 - `predict(X)` returns values or labels. `predict_proba(X)` returns one column per class, in the order of `self.classes_`.
-- `self.seed`, `self.device`, `self.n_jobs` are given. Weights load from `self.weights_dir`: there is no network during a run.
-- Default configuration. Early stopping may use `self.validation_split(y)`, the protocol's first inner fold.
-- Never read the tables, the split files or the test rows yourself.
+- **No folds of your own.** Never split, cross-validate or search hyperparameters: no `train_test_split`, `KFold`, `GridSearchCV` or internal validation split of your own. Early stopping may only use `fit_idx, val_idx = self.validation_split(y)`, the paper's first inner fold (inner 8-fold, seed 1234). Turn off a package's own validation split (for example `early_stopping=False`, or pass the protocol's split as its validation set).
+- **No seed of your own.** Pass `self.seed` (1234) wherever a seed goes; never a number.
+- `self.device` and `self.n_jobs` are given. Weights load from `self.weights_dir`: there is no network during a run.
+- Default configuration. Never read the tables, the split files or the test rows yourself.
 
 ## The model card
+
+Every field is required unless marked optional, and the smoke test (`strable_leaderboard/card.py`) fails on a missing field, an unknown field, a value outside the allowed ones, a checkpoint revision that is not a full 40-character commit hash, a table name that is not a STRABLE table, or a value left from the template.
 
 ```yaml
 name: TabPFN
 version: "2.5"
 handles_strings: false          # false: three encoder rows. true: end-to-end
 tasks: [regression, binary, multiclass]
-variant: default                # default now; tuned and tuned-ensembled later
-access: open                    # open | closed
+variant: default                # the only value accepted for now
 hardware: gpu                   # gpu | cpu
-gpu_memory_gb: 24               # optional
 
 package: tabpfn==6.0.6          # the code, same pin as requirements.txt
 checkpoint:                     # the weights, or null
   repo: Prior-Labs/TabPFN-2.5
-  revision: 0123456789abcdef    # commit hash
+  revision: <40-character commit hash>
 licence: Prior Labs licence
 trained_on_strable: []          # STRABLE tables seen in pre-training or tuning
 
 code: https://github.com/PriorLabs/TabPFN      # optional
-paper: https://arxiv.org/abs/0000.00000        # optional
+paper: https://arxiv.org/abs/<id>              # optional
 ```
 
 What the board derives from it:
@@ -82,14 +91,13 @@ What the board derives from it:
 | Field | On the board |
 |---|---|
 | `handles_strings` | The end-to-end tag, or one row per encoder |
-| `access` | `closed`: a closed tag |
 | `hardware` | Whether the row used the GPU, shown when hovering the row |
-| `variant` | Nothing yet: only `default` is accepted. Tuned and tuned-ensembled rows come later, each from its own folder |
-| `trained_on_strable` | A contamination note on the row |
+| `variant` | Nothing yet: only `default` is accepted |
+| `trained_on_strable` | A contamination note on the row. The leakage pass also reads your paper and card for pre-training data from STRABLE's sources: link them in `paper` and `code` |
 
-Why `access` matters: *open* means anyone can rerun the pipeline, since the code, the weights, the folder and the folds are public; *closed* means we ran it on our hardware with weights shared privately, so the numbers are comparable but only we could produce them. The Pareto front is computed from the results, so a closed model is on it only if nothing beats it.
+**Variants.** Only `variant: default`, the package's default configuration, is accepted for now. Tuned and tuned-plus-ensembled variants will come later with a fixed protocol (search space, budget, ensembling) that every model follows; each will then be a separate folder. Do not submit them yet.
 
-Models reachable only through a vendor's API are not on the board: they would run on the vendor's servers, so neither the time nor the hardware would be comparable. A vendor who wants a row shares the weights privately and the model runs as closed.
+**Open models only.** The code is on PyPI and the weights are on a public Hugging Face repository, so anyone can rerun the pipeline from the folder and the public folds. Closed models (private code or weights) and anonymous submissions are not accepted, and neither are models reachable only through a vendor's API: they would run on the vendor's servers, so neither the time nor the hardware would be comparable.
 
 Why a commit hash in `checkpoint.revision`: a Hugging Face repository is a git repository, and vendors update weights in place. The hash pins the exact weights that were benchmarked, so the row can be reproduced later; a branch name like `main` would silently point to newer weights.
 
@@ -97,37 +105,23 @@ There is no family field. Whether a model is a tree ensemble or a foundation mod
 
 ## Package, weights, checkpoint
 
-- The **package** is the code, installed with pip and pinned in `requirements.txt`.
+- The **package** is the code, pinned in `requirements.txt` and in the card's `package` field, at the shared environment's version.
 - The **weights** are what the model learned in pre-training. A **checkpoint** is the file holding them, on Hugging Face. For the leaderboard the two words mean the same file, pinned by its repository and commit hash in `model.yaml`.
-- The repository stores neither: only the pins. The runner downloads the checkpoint into a cache before the job starts, and jobs run offline. If a package downloads its weights on first use, point its cache setting at `self.weights_dir`.
+- The repository stores neither: only the pins. The runner downloads the checkpoint into a cache before the job starts, and jobs run in a sandbox without network. If a package downloads its weights on first use, point its cache setting at `self.weights_dir`.
 
 ## Versions
 
-Each version is its own folder and its own row, forever: `models/tabpfn-2.5/`, `models/tabpfn-3/`, `models/tabpfn-3.5/`. Each pins its own package version and checkpoint hash, so a new release never changes an older row. If a new checkpoint loads with the same package, the new folder can copy `model.py` and change only `model.yaml`. The runner computes only what is missing.
+Each model version is its own folder and its own row, forever: `models/tabpfn-3/` and `models/tabpfn-3.5/`, each with its `version` in `model.yaml`. Each pins its own checkpoint hash, so a new release never changes an older row. If a new checkpoint loads with the same package, the new folder can copy `model.py` and change only `model.yaml`. The runner computes only what is missing. A change to a folder that is already on `main` is never merged automatically.
 
-## Open, closed, anonymous
-
-| | Code and weights | Runs on | Eligible for the front | How to submit |
-|---|---|---|---|---|
-| Open | Public | Our hardware | Yes | Public pull request |
-| Closed | Private, shared with us | Our hardware | Yes, with a *closed* tag | Private channel |
-| Anonymous | Private, shared with us | Our hardware | Yes, under a codename with an *anonymous* tag | Private channel |
-
-Closed and anonymous are the same case; anonymous also hides the name. Neither fits a public pull request. Instead:
-
-1. The submitter creates a repository on huggingface.co, sets it to private (Settings → *Make private*: only the owner and the people listed under Settings → *Collaborators* can see or download it), uploads the package and the weights, and adds our runner account as a read collaborator. Our runner account is a Hugging Face user that exists only to download submissions.
-2. The submitter emails the model card and `model.py` to the maintainer.
-3. The maintainer puts the folder into `private/<name>/` of the repository clone on the cluster, a folder that `.gitignore` keeps off GitHub, with the same layout as `models/`. Anonymous entries get a codename from `strable_leaderboard.codenames` and `anonymous: true` in the card; the codename-to-model mapping never leaves the cluster.
-4. The runner downloads the private Hugging Face repository with the runner account's token, runs the model like any other, and the aggregates are published here under the name or the codename. The weights never become public.
+A version whose package is incompatible with the shared environment (TabPFN-3.5 needs tabpfn 9, the environment has tabpfn 6.0.6) cannot enter through a normal pull request: it needs an environment change, which the maintainer decides.
 
 ## Examples
 
 **Open, numeric-only: Kumo Tabular.** NVIDIA's in-context model takes numerical and categorical columns; text needs preprocessing, so on STRABLE it is paired with the three encoders, like TabPFN and TabICL.
 1. `cp -r models/_template models/kumo-tabular-1.0`
 2. `model.py`: `handles_strings = False`; `fit` builds `sdm.models.KumoTabular` on `self.device` and stores the context; `predict_proba` returns the class probabilities in the order of `self.classes_`.
-3. `model.yaml`: `access: open`, `hardware: gpu`, `package: structured-data-models==<version>`, `checkpoint: {repo: nvidia/Kumo-Tabular, revision: <commit hash>}`, `licence: OpenMDW-1.1 weights, Apache-2.0 code`.
-4. Smoke test on a GPU machine, then the pull request `Add Kumo Tabular 1.0`.
+3. `model.yaml`: `hardware: gpu`, `package: structured-data-models==<version>`, `checkpoint: {repo: nvidia/Kumo-Tabular, revision: <commit hash>}`, `licence: OpenMDW-1.1 weights, Apache-2.0 code`.
+4. `structured-data-models` is not in the shared environment: the pull request also adds the line `structured-data-models==<version>` to `env/requirements.in`, and the maintainer relocks.
+5. Smoke test on a GPU machine, then the pull request `Add Kumo Tabular 1.0`.
 
 **Open, end-to-end: a model that reads strings itself.** Same steps with `handles_strings = True`; `fit` receives the raw DataFrame with its string, numeric and datetime columns. The board shows one row with an end-to-end tag.
-
-**Closed or anonymous.** The private channel above. On the board the row looks like any other, plus its tag.

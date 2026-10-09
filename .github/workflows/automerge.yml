@@ -1,0 +1,54 @@
+name: Auto-merge gate
+
+# Runs scripts/automerge_gate.py; its conditions: docs/automation.md, section 3. The gate runs here
+# when Checks completes and in the verdict job of claude-review.yml, under one concurrency group
+# per head commit, so the two never merge at once; whichever comes last decides. The triage job
+# checks the scope of every pull request at once. Runs on the base branch with the built-in
+# GITHUB_TOKEN; the pull request's code is never checked out.
+on:
+  workflow_run:
+    workflows: ["Checks"]
+    types: [completed]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: write        # merge
+  pull-requests: write   # labels, comments, merge
+  issues: write          # labels and comments go through the issues API
+  actions: write         # read workflow runs, start pages.yml
+  statuses: read         # the "Claude review" commit status
+
+jobs:
+  triage:
+    # Every pull request, at once: a scope problem needs the maintainer whatever the reviews say,
+    # including pull requests that the review workflow never sees (.github/ only, say).
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4  # the base branch only
+        with:
+          persist-credentials: false
+      - name: Scope check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: python3 scripts/automerge_gate.py triage --pr "$PR"
+
+  gate:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: automerge-${{ github.event.workflow_run.head_sha }}  # shared with claude-review.yml
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4  # the base branch only
+        with:
+          persist-credentials: false
+      - name: Gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: python3 scripts/automerge_gate.py gate --sha "$SHA"
