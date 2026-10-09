@@ -41,7 +41,8 @@ The runner is the scripts below, run on the compute cluster under the maintainer
 git pull                                                   # on the login node, after a merge
 python scripts/prepare.py models/tabpfn-2.5 --cache-dir $STRABLE_CACHE   # dataset, checkpoints, environment
 python scripts/make_tasks.py models/tabpfn-2.5 > tasks.txt # the (encoder, table, fold) tasks without a result: 972
-sbatch --array=0-$(( $(wc -l < tasks.txt) - 1 ))%16 scripts/run_array.sh tasks.txt
+mkdir -p logs                                              # SLURM does not create the log folder
+sbatch -p <partition> --array=0-$(( $(wc -l < tasks.txt) - 1 ))%16 scripts/run_array.sh tasks.txt
                                                            # each task: python -m strable_leaderboard.run ...
 python scripts/gather_results.py runs results              # rows -> results/tabpfn-2.5.csv (gitignored)
 python -m strable_leaderboard.check_results results/tabpfn-2.5.csv
