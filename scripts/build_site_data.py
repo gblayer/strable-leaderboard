@@ -53,8 +53,7 @@ PAPER = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text()) 
 
 def card_of(model: str) -> dict:
     path = ROOT / "models" / model / "model.yaml"
-    return yaml.safe_load(path.read_text()) if path.exists() else {
-        "name": PAPER["learners"].get(model, model), "handles_strings": False, "access": "open", "hardware": ""}
+    return yaml.safe_load(path.read_text()) if path.exists() else {"name": PAPER["learners"].get(model, model)}
 
 
 def folds_expected() -> dict:
@@ -87,9 +86,8 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json") -> dict
     for path in sorted(results_dir.glob("*.csv")):
         card = card_of(path.stem)
         df = pd.read_csv(path)
-        df["variant"] = df.get("variant", "default")  # files written before the variant column
         for (encoder, variant), rows in df.groupby(["encoder", "variant"], sort=True):
-            e2e = encoder == "none" or card.get("handles_strings", False)
+            e2e = encoder == "none"  # the runner writes "none" for models that handle strings
             pid = path.stem if e2e else f"{encoder}+{path.stem}"
             record = {
                 "id": pid if variant == "default" else f"{pid}:{variant}",
@@ -104,8 +102,7 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json") -> dict
             elif card.get("access") == "closed":
                 record["closed"] = True
             record.update(summarize(rows, expected))
-            if any(record[k] for k in VIEW_KEYS.values()):
-                pipelines.append(record)
+            pipelines.append(record)
     versions = yaml.safe_load((results_dir / "versions.yaml").read_text()) if (results_dir / "versions.yaml").exists() else []
     data = {"version": versions[0]["version"] if versions else "v0.0.0", "built": date.today().isoformat(),
             "history": [{"version": v["version"], "note": v["note"]} for v in versions], "pipelines": pipelines}

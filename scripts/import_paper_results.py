@@ -6,10 +6,9 @@ Run it where the paper's CSVs are, on the cluster. Exactly the pipelines listed 
 ``scripts/paper_selection.yaml`` are imported, by source CSV and method token, nothing else; a
 listed pipeline missing from its CSV is an error. The paper timed fit and predict together, so
 imported rows carry ``total_s`` only (the paper's ``run_time``), with ``hardware`` and
-``package`` set to ``paper``. Scores are the raw per-fold R² or ROC-AUC. A ``data_name`` that
-is not a table of the dataset (a table renamed before the Hugging Face release) goes into
-``RENAMES`` as old name -> new name. The selection's ``filled`` section names, for some source
-CSVs, the file read instead: the original plus the fold rows completed after publication.
+``package`` set to ``paper``. Scores are the raw per-fold R² or ROC-AUC. The selection's
+``filled`` section names, for some source CSVs, the file read instead: the original plus the fold
+rows completed after publication.
 """
 
 import argparse
@@ -25,9 +24,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from strable_leaderboard.check_results import COLUMNS  # noqa: E402
 from strable_leaderboard.data import MANIFEST  # noqa: E402
+from strable_leaderboard.run import PROTOCOL  # noqa: E402
 
 SELECTION = ROOT / "scripts" / "paper_selection.yaml"
-RENAMES: dict[str, str] = {}  # paper data_name -> dataset table name, for tables renamed on Hugging Face
 
 
 def convert(frames: dict[str, pd.DataFrame], tables: dict, pipelines: dict) -> tuple[pd.DataFrame, list[str]]:
@@ -44,9 +43,9 @@ def convert(frames: dict[str, pd.DataFrame], tables: dict, pipelines: dict) -> t
             if sel.empty:
                 problems.append(f"{csv}: no rows for {method}")
             for _, r in sel.iterrows():
-                table = RENAMES.get(r["data_name"], r["data_name"])
+                table = r["data_name"]
                 if table not in tables:
-                    problems.append(f"{csv}: unknown table {r['data_name']}")
+                    problems.append(f"{csv}: unknown table {table}")
                     continue
                 fold = int(r["fold_index"])
                 n_test = tables[table]["test_rows_per_outer_fold"][fold]
@@ -54,7 +53,7 @@ def convert(frames: dict[str, pd.DataFrame], tables: dict, pipelines: dict) -> t
                 rows.append(dict(model=p["model"], encoder=p["encoder"], variant=p["variant"], table=table,
                                  task=tables[table]["task"], fold=fold, score=score, fit_s=None, predict_s=None,
                                  total_s=r["run_time"], n_train=tables[table]["n_rows"] - n_test, n_test=n_test,
-                                 hardware="paper", package="paper", checkpoint_revision="", protocol_version="0.1",
+                                 hardware="paper", package="paper", checkpoint_revision="", protocol_version=PROTOCOL,
                                  date="2026-05"))
     df = pd.DataFrame(rows, columns=COLUMNS)
     dup = df.duplicated(["model", "encoder", "variant", "table", "fold"]).sum()
