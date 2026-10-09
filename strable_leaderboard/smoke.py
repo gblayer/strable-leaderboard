@@ -1,25 +1,32 @@
 """Smoke test for one model folder: outer fold 0 of three small tables, one per task.
 
     python -m strable_leaderboard.smoke models/<name>
-    python -m strable_leaderboard.smoke models/<name> --data-dir /path/to/STRABLE-benchmark
+    python -m strable_leaderboard.smoke models/<name> --data-dir /path/to/STRABLE-benchmark --device cuda
+    python -m strable_leaderboard.smoke models/<name> --static     # card, pins and code only
 
-It checks the model card, loads ``Model`` from ``model.py``, encodes strings with Tf-Idf
-when the model needs numbers, and checks the shapes and ranges of the predictions.
-It does not measure leaderboard scores: the full run happens on the cluster.
+It fails on any missing or invalid model card field (``strable_leaderboard.card``), on a pin
+that the shared environment does not satisfy (``strable_leaderboard.check_requirements``) and
+on code that makes its own folds or fixes its own seed. Then it loads ``Model`` from
+``model.py``, encodes strings with Tf-Idf when the model needs numbers, and checks the shapes
+and ranges of the predictions. It does not measure leaderboard scores: the full run happens on
+the cluster.
 """
 
 from __future__ import annotations
 
 import argparse
 import importlib.util
+import re
 import sys
 import time
 import warnings
 from pathlib import Path
 
 import numpy as np
-import yaml
 
+from .card import load_card  # noqa: F401  (kept importable from here)
+from .card import card_problems
+from .check_requirements import problems as pin_problems
 from .data import load_table
 from .metrics import fold_score
 from .model import StrableModel
@@ -30,34 +37,44 @@ SMOKE_TABLES = {
     "binary": "animalandveterinary-event",  # 1,345 rows
     "multiclass": "drug-ndc",  # 583 rows, 4 classes
 }
-REQUIRED = ["name", "version", "handles_strings", "tasks", "variant", "access", "hardware", "package", "checkpoint",
-            "licence", "trained_on_strable"]
-VARIANTS = {"default"}  # tuned and tuned-ensembled come later
-ACCESS = {"open", "closed"}
-HARDWARE = {"gpu", "cpu"}
-TASKS = {"regression", "binary", "multiclass"}
+# Models never make their own folds or seeds: the runner gives the outer fold, the seed is
+# self.seed, and early stopping uses self.validation_split(y).
+FORBIDDEN = {
+    r"\b(train_test_split|(Repeated)?(Stratified)?(Group)?K[Ff]old|(Stratified)?ShuffleSplit|LeaveOneOut|"
+    r"PredefinedSplit|TimeSeriesSplit|cross_val_(score|predict)|cross_validate)\b":
+        "makes its own split or cross-validation; use self.validation_split(y)",
+    r"\b(GridSearchCV|RandomizedSearchCV|HalvingGridSearchCV|HalvingRandomSearchCV|optuna|hyperopt)\b":
+        "searches hyperparameters; only default configurations are accepted",
+    r"\b(random_state|seed|random_seed)\s*=\s*-?\d+":
+        "fixes its own seed; pass self.seed",
+    r"\b(np\.random\.seed|random\.seed|torch\.manual_seed|torch\.cuda\.manual_seed(_all)?|set_seed)\s*\(\s*-?\d+":
+        "fixes its own seed; pass self.seed",
+}
 
 
-def load_card(folder: Path) -> dict:
-    """Read and validate model.yaml."""
-    card = yaml.safe_load((folder / "model.yaml").read_text())
-    missing = [k for k in REQUIRED if k not in card]
+def code_problems(folder: Path) -> list[str]:
+    """Lines of model.py that make their own folds, search hyperparameters or fix a seed."""
+    out = []
+    for n, line in enumerate((Path(folder) / "model.py").read_text().splitlines(), 1):
+        code = line.split("#", 1)[0]
+        for pattern, why in FORBIDDEN.items():
+            if re.search(pattern, code):
+                out.append(f"model.py line {n} {why}: {line.strip()}")
+    return out
+
+
+def static_problems(folder: Path) -> list[str]:
+    """Card, pins and code problems of a model folder, without running it."""
+    import yaml
+
+    folder = Path(folder)
+    missing = [f for f in ("model.py", "model.yaml", "requirements.txt") if not (folder / f).exists()]
     if missing:
-        raise ValueError(f"model.yaml misses {missing}")
-    if card["variant"] not in VARIANTS:
-        raise ValueError(f"variant must be one of {sorted(VARIANTS)} for now")
-    if card["access"] not in ACCESS:
-        raise ValueError(f"access must be one of {sorted(ACCESS)}")
-    if card["hardware"] not in HARDWARE:
-        raise ValueError(f"hardware must be one of {sorted(HARDWARE)}")
-    if not card["tasks"] or not set(card["tasks"]) <= TASKS:
-        raise ValueError(f"tasks must be a non-empty subset of {sorted(TASKS)}")
-    ckpt = card["checkpoint"]
-    if ckpt is not None:
-        rev = str(ckpt.get("revision", ""))
-        if not ckpt.get("repo") or len(rev) < 7 or any(c not in "0123456789abcdef" for c in rev.lower()):
-            raise ValueError("checkpoint needs a repo and a commit hash as revision")
-    return card
+        return [f"missing {', '.join(missing)}"]
+    out = [f"card: {p}" for p in card_problems(yaml.safe_load((folder / "model.yaml").read_text()))]
+    out += [f"pins: {p}" for p in pin_problems(folder)]
+    out += [f"protocol: {p}" for p in code_problems(folder)]
+    return out
 
 
 def load_model_class(folder: Path):
@@ -70,7 +87,7 @@ def load_model_class(folder: Path):
     return cls
 
 
-def check_one(model_cls, card: dict, table: str, data_dir=None) -> dict:
+def check_one(model_cls, card: dict, table: str, data_dir=None, device: str = "cpu") -> dict:
     X, y, task = load_table(table, data_dir=data_dir)
     train_idx, test_idx = outer_splits(y, task)[0]
     X_train, X_test, y_train, y_test = X.iloc[train_idx], X.iloc[test_idx], y[train_idx], y[test_idx]
@@ -83,7 +100,7 @@ def check_one(model_cls, card: dict, table: str, data_dir=None) -> dict:
             X_train = encoder.fit_transform(X_train, y_train)
             X_test = encoder.transform(X_test)
 
-    model = model_cls(task=task, seed=SEED, device="cpu", n_jobs=1)
+    model = model_cls(task=task, seed=SEED, device=device, n_jobs=1)
     t0 = time.perf_counter()
     model.fit(X_train, y_train)
     fit_s = time.perf_counter() - t0
@@ -111,21 +128,36 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("folder", type=Path, help="models/<name>")
     parser.add_argument("--data-dir", type=Path, default=None, help="local copy of the dataset (optional)")
+    parser.add_argument("--device", default="cpu", help="cpu, cuda, or auto")
+    parser.add_argument("--static", action="store_true", help="check the card, the pins and the code, do not run")
     args = parser.parse_args(argv)
 
+    found = static_problems(args.folder)
+    for p in found:
+        print(f"  FAIL  {p}")
+    if found:
+        return 1
     card = load_card(args.folder)
     model_cls = load_model_class(args.folder)
     if bool(card["handles_strings"]) != bool(model_cls.handles_strings):
-        raise ValueError("handles_strings differs between model.yaml and model.py")
+        print("  FAIL  handles_strings differs between model.yaml and model.py")
+        return 1
+    print(f"{card['name']} {card['version']}  ({'end-to-end' if model_cls.handles_strings else 'numeric-only, Tf-Idf encoder'})")
+    print("  ok    card, pins and code")
+    if args.static:
+        return 0
+    if args.device == "auto":
+        import torch
+
+        args.device = "cuda" if torch.cuda.is_available() else "cpu"
 
     failures = 0
-    print(f"{card['name']} {card['version']}  ({'end-to-end' if model_cls.handles_strings else 'numeric-only, Tf-Idf encoder'})")
     for task, table in SMOKE_TABLES.items():
         if task not in card["tasks"]:
             print(f"  skip  {task:<10} not in model.yaml tasks")
             continue
         try:
-            r = check_one(model_cls, card, table, data_dir=args.data_dir)
+            r = check_one(model_cls, card, table, data_dir=args.data_dir, device=args.device)
             print(f"  ok    {task:<10} {table:<34} score {r['score']:.3f}  fit {r['fit_s']:.2f}s  predict {r['predict_s']:.2f}s")
         except Exception as exc:  # report every failure, then exit non-zero
             failures += 1
