@@ -22,8 +22,6 @@ import time
 import warnings
 from pathlib import Path
 
-import numpy as np
-
 from .card import card_problems, load_card
 from .check_requirements import problems as pin_problems
 from .data import load_table
