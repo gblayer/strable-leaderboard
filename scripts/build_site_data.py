@@ -58,12 +58,9 @@ PAPER = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text()) 
 
 
 def card_of(model: str) -> dict:
-    """The card in models/ or, for closed and anonymous models, private/; else a paper learner's name."""
-    for folder in ["models", "private"]:
-        path = ROOT / folder / model / "model.yaml"
-        if path.exists():
-            return yaml.safe_load(path.read_text())
-    return {"name": PAPER["learners"].get(model, model)}
+    """The card in models/, else a paper learner's name."""
+    path = ROOT / "models" / model / "model.yaml"
+    return yaml.safe_load(path.read_text()) if path.exists() else {"name": PAPER["learners"].get(model, model)}
 
 
 def folds_expected() -> dict:
