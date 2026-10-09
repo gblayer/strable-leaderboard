@@ -15,7 +15,6 @@ the cluster.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import re
 import sys
 import time
@@ -24,12 +23,11 @@ from pathlib import Path
 
 import numpy as np
 
-from .card import load_card  # noqa: F401  (kept importable from here)
-from .card import card_problems
+from .card import card_problems, load_card
 from .check_requirements import problems as pin_problems
 from .data import load_table
-from .metrics import fold_score
-from .model import StrableModel
+from .metrics import checked_score
+from .model import load_model_class
 from .splits import SEED, outer_splits
 
 SMOKE_TABLES = {
@@ -77,16 +75,6 @@ def static_problems(folder: Path) -> list[str]:
     return out
 
 
-def load_model_class(folder: Path):
-    spec = importlib.util.spec_from_file_location(f"strable_model_{folder.name}", folder / "model.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    cls = getattr(module, "Model", None)
-    if cls is None or not issubclass(cls, StrableModel):
-        raise TypeError("model.py must define `class Model(StrableModel)`")
-    return cls
-
-
 def check_one(model_cls, card: dict, table: str, data_dir=None, device: str = "cpu") -> dict:
     X, y, task = load_table(table, data_dir=data_dir)
     train_idx, test_idx = outer_splits(y, task)[0]
@@ -106,20 +94,11 @@ def check_one(model_cls, card: dict, table: str, data_dir=None, device: str = "c
     fit_s = time.perf_counter() - t0
     t0 = time.perf_counter()
     if task == "regression":
-        pred = np.asarray(model.predict(X_test), dtype=float)
-        predict_s = time.perf_counter() - t0
-        assert pred.shape == (len(test_idx),), f"predict returned shape {pred.shape}"
-        assert np.isfinite(pred).all(), "predict returned NaN or infinite values"
-        score = fold_score(task, y_test, y_pred=pred)
+        out = {"pred": model.predict(X_test)}
     else:
-        proba = np.asarray(model.predict_proba(X_test), dtype=float)
-        predict_s = time.perf_counter() - t0
-        classes = np.asarray(model.classes_)
-        assert list(classes) == sorted(np.unique(y_train).tolist()), "classes_ must be the sorted training labels"
-        assert proba.shape == (len(test_idx), len(classes)), f"predict_proba returned shape {proba.shape}"
-        assert np.isfinite(proba).all() and (proba >= 0).all(), "probabilities must be finite and non-negative"
-        assert np.allclose(proba.sum(axis=1), 1, atol=1e-4), "probabilities must sum to 1 per row"
-        score = fold_score(task, y_test, proba=proba, classes=classes)
+        out = {"proba": model.predict_proba(X_test), "classes": model.classes_}
+    predict_s = time.perf_counter() - t0
+    score = checked_score(task, y_train, y_test, **out)
     return {"table": table, "task": task, "score": score, "fit_s": fit_s, "predict_s": predict_s,
             "n_train": len(train_idx), "n_test": len(test_idx)}
 

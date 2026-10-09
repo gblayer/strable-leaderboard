@@ -117,14 +117,17 @@ def warm_up(encoder: str) -> None:
 
 
 def encode(X_train, X_test, encoder: str, table: str, cache_dir=None, device: str = "cuda"):
-    """Numeric train and test frames for one encoder, and the embedding seconds for the whole table.
+    """Numeric train and test frames for one encoder, and the seconds the encoding costs.
 
-    The encoder is fitted on the training rows only. The embedding time is 0 for Tf-Idf; for the
-    language models it is the cached extraction time of the table, measured once.
+    The encoder is fitted on the training rows only. The seconds are the table's language-model
+    extraction time, measured once and cached (0 for Tf-Idf), plus fitting and applying the
+    encoder here; reading the cache is not counted.
     """
     if encoder == "tfidf":
         enc, seconds = tfidf_encoder(), 0.0
     else:
         embeddings, seconds = embed_table(pd.concat([X_train, X_test]), encoder, table, Path(cache_dir), device)
         enc = first_dims_encoder(embeddings)
-    return enc.fit_transform(X_train), enc.transform(X_test), seconds
+    t0 = time.perf_counter()
+    X_train, X_test = enc.fit_transform(X_train), enc.transform(X_test)
+    return X_train, X_test, seconds + time.perf_counter() - t0

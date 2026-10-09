@@ -57,18 +57,16 @@ This is the only score on the board. Elo, improvability and normalized scores ar
 
 ## Time
 
-Two times, both in seconds per 1,000 rows, and their sum:
+One time per run, the total, in seconds per 1,000 rows of the table: string embedding plus training plus prediction, as in the paper's Pareto plot.
 
-| Time | Includes | Divided by |
-|---|---|---|
-| Fit | String embedding of the training rows plus training | Training rows |
-| Predict | String embedding of the test rows plus prediction | Test rows |
+It is measured by the runner's trusted parent process, never by the model's code (`strable_leaderboard/run.py`):
 
-- For in-context learners such as TabPFN and TabICL, fit mostly stores the context, and the forward pass happens in predict.
-- Embeddings are computed once per table, encoder and fold, then reused by every model. Their time is measured once and added to every pipeline that uses them, split between fit and predict by the rows embedded.
-- An untimed warm-up runs first: imports, CUDA start-up and weight loading are not counted.
+- The parent encodes the strings itself. Encoding time = the table's language-model extraction time, measured once per table and encoder when the cache is filled and added to every fold and every model that uses it (0 for Tf-Idf), plus the time to fit and apply the encoder on this fold. Reading the cache is not counted.
+- The model runs in a child process in the sandbox. Two warm-up children run first: each starts the sandbox and Python, reads the inputs, imports the model, fits on 64 rows (at least one per class) and predicts 8, which covers imports, CUDA start-up and weight loading. The first one only warms the file caches; the wall-clock time of the second is the start-up overhead O.
+- The timed child does the same start-up, fits on all training rows and predicts the test rows. Its wall-clock time is T.
+- `total_s = encoding + max(T − O, 0.001)`. The difference is a measurement: for models that fit in well under a second, the noise of a process start dominates it.
 - Per table: the mean over folds. Per pipeline: the median over tables.
-- The board's default time is the total: fit plus predict seconds, divided by all rows of the table, as in the paper's Pareto plot. Fit or predict alone can be selected. Rows imported from the paper have only the total, since the paper timed fit and predict together.
+- Fit and predict are not timed apart: a split would have to come from timestamps written by the model's own code. The board's fit and predict views therefore stay empty for these rows, as for rows imported from the paper.
 
 ## Pareto front
 
@@ -108,12 +106,12 @@ One file per model, `<model>.csv`, one row per encoder, table and outer fold. Th
 `model, encoder, table, task, fold, score, fit_s, predict_s, total_s, n_train, n_test, hardware, package, checkpoint_revision, protocol_version, date`
 
 - `encoder` is `none` for end-to-end models. `score` is the raw fold score.
-- Runs by the runner fill `fit_s` and `predict_s`; `hardware` is the GPU model or `cpu`.
-- Rows imported from the paper (`scripts/import_paper_results.py`) fill `total_s` only, with `hardware: paper`, since the paper timed fit and predict together on mixed hardware. They may name encoders outside the three above.
+- Every row fills `total_s` only; `fit_s` and `predict_s` stay empty. Runs by the runner have `hardware` the GPU model or `cpu`.
+- Rows imported from the paper (`scripts/import_paper_results.py`) have `hardware: paper`, since the paper ran on mixed hardware. They may name encoders outside the three above.
 - Rows are default configurations; a `variant` column is added when tuned runs come. `python -m strable_leaderboard.check_results` validates a file.
 
 ## Differences from the paper
 
-- The paper times one total per fold, with the embedding time measured once per table and added to every fold. The leaderboard splits fit and predict.
+- The paper times one total per fold in the model's process, with the embedding time measured once per table and added to every fold. The leaderboard also times one total, from outside the sandboxed model process, minus the measured start-up overhead.
 - The paper evaluates about 445 pipelines. The leaderboard opens with a launch set, chosen around mid-November 2026, and grows.
 - Still to decide: for multiclass tasks, the paper re-applies a softmax to `predict_proba` before computing AUC. The leaderboard plans to use the probabilities as returned.

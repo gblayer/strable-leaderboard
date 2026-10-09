@@ -3,8 +3,8 @@
 # task runs one line of the tasks file:
 #
 #   embed <encoder> <table>                    fill the embedding cache (GPU; run before any model)
-#   smoke <models/name>                        the smoke test on the reference hardware, sandboxed
-#   <models/name> <encoder> <table> <fold>     one run of strable_leaderboard.run, sandboxed
+#   smoke <models/name>                        strable_leaderboard.run --smoke on the reference hardware
+#   <models/name> <encoder> <table> <fold>     one run of strable_leaderboard.run
 #
 #   python -m strable_leaderboard.embed --list --cache-dir cache > embed.txt && bash scripts/run_array.sh embed.txt
 #   echo "smoke models/<name>" > smoke.txt && bash scripts/run_array.sh smoke.txt
@@ -19,7 +19,8 @@
 # Extra arguments go to sbatch after these, so they win. The job id is
 # printed. Logs go to $STRABLE_LOGS (default logs/), created before submission, since SLURM fails
 # silently on a missing output folder. Finished tasks are skipped, so the same file resubmits after
-# a preemption. Model code runs through scripts/sandbox.sh: Singularity, network cut.
+# a preemption. strable_leaderboard.run runs the model code through scripts/sandbox.sh (Singularity,
+# network cut, no dataset). Rows go to $STRABLE_RUNS (default runs/).
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=128G
 #SBATCH --requeue
@@ -30,6 +31,7 @@ ROOT=$STRABLE_ROOT
 [ -f "$ROOT/private/runner.env" ] && source "$ROOT/private/runner.env"
 export STRABLE_CACHE=${STRABLE_CACHE:-$ROOT/cache}
 CACHE=$STRABLE_CACHE
+RUNS=${STRABLE_RUNS:-$ROOT/runs}
 
 if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
   TASKS=$(realpath "$1"); shift
@@ -64,20 +66,16 @@ case "$a" in
   embed)
     "$PY" -m strable_leaderboard.embed --encoder "$b" --table "$c" --cache-dir "$CACHE" --device "$DEVICE" ;;
   smoke)
-    # The result goes next to the writable folder, written here, outside the sandbox.
+    # The verdict is written here, by this trusted script.
     name=$(basename "$b"); dir=$CACHE/dispatch/smoke; mkdir -p "$dir"
     set +e
-    scripts/sandbox.sh "$b" "$dir/$name.work" "$PY" -m strable_leaderboard.smoke "$ROOT/$b" \
-      --data-dir "$CACHE/data" --device "$DEVICE" 2>&1 | tee "$dir/$name.log"
+    "$PY" -m strable_leaderboard.run "$ROOT/$b" --smoke --data-dir "$CACHE/data" --cache-dir "$CACHE" \
+      --device "$DEVICE" --n-jobs "${SLURM_CPUS_PER_TASK:-32}" 2>&1 | tee "$dir/$name.log"
     rc=${PIPESTATUS[0]}
     set -e
     echo "$rc" > "$dir/$name.rc"
     exit "$rc" ;;
   *)
-    name=$(basename "$a")
-    out=$ROOT/runs/$name/$b/$c
-    [ -f "$out/$d.json" ] && { echo "exists $out/$d.json"; exit 0; }
-    scripts/sandbox.sh "$a" "$out" "$PY" -m strable_leaderboard.run "$ROOT/$a" --encoder "$b" --table "$c" \
-      --fold "$d" --data-dir "$CACHE/data" --cache-dir "$CACHE" --out "$ROOT/runs" --device "$DEVICE" \
-      --n-jobs "${SLURM_CPUS_PER_TASK:-32}" ;;
+    "$PY" -m strable_leaderboard.run "$ROOT/$a" --encoder "$b" --table "$c" --fold "$d" --data-dir "$CACHE/data" \
+      --cache-dir "$CACHE" --out "$RUNS" --device "$DEVICE" --n-jobs "${SLURM_CPUS_PER_TASK:-32}" ;;
 esac

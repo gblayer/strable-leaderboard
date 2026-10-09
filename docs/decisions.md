@@ -25,6 +25,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-01 | One score, no normalization. Elo and improvability are not shown |
 | 10-01 | Two times per pipeline: fit (embedding plus training) per 1,000 training rows and predict (embedding plus prediction) per 1,000 test rows. The default view is the total, fit plus predict seconds per 1,000 table rows, as in the paper |
 | 10-01 | No hardware column: hovering a row shows whether it used the GPU |
+| 10-09 | Runner rows carry one total time, measured by the trusted parent from outside the sandboxed model process, minus the measured start-up overhead. The model never sees the test labels and never times or scores itself, so fit and predict are no longer timed apart |
 | 10-01 | One red frame around the top three rows of the current order, and a ring around them in the plot |
 
 ## Models

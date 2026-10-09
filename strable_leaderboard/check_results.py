@@ -6,8 +6,8 @@ One row per (encoder, table, outer fold). Prints the problems found and the cove
 view, and exits non-zero on any problem. The Checks workflow runs it on every results
 pull request, and the Claude review reads its output.
 
-A row carries either ``fit_s`` and ``predict_s`` (runs by the runner) or only ``total_s``
-(rows imported from the paper, which timed fit and predict together).
+A row carries ``total_s`` (the runner and the paper time fit and predict together) or, in older
+files, ``fit_s`` and ``predict_s``.
 """
 
 from __future__ import annotations

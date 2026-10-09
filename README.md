@@ -57,7 +57,7 @@ You submit code, not results. After the merge we run the model on all 108 tables
 pip install -e ".[dev]"
 pytest
 python -m strable_leaderboard.smoke models/ridge
-python -m strable_leaderboard.run models/ridge --encoder tfidf --table drug-ndc --fold 0 --device cpu
+python -m strable_leaderboard.run models/ridge --encoder tfidf --table drug-ndc --fold 0 --device cpu --no-sandbox
 ```
 
 ## Contact

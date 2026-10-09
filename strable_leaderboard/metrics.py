@@ -34,6 +34,28 @@ def fold_score(task: str, y_true, y_pred=None, proba=None, classes=None) -> floa
     return float(roc_auc_score(y_true, proba, multi_class="ovr", average="macro", labels=classes))
 
 
+def checked_score(task: str, y_train, y_test, pred=None, proba=None, classes=None) -> float:
+    """``fold_score`` after checking the predictions' shape and range; raises ValueError."""
+    n = len(y_test)
+    if task == "regression":
+        pred = np.asarray(pred, dtype=float)
+        if pred.shape != (n,):
+            raise ValueError(f"predict returned shape {pred.shape}, expected ({n},)")
+        if not np.isfinite(pred).all():
+            raise ValueError("predict returned NaN or infinite values")
+        return fold_score(task, y_test, y_pred=pred)
+    classes, proba = np.asarray(classes), np.asarray(proba, dtype=float)
+    if classes.tolist() != sorted(np.unique(y_train).tolist()):
+        raise ValueError("classes_ must be the sorted training labels")
+    if proba.shape != (n, len(classes)):
+        raise ValueError(f"predict_proba returned shape {proba.shape}, expected ({n}, {len(classes)})")
+    if not (np.isfinite(proba).all() and (proba >= 0).all()):
+        raise ValueError("probabilities must be finite and non-negative")
+    if not np.allclose(proba.sum(axis=1), 1, atol=1e-4):
+        raise ValueError("probabilities must sum to 1 per row")
+    return fold_score(task, y_test, proba=proba, classes=classes)
+
+
 def table_scores(results: pd.DataFrame) -> pd.DataFrame:
     """One row per (pipeline, table).
 

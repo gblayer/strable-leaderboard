@@ -6,6 +6,9 @@ a model card ``model.yaml`` and pinned ``requirements.txt``. See docs/submitting
 
 from __future__ import annotations
 
+import importlib.util
+from pathlib import Path
+
 import numpy as np
 
 from .splits import SEED, inner_splits
@@ -57,3 +60,16 @@ class StrableModel:
         Returns ``(fit_idx, val_idx)``, positions within ``y``.
         """
         return inner_splits(np.asarray(y), self.task)[0]
+
+
+def load_model_class(folder: Path):
+    """``Model`` from ``<folder>/model.py``. This runs the folder's code: on the cluster only the
+    sandboxed child (``strable_leaderboard.fit_predict``) calls it."""
+    folder = Path(folder)
+    spec = importlib.util.spec_from_file_location(f"strable_model_{folder.name}", folder / "model.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    cls = getattr(module, "Model", None)
+    if not (isinstance(cls, type) and issubclass(cls, StrableModel)):
+        raise TypeError("model.py must define `class Model(StrableModel)`")
+    return cls
