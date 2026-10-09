@@ -26,8 +26,9 @@ code of a model in flight. A model is a folder of models/ on main. Its steps:
 State lives in cache/dispatch/<model>.json. GitHub and git network calls are tried three times,
 with a growing wait. A failure stops the model (step "failed") and sends ONE repository_dispatch
 event (smoke-failed, run-failed, results-failed or runner-failed) that the Notify workflow turns
-into a comment mentioning @gblayer; absolute paths in its text are cut to the file name. Nothing
-is posted on success. Delete the state file to retry. GitHub access, API and git, uses the
+into a comment mentioning @gblayer; absolute paths in its text are cut to the file name. The one
+message on success is a comment on the model's pull request when its run starts: the number of
+tasks and a rough automatic estimate of when results will be ready. Delete the state file to retry. GitHub access, API and git, uses the
 fine-grained token in $STRABLE_GH_TOKEN_FILE (default ~/.config/strable/github_token, mode 0600;
 docs/automation.md, section 9), never the git credential store; it is never printed or logged.
 """
@@ -36,7 +37,9 @@ from __future__ import annotations
 
 import argparse
 import fcntl
+import getpass
 import json
+import math
 import os
 import re
 import stat
@@ -63,6 +66,7 @@ FETCH_MAIN = (REMOTE, "+refs/heads/main:refs/remotes/origin/main")
 GATE_BOT = "github-actions[bot]"
 STOPPED = ("done", "failed", "unapproved", "closed")
 VERSION = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.-]+)?$")  # v0.1.3, or a pre-release v0.1.0-pre
+ELAPSED = re.compile(rb"^elapsed (\d+)s on (\w+)$", re.M)  # the last line of a run task's log (run_array.sh)
 ABSOLUTE_PATH = re.compile(r"(?<![\w.:/~-])/(?:[\w.@+~-]+/)+([\w.@+~-]*)")
 TOKEN_FILE = Path(os.environ.get("STRABLE_GH_TOKEN_FILE", "~/.config/strable/github_token")).expanduser()
 # git reads the same file through this helper; the empty first value drops every other helper (the store).
@@ -98,6 +102,11 @@ def token_file(path: Path = TOKEN_FILE) -> Path:
     if stat.S_IMODE(path.stat().st_mode) & 0o077:
         sys.exit(f"{path} is readable by others: chmod 600 {path}")
     return path
+
+
+def duration(seconds: float) -> str:
+    hours = seconds / 3600
+    return f"{seconds / 60:.0f} minutes" if hours < 2 else f"{hours:.0f} hours" if hours < 48 else f"{hours / 24:.0f} days"
 
 
 def board_models(results: Path, site_json: Path, name: str) -> list[str]:
@@ -222,6 +231,44 @@ class Dispatcher:
         r = self.sh(self.python, "-m", "strable_leaderboard.check_results", csv, cwd=code, check=False)
         return r.returncode == 0, r.stdout + r.stderr
 
+    def task_seconds(self, device: str, last: int = 2000) -> list[int]:
+        """Wall-clock seconds of the latest run tasks on ``device`` (cpu or cuda), from their logs."""
+        times = []
+        for path in sorted((self.cache / "logs").glob("*.out"), key=lambda p: p.stat().st_mtime)[-last:]:
+            with open(path, "rb") as f:
+                f.seek(max(0, path.stat().st_size - 200))
+                times += [int(s) for s, dev in ELAPSED.findall(f.read()) if dev.decode() == device]
+        return times
+
+    def estimate(self, job: str, n: int, device: str) -> str:
+        """When the results should be ready: the run tasks queued ahead plus this run's, in waves of
+        the array's throttle, each wave as long as the median task observed on this device."""
+        times = self.task_seconds(device)
+        if not times:
+            return "No task time has been observed on this hardware yet, so there is no estimate."
+        queue = self.sh("squeue", "-h", "-r", "-u", getpass.getuser(), "-n", "strable-run", "-o", "%i", check=False)
+        ahead = sum(1 for task in queue.stdout.split() if task.split("_")[0] != job)
+        shown = self.sh("scontrol", "show", "job", job, check=False).stdout
+        throttle = re.search(r"ArrayTaskThrottle=(\d+)", shown) or re.search(r"ArrayTaskId=\S*%(\d+)", shown)
+        slots = int(throttle.group(1)) if throttle else 1
+        median = sorted(times)[len(times) // 2]
+        seconds = math.ceil((ahead + n) / slots) * median
+        ready = datetime.fromtimestamp(time.time() + seconds).astimezone().strftime("%a %d %b %Y, %H:00 %Z")
+        return (f"Results expected around {ready}, in about {duration(seconds)} (rough automatic estimate: "
+                f"{ahead} tasks queued ahead, {slots} at a time, {duration(median)} per task, the median "
+                f"observed on this hardware).")
+
+    def announce(self, st: dict, job: str, n: int, device: str) -> None:
+        """The one success comment: on the model's pull request, when its run starts."""
+        if not st.get("pr"):
+            return
+        try:
+            body = f"The benchmark of `{st['model']}` started: {n} tasks on the reference hardware. " + \
+                self.estimate(job, n, device)
+            self.gh.post(f"/issues/{st['pr']}/comments", {"body": body})
+        except Exception as exc:  # a missed comment never stops the run
+            log("announce failed:", type(exc).__name__)
+
     def missing_embeddings(self) -> list[str]:
         from strable_leaderboard.embed import missing
 
@@ -319,9 +366,14 @@ class Dispatcher:
                 return self.fail(name, st, "run-failed", f"{len(todo)} tasks have no result after two submissions; "
                                  f"first: {todo[0]}; logs in cache/logs/{st.get('job')}_*.out")
             else:
+                first = not st.get("submissions")
                 st.update(step="run", job=self.submit(name, "run", todo, code), submissions=st.get("submissions", 0) + 1,
                           n_tasks=st.get("n_tasks") or len(todo))
-                return self.save(name, st)
+                self.save(name, st)
+                if first:
+                    gpu = self.card(folder, code)["hardware"] == "gpu"
+                    self.announce(st, st["job"], len(todo), "cuda" if gpu else "cpu")
+                return
         if step == "publish":
             st["step"] = "publish"
             self.save(name, st)

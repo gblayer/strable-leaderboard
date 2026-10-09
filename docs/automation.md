@@ -20,7 +20,7 @@ flowchart TD
   R -. any failure .-> F[repository_dispatch -> Notify: '@gblayer' comment]
 ```
 
-Pull requests merge by themselves only when the gate's conditions all hold; everything else waits for the maintainer. Messages are sent only on failures or when a review is needed, never on success.
+Pull requests merge by themselves only when the gate's conditions all hold; everything else waits for the maintainer. Messages are sent on failures and when a review is needed; the one message on success is the comment that a model's run started, with a rough estimate of when its results will be ready (section 5).
 
 ## 1. Checks
 
@@ -96,9 +96,11 @@ python scripts/gather_results.py runs results <name> && python -m strable_leader
 
 **Cost.** A numeric-only model is 3 encoders × 108 tables × 3 folds = 972 tasks. Embeddings are computed once per encoder and table and kept in `cache/embeddings/`, so a new model adds only its own run time.
 
-## 5. Notifications: failures only
+## 5. Notifications
 
-No message is sent when things work. Two kinds of message exist, both comments by `github-actions[bot]` that mention `@gblayer`, so GitHub emails her (a comment made with her own token would not):
+One comment is made when things work: when the dispatcher submits a model's run array for the first time, it comments on the model's pull request with the number of tasks and a rough automatic estimate of when results will be ready, labelled as such. The estimate counts the run tasks of the account queued ahead (`squeue`) plus the model's own, runs them in waves of the array's throttle (`scontrol`, `ArrayTaskThrottle`), and gives each wave the median wall-clock time of the latest 2,000 run tasks on the same device, which `run_array.sh` writes as the last line of each task's log (`elapsed <s>s on <device>`). Before any task has run on that device it says there is no estimate. The comment is made with the dispatcher's token; nothing else is posted on success.
+
+Two kinds of message mention the maintainer, both comments by `github-actions[bot]` that mention `@gblayer`, so GitHub emails her (a comment made with her own token would not):
 
 - the gate's "@gblayer your review is needed: <reason>" (section 3);
 - a cluster failure. The dispatcher sends a `repository_dispatch` event, type `smoke-failed`, `run-failed`, `results-failed` or `runner-failed`, with `client_payload: {pr, model, reason}`. `.github/workflows/notify.yml` comments on the model's pull request and labels it `needs-maintainer`, or opens an issue when there is no pull request.

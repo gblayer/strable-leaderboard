@@ -78,5 +78,6 @@ case "$a" in
     exit "$rc" ;;
   *)
     "$PY" -m strable_leaderboard.run "$ROOT/$a" --encoder "$b" --table "$c" --fold "$d" --data-dir "$CACHE/data" \
-      --cache-dir "$CACHE" --out "$RUNS" --device "$DEVICE" --n-jobs "${SLURM_CPUS_PER_TASK:-32}" ;;
+      --cache-dir "$CACHE" --out "$RUNS" --device "$DEVICE" --n-jobs "${SLURM_CPUS_PER_TASK:-32}"
+    echo "elapsed ${SECONDS}s on $DEVICE" ;;  # the dispatcher's estimate of the time to results reads it
 esac

@@ -56,6 +56,7 @@ def clone(tmp_path, monkeypatch):
     bin_dir.mkdir()
     (bin_dir / "sbatch").write_text(f'#!/bin/bash\necho "$@" >> {tmp_path}/sbatch.log\necho 4242\n')
     (bin_dir / "squeue").write_text(f'#!/bin/bash\ncat {tmp_path}/queue 2>/dev/null\n')
+    (bin_dir / "scontrol").write_text('#!/bin/bash\necho "JobId=4242 ArrayJobId=4242 ArrayTaskId=0-1%16 ArrayTaskThrottle=16"\n')
     for f in bin_dir.iterdir():
         f.chmod(0o755)
     monkeypatch.setenv("PATH", f"{bin_dir}:{Path(sys.executable).parent}:/usr/bin:/bin")
@@ -90,7 +91,7 @@ def finish_smoke(d, rc="0"):
     (d.state_dir / "smoke" / "extratrees.log").write_text("FAIL boom\n")
 
 
-def test_full_path_without_messages_on_success(clone):
+def test_full_path_with_one_comment_on_success(clone):
     d = clone
     d.run(fetch=False)
     assert state(d)["step"] == "smoke" and state(d)["pr"] == 3
@@ -107,6 +108,8 @@ def test_full_path_without_messages_on_success(clone):
     d.run(fetch=False)
     assert state(d)["step"] == "run" and state(d)["n_tasks"] == 2
     assert (d.state_dir / "extratrees.run.txt").read_text().splitlines() == d.todo
+    (path, data), = d.gh.posts  # the run started: the only success comment
+    assert path == "/issues/3/comments" and "2 tasks" in data["body"] and "no estimate" in data["body"]
 
     d.todo = []
     d.run(fetch=False)
@@ -115,8 +118,7 @@ def test_full_path_without_messages_on_success(clone):
 
     d.gh.results_pr = {"number": 9, "state": "closed", "merged_at": "x", "merge_commit_sha": "abc"}
     d.run(fetch=False)
-    assert state(d)["step"] == "done"
-    assert d.gh.posts == []  # no notification on success
+    assert state(d)["step"] == "done" and len(d.gh.posts) == 1  # nothing more on success
 
 
 def test_gpu_model_smokes_on_the_reference_gpu(clone):
@@ -147,11 +149,11 @@ def test_run_is_resubmitted_once_then_fails(clone):
     d = clone
     d.run(fetch=False)
     finish_smoke(d)
-    d.run(fetch=False)  # first submission
-    d.run(fetch=False)  # tasks left: the second submission
-    assert state(d)["step"] == "run" and state(d)["submissions"] == 2 and d.gh.posts == []
+    d.run(fetch=False)  # first submission, announced
+    d.run(fetch=False)  # tasks left: the second submission, not announced
+    assert state(d)["step"] == "run" and state(d)["submissions"] == 2 and len(d.gh.posts) == 1
     d.run(fetch=False)
-    assert state(d)["step"] == "failed" and d.gh.posts[0][1]["event_type"] == "run-failed"
+    assert state(d)["step"] == "failed" and d.gh.posts[1][1]["event_type"] == "run-failed"
 
 
 def test_embeddings_come_first_and_are_shared(clone):
@@ -166,6 +168,22 @@ def test_embeddings_come_first_and_are_shared(clone):
     d.embeddings = []
     d.run(fetch=False)
     assert state(d)["step"] == "run"
+
+
+def test_estimate_from_the_queue_and_the_observed_task_times(clone):
+    d = clone
+    logs = d.cache / "logs"
+    logs.mkdir(parents=True)
+    for i, (seconds, device) in enumerate([(600, "cpu"), (1200, "cpu"), (1800, "cpu"), (5, "cuda")]):
+        (logs / f"1_{i}.out").write_text(f"task {i} on n1: models/x tfidf t 0 (device {device})\nscore\n"
+                                         f"elapsed {seconds}s on {device}\n")
+    (logs / "2_0.out").write_text("task 0: smoke\nFAIL\n")  # no elapsed line: not counted
+    assert sorted(d.task_seconds("cpu")) == [600, 1200, 1800] and d.task_seconds("cuda") == [5]
+    (d.tmp / "queue").write_text("77_1\n77_2\n4242_0\n4242_1\n")  # two tasks of another run ahead
+    text = d.estimate("4242", 30, "cpu")  # ceil((2 + 30) / 16) = 2 waves of the 1200 s median
+    assert "rough automatic estimate: 2 tasks queued ahead, 16 at a time, 20 minutes per task" in text
+    assert "in about 40 minutes" in text
+    assert dispatch.duration(3 * 3600) == "3 hours" and dispatch.duration(72 * 3600) == "3 days"
 
 
 def test_unapproved_merge_never_runs(clone):

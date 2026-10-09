@@ -49,7 +49,7 @@ You need a GitHub account. You cannot push to this repository, so you work on yo
    Python 3.12 or later.
 5. **Push and open the pull request.** `git push -u origin add-<name>`, then on GitHub open a pull request from your fork's branch to `gblayer/strable-leaderboard`, `main`, titled `Add <Name> <version>`, with the template filled and the smoke test output pasted. Only `models/<name>/` may change, plus added lines in `env/requirements.in`.
 
-What happens next is automatic. GitHub runs the Checks; Claude reviews the pull request twice. If both reviews say MERGE, the Checks pass and the diff is exactly your new folder, the pull request merges by itself; otherwise, for example when it adds a package, the maintainer is asked to look. After the merge our runner smoke-tests the model on the reference hardware, runs all 108 tables and opens the results pull request, and the board updates. If anything fails, the maintainer is told on your pull request. See [automation.md](automation.md).
+What happens next is automatic. GitHub runs the Checks; Claude reviews the pull request twice. If both reviews say MERGE, the Checks pass and the diff is exactly your new folder, the pull request merges by itself; otherwise, for example when it adds a package, the maintainer is asked to look. After the merge our runner smoke-tests the model on the reference hardware and starts the 108 tables; it then comments on your pull request with the number of tasks and a rough automatic estimate of when results will be ready. It opens the results pull request when they are, and the board updates. If anything fails, the maintainer is told on your pull request. See [automation.md](automation.md).
 
 ## The model contract
 
