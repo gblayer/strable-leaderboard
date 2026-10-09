@@ -1,0 +1,142 @@
+# The 75 pipelines of the paper's Figure 4a, the set scripts/import_paper_results.py imports.
+#
+# Rebuilt from salts/posthoc_analysis.py: result_comparison.csv after its two filters (RealTabPFN
+# dropped, methods with at least 303 fold rows), num-str methods of the selected encoders plus
+# Nemotron-1B, without num-str_tabpfn_tabpfn_default (l.20367-20381); then the extra CSVs
+# concatenated at l.20348: TabICLv2, TabM, RealMLP (without E5-base-v2 and Jasper-0.6B), Mambular
+# only, Qwen-3-8B first-30 + TabPFN-2.5, LLaMA-3.1-8B SS+PCA-30 + TabPFN-2.5 only. Not imported:
+# the OHE CT=30 Ridge CSV (commented out of the figure) and TabPFN-3/3.5.
+#
+# pipelines: source CSV (in salts/results/compiled_results/) -> method token exactly as written in
+# that CSV -> model folder, encoder id and variant. The same token can mean different pipelines in
+# different CSVs (num-str_llm-llama-3.1-8b_tabpfn is SS+PCA-30 in the standscal CSV), so the CSV is
+# part of the key. Variant "tuned" is the paper's random hyperparameter search (src/param_search.py).
+
+# filled: source CSV -> the file actually read. Each filled file is the original plus the fold rows
+# completed after publication (2026-10-09): 17 rows, 12 re-run on 2026-10-08 with the paper's code
+# and 5 finished in April but never compiled. Pipelines below stay keyed by the original name.
+filled:
+  result_comparison_tabicl_all.csv: result_comparison_tabicl_all_filled_2026-10-09.csv
+  result_REBUTTALS_trompt_transtab_mambular.csv: result_REBUTTALS_trompt_transtab_mambular_filled_2026-10-09.csv
+  result_comparison_standscal_pca_30.csv: result_comparison_standscal_pca_30_filled_2026-10-09.csv
+
+learners:  # model folder -> display name
+  ridge: Ridge
+  xgboost: XGBoost
+  extratrees: ExtraTrees
+  tabpfn-2.5: TabPFN-2.5
+  tabicl-v2: TabICLv2
+  tabm: TabM
+  realmlp: RealMLP
+  catboost: CatBoost
+  contexttab: ConTextTab
+  tabstar: TabSTAR
+  mambular: Mambular
+
+# Encoder id -> display name. What the paper did (salts/src/encoding.py, llm_encoder.py):
+# - tfidf: skrub StringEncoder (character n-gram Tf-Idf, truncated SVD to 30) in a
+#   TableVectorizer, the leaderboard's own Tf-Idf encoder. The only paper encoder with a leaderboard id.
+# - targetencoder: scikit-learn TargetEncoder. tarte: tarte_ai's TARTE_TablePreprocessor.
+# - *-pca30: the cached embedding of each distinct string, then PCA to 30 components fitted on the
+#   training rows (LLM_Encoder, the paper's default for every language model and FastText).
+# - *-ss-pca30: a StandardScaler before that PCA.
+# - *-first30: the first 30 embedding dimensions, no PCA (prepare_llm_no_pca_mrl).
+# No *-pca30 row is ever labelled minilm-l6-v2 or llama-3.1-8b, the leaderboard's first-30 encoders.
+encoders:
+  none: ""
+  tfidf: Tf-Idf
+  targetencoder: TargetEncoder
+  tarte: Tarte
+  minilm-l6-v2-pca30: MiniLM-L6-v2 · PCA-30
+  e5-small-v2-pca30: E5-small-v2 · PCA-30
+  fasttext-pca30: FastText · PCA-30
+  jasper-0.6b-pca30: Jasper-0.6B · PCA-30
+  nemotron-1b-pca30: Nemotron-1B · PCA-30
+  llama-3.1-8b-pca30: LLaMA-3.1-8B · PCA-30
+  llama-3.1-8b-ss-pca30: LLaMA-3.1-8B · SS+PCA-30
+  qwen-3-8b-pca30: Qwen-3-8B · PCA-30
+  qwen-3-8b-first30: Qwen-3-8B · first-30
+
+pipelines:
+  result_comparison.csv:
+    num-str_catboost_catboost_default: {model: catboost, encoder: none, variant: default}
+    num-str_catboost_catboost_tune: {model: catboost, encoder: none, variant: tuned}
+    num-str_contexttab_contexttab: {model: contexttab, encoder: none, variant: default}
+    num-str_tabstar_tabstar: {model: tabstar, encoder: none, variant: default}
+    num-str_tabvec_ridge_default: {model: ridge, encoder: tfidf, variant: default}
+    num-str_tabvec_xgb_default: {model: xgboost, encoder: tfidf, variant: default}
+    num-str_tabvec_xgb_tune: {model: xgboost, encoder: tfidf, variant: tuned}
+    num-str_tabvec_extrees_default: {model: extratrees, encoder: tfidf, variant: default}
+    num-str_tabvec_extrees_tune: {model: extratrees, encoder: tfidf, variant: tuned}
+    num-str_tabvec_tabpfn_default: {model: tabpfn-2.5, encoder: tfidf, variant: default}
+    num-str_tarenc_ridge_default: {model: ridge, encoder: targetencoder, variant: default}
+    num-str_tarenc_xgb_default: {model: xgboost, encoder: targetencoder, variant: default}
+    num-str_tarenc_xgb_tune: {model: xgboost, encoder: targetencoder, variant: tuned}
+    num-str_tarenc_extrees_default: {model: extratrees, encoder: targetencoder, variant: default}
+    num-str_tarenc_extrees_tune: {model: extratrees, encoder: targetencoder, variant: tuned}
+    num-str_tarenc_tabpfn_default: {model: tabpfn-2.5, encoder: targetencoder, variant: default}
+    num-str_tarte_ridge_default: {model: ridge, encoder: tarte, variant: default}
+    num-str_tarte_xgb_default: {model: xgboost, encoder: tarte, variant: default}
+    num-str_tarte_xgb_tune: {model: xgboost, encoder: tarte, variant: tuned}
+    num-str_tarte_extrees_default: {model: extratrees, encoder: tarte, variant: default}
+    num-str_tarte_extrees_tune: {model: extratrees, encoder: tarte, variant: tuned}
+    num-str_tarte_tabpfn_default: {model: tabpfn-2.5, encoder: tarte, variant: default}
+    num-str_llm-all-MiniLM-L6-v2_ridge_default: {model: ridge, encoder: minilm-l6-v2-pca30, variant: default}
+    num-str_llm-all-MiniLM-L6-v2_xgb_default: {model: xgboost, encoder: minilm-l6-v2-pca30, variant: default}
+    num-str_llm-all-MiniLM-L6-v2_xgb_tune: {model: xgboost, encoder: minilm-l6-v2-pca30, variant: tuned}
+    num-str_llm-all-MiniLM-L6-v2_extrees_default: {model: extratrees, encoder: minilm-l6-v2-pca30, variant: default}
+    num-str_llm-all-MiniLM-L6-v2_extrees_tune: {model: extratrees, encoder: minilm-l6-v2-pca30, variant: tuned}
+    num-str_llm-all-MiniLM-L6-v2_tabpfn_default: {model: tabpfn-2.5, encoder: minilm-l6-v2-pca30, variant: default}
+    num-str_llm-e5-small-v2_ridge_default: {model: ridge, encoder: e5-small-v2-pca30, variant: default}
+    num-str_llm-e5-small-v2_xgb_default: {model: xgboost, encoder: e5-small-v2-pca30, variant: default}
+    num-str_llm-e5-small-v2_xgb_tune: {model: xgboost, encoder: e5-small-v2-pca30, variant: tuned}
+    num-str_llm-e5-small-v2_extrees_default: {model: extratrees, encoder: e5-small-v2-pca30, variant: default}
+    num-str_llm-e5-small-v2_extrees_tune: {model: extratrees, encoder: e5-small-v2-pca30, variant: tuned}
+    num-str_llm-e5-small-v2_tabpfn_default: {model: tabpfn-2.5, encoder: e5-small-v2-pca30, variant: default}
+    num-str_llm-fasttext_ridge_default: {model: ridge, encoder: fasttext-pca30, variant: default}
+    num-str_llm-fasttext_xgb_default: {model: xgboost, encoder: fasttext-pca30, variant: default}
+    num-str_llm-fasttext_xgb_tune: {model: xgboost, encoder: fasttext-pca30, variant: tuned}
+    num-str_llm-fasttext_extrees_default: {model: extratrees, encoder: fasttext-pca30, variant: default}
+    num-str_llm-fasttext_extrees_tune: {model: extratrees, encoder: fasttext-pca30, variant: tuned}
+    num-str_llm-fasttext_tabpfn_default: {model: tabpfn-2.5, encoder: fasttext-pca30, variant: default}
+    num-str_llm-jasper-token-comp-0.6b_ridge_default: {model: ridge, encoder: jasper-0.6b-pca30, variant: default}
+    num-str_llm-jasper-token-comp-0.6b_xgb_default: {model: xgboost, encoder: jasper-0.6b-pca30, variant: default}
+    num-str_llm-jasper-token-comp-0.6b_xgb_tune: {model: xgboost, encoder: jasper-0.6b-pca30, variant: tuned}
+    num-str_llm-jasper-token-comp-0.6b_extrees_default: {model: extratrees, encoder: jasper-0.6b-pca30, variant: default}
+    num-str_llm-jasper-token-comp-0.6b_extrees_tune: {model: extratrees, encoder: jasper-0.6b-pca30, variant: tuned}
+    num-str_llm-jasper-token-comp-0.6b_tabpfn_default: {model: tabpfn-2.5, encoder: jasper-0.6b-pca30, variant: default}
+    num-str_llm-llama-nemotron-embed-1b-v2_tabpfn_default: {model: tabpfn-2.5, encoder: nemotron-1b-pca30, variant: default}
+    num-str_llm-llama-3.1-8b_ridge_default: {model: ridge, encoder: llama-3.1-8b-pca30, variant: default}
+    num-str_llm-llama-3.1-8b_xgb_default: {model: xgboost, encoder: llama-3.1-8b-pca30, variant: default}
+    num-str_llm-llama-3.1-8b_xgb_tune: {model: xgboost, encoder: llama-3.1-8b-pca30, variant: tuned}
+    num-str_llm-llama-3.1-8b_extrees_default: {model: extratrees, encoder: llama-3.1-8b-pca30, variant: default}
+    num-str_llm-llama-3.1-8b_extrees_tune: {model: extratrees, encoder: llama-3.1-8b-pca30, variant: tuned}
+    num-str_llm-llama-3.1-8b_tabpfn_default: {model: tabpfn-2.5, encoder: llama-3.1-8b-pca30, variant: default}
+    num-str_llm-qwen3-8b_ridge_default: {model: ridge, encoder: qwen-3-8b-pca30, variant: default}
+    num-str_llm-qwen3-8b_xgb_default: {model: xgboost, encoder: qwen-3-8b-pca30, variant: default}
+    num-str_llm-qwen3-8b_xgb_tune: {model: xgboost, encoder: qwen-3-8b-pca30, variant: tuned}
+    num-str_llm-qwen3-8b_extrees_default: {model: extratrees, encoder: qwen-3-8b-pca30, variant: default}
+    num-str_llm-qwen3-8b_extrees_tune: {model: extratrees, encoder: qwen-3-8b-pca30, variant: tuned}
+    num-str_llm-qwen3-8b_tabpfn_default: {model: tabpfn-2.5, encoder: qwen-3-8b-pca30, variant: default}
+  result_comparison_tabicl_all.csv:
+    num-str_tabvec_tabicl: {model: tabicl-v2, encoder: tfidf, variant: default}
+    num-str_llm-llama-3.1-8b_tabicl: {model: tabicl-v2, encoder: llama-3.1-8b-pca30, variant: default}
+    num-str_llm-llama-3.1-8b_tabicl_standscal: {model: tabicl-v2, encoder: llama-3.1-8b-ss-pca30, variant: default}
+    num-str_llm-qwen3-8b_tabicl: {model: tabicl-v2, encoder: qwen-3-8b-pca30, variant: default}
+    num-str_llm-qwen3-8b_tabicl_nopca: {model: tabicl-v2, encoder: qwen-3-8b-first30, variant: default}
+  result_REBUTTALS_tabM_tfidf_minLMv6_Qwen8_LLaMA8_30pca.csv:
+    num-str_tabvec_tabm: {model: tabm, encoder: tfidf, variant: default}
+    num-str_llm-all-MiniLM-L6-v2_tabm: {model: tabm, encoder: minilm-l6-v2-pca30, variant: default}
+    num-str_llm-llama-3.1-8b_tabm: {model: tabm, encoder: llama-3.1-8b-pca30, variant: default}
+    num-str_llm-qwen3-8b_tabm: {model: tabm, encoder: qwen-3-8b-pca30, variant: default}
+  result_REBUTTALS_realMLP_tfidf_minLMv6_Qwen8_LLaMA8_30pca.csv:
+    num-str_tabvec_realmlp: {model: realmlp, encoder: tfidf, variant: default}
+    num-str_llm-all-MiniLM-L6-v2_realmlp: {model: realmlp, encoder: minilm-l6-v2-pca30, variant: default}
+    num-str_llm-llama-3.1-8b_realmlp: {model: realmlp, encoder: llama-3.1-8b-pca30, variant: default}
+    num-str_llm-qwen3-8b_realmlp: {model: realmlp, encoder: qwen-3-8b-pca30, variant: default}
+  result_REBUTTALS_trompt_transtab_mambular.csv:
+    num-str_mambular_mambular: {model: mambular, encoder: none, variant: default}
+  result_comparison_qwen_nopca_30.csv:
+    num-str_llm-qwen3-8b_tabpfn_default-no_pca: {model: tabpfn-2.5, encoder: qwen-3-8b-first30, variant: default}
+  result_comparison_standscal_pca_30.csv:
+    num-str_llm-llama-3.1-8b_tabpfn: {model: tabpfn-2.5, encoder: llama-3.1-8b-ss-pca30, variant: default}

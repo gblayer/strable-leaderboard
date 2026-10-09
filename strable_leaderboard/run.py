@@ -87,7 +87,8 @@ def run(folder: Path, encoder: str, table: str, fold: int, data_dir, cache_dir, 
 
     checkpoint = card.get("checkpoint") or {}
     return {
-        "model": folder.name, "encoder": encoder if not cls.handles_strings else "none", "table": table, "task": task,
+        "model": folder.name, "encoder": encoder if not cls.handles_strings else "none",
+        "variant": card.get("variant", "default"), "table": table, "task": task,
         "fold": fold, "score": score, "fit_s": round(fit_s, 4), "predict_s": round(predict_s, 4), "total_s": None,
         "n_train": len(train_idx), "n_test": len(test_idx), "hardware": hardware_name(device),
         "package": card["package"], "checkpoint_revision": checkpoint.get("revision", ""),

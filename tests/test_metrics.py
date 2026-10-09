@@ -2,40 +2,25 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from strable_leaderboard.codenames import codename
-from strable_leaderboard.metrics import fold_score, leaderboard, pareto_front, table_scores
+from strable_leaderboard.metrics import expected_folds, fold_score, pareto_front, per_1k
 
 
-def _results():
-    rows = []
-    # pipeline A: R² 0.8, 0.7 and a failed table (-3.0); AUC 0.9
-    for table, task, score in [("r1", "regression", 0.8), ("r2", "regression", 0.7), ("r3", "regression", -3.0), ("c1", "binary", 0.9)]:
-        for fold in range(3):
-            rows.append(dict(pipeline="A", table=table, task=task, fold=fold, score=score,
-                             fit_s=1.0, predict_s=0.5, n_train=1000, n_test=500))
-    return pd.DataFrame(rows)
+def test_total_time_per_1k_samples():
+    runner = pd.DataFrame({"fit_s": [1.0], "predict_s": [0.5], "total_s": [np.nan], "n_train": [1000], "n_test": [500]})
+    out = per_1k(runner).iloc[0]
+    assert out["total_per_1k"] == pytest.approx(1.0) and out["total"] == 1.5 and out["n_rows"] == 1500  # 1.5 s over 1,500 rows
+    paper = runner.assign(fit_s=None, predict_s=None, total_s=3.0)  # rows imported from the paper
+    assert per_1k(paper)["total_per_1k"].iloc[0] == pytest.approx(2.0)
 
 
-def test_table_scores_are_raw_fold_means():
-    t = table_scores(_results()).set_index("table")
-    assert t.loc["r3", "score"] == pytest.approx(-3.0)  # a negative R² is kept, as in the paper
-    assert t.loc["r1", "score"] == pytest.approx(0.8)
-
-
-def test_leaderboard_views():
-    both = leaderboard(_results(), "both", n_tables=4)
-    assert both.loc["A", "score"] == pytest.approx((0.8 + 0.7 - 3.0 + 0.9) / 4)
-    assert bool(both.loc["A", "complete"])
-    reg = leaderboard(_results(), "regression")
-    assert reg.loc["A", "score"] == pytest.approx((0.8 + 0.7 - 3.0) / 3)
-    assert reg.loc["A", "fit_per_1k"] == pytest.approx(1.0)
-    assert reg.loc["A", "predict_per_1k"] == pytest.approx(1.0)
+def test_expected_folds():
+    tables = {"r1": {"task": "regression"}, "c1": {"task": "binary"}, "c2": {"task": "multiclass"}}
+    assert expected_folds(tables) == {"both": 9, "regression": 3, "classification": 6}
 
 
 def test_pareto_front_keeps_only_undominated_pipelines():
-    board = pd.DataFrame({"score": [0.6, 0.7, 0.65, 0.8], "fit_per_1k": [0.1, 1.0, 2.0, 10.0]}, index=list("abcd"))
+    board = pd.DataFrame({"score": [0.6, 0.7, 0.65, 0.8], "total_per_1k": [0.1, 1.0, 2.0, 10.0]}, index=list("abcd"))
     assert pareto_front(board) == ["a", "b", "d"]
-    assert pareto_front(board, exclude=["b"]) == ["a", "c", "d"]
 
 
 def test_fold_scores():
@@ -44,9 +29,21 @@ def test_fold_scores():
     assert fold_score("binary", np.array(["no", "yes"]), proba=proba, classes=np.array(["no", "yes"])) == 1.0
 
 
-def test_codename_format_and_uniqueness():
-    names = set()
-    for _ in range(50):
-        names.add(codename(taken=names))
-    assert len(names) == 50
-    assert all(n.count("-") == 1 for n in names)
+def test_multiclass_auc_applies_the_papers_softmax():
+    """salts src/utils_evaluation.py: reshape_pred_output softmaxes (n, K>2) outputs, then return_score
+    computes roc_auc_score(multi_class="ovr", average="macro")."""
+    from scipy.special import softmax
+    from sklearn.metrics import roc_auc_score
+
+    rng = np.random.default_rng(0)
+    y = np.repeat([0, 1, 2], 20)
+    proba = rng.dirichlet([0.3, 0.3, 0.3], size=60)
+    proba[y == 1, 1] += 0.2
+    proba /= proba.sum(axis=1, keepdims=True)
+    paper = roc_auc_score(y, softmax(proba, axis=1), multi_class="ovr", average="macro")
+    assert fold_score("multiclass", y, proba=proba, classes=np.array([0, 1, 2])) == pytest.approx(paper)
+    as_returned = roc_auc_score(y, proba, multi_class="ovr", average="macro")
+    assert abs(paper - as_returned) > 1e-3  # the softmax changes the score
+    labels = np.array(["a", "b", "c"])  # original labels, sorted
+    assert fold_score("multiclass", labels[y], proba=proba, classes=labels) == pytest.approx(paper)
+

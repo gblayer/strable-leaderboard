@@ -1,85 +1,72 @@
-"""Scores, aggregation and the Pareto front.
+"""Scores, fold counts and the Pareto front.
 
-Per fold: R² for regression, ROC-AUC for classification (one-vs-rest, macro average for
-multiclass), as in the paper. Per table: mean over the 3 outer folds, raw, so a negative R²
-stays negative. Per pipeline: mean of the table scores over the tables of the chosen view,
-with no per-table normalization, so a pipeline's score never changes when others join.
-Times are seconds per 1,000 rows, averaged over folds and then summarized by the median
-over tables.
+Per fold: R² for regression, ROC-AUC for classification (one-vs-rest, macro average of the
+softmax of the probabilities for multiclass), as in the paper. Per pipeline and view: the median
+over all fold rows of the view, raw, as in the paper's Figure 4a, so a negative R² stays a fold
+row like any other. Time is the total run time per 1,000 samples, also the median over fold rows:
+per fold, encoding plus training plus prediction seconds (or the paper's run time) divided by the
+table's rows, times 1,000. No per-table normalization, so a pipeline's numbers never change when
+others join.
 """
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from scipy.special import softmax
 from sklearn.metrics import r2_score, roc_auc_score
+
+from .splits import N_OUTER
 
 VIEWS = {
     "both": ("regression", "binary", "multiclass"),
     "regression": ("regression",),
     "classification": ("binary", "multiclass"),
 }
+VARIANTS = ("default", "tuned")
+
+
+def expected_folds(tables: dict) -> dict[str, int]:
+    """Fold rows per view of a pipeline that covers every table and outer fold of the manifest's ``tables``."""
+    return {view: N_OUTER * sum(m["task"] in tasks for m in tables.values()) for view, tasks in VIEWS.items()}
 
 
 def fold_score(task: str, y_true, y_pred=None, proba=None, classes=None) -> float:
-    """R² for regression; ROC-AUC from probabilities for classification.
+    """R² for regression; ROC-AUC from probabilities for classification, as in the paper.
 
-    ``proba`` has one column per class, in the order of ``classes`` (sorted labels).
+    ``proba`` has one column per class, in the order of ``classes`` (sorted labels). Binary: the
+    positive-class column. Multiclass: one-vs-rest macro AUC of ``softmax(proba, axis=1)``.
     """
     if task == "regression":
         return float(r2_score(y_true, y_pred))
     proba = np.asarray(proba, dtype=float)
     if task == "binary":
         return float(roc_auc_score(np.asarray(y_true) == classes[1], proba[:, 1]))
-    return float(roc_auc_score(y_true, proba, multi_class="ovr", average="macro", labels=classes))
+    # The paper applies a softmax to the probabilities before the multiclass AUC
+    # (reshape_pred_output in src/utils_evaluation.py); kept so re-runs match the paper's rows.
+    return float(roc_auc_score(y_true, softmax(proba, axis=1), multi_class="ovr", average="macro", labels=classes))
 
 
-def table_scores(results: pd.DataFrame) -> pd.DataFrame:
-    """One row per (pipeline, table).
+def per_1k(results: pd.DataFrame) -> pd.DataFrame:
+    """Add the total run time (``total``, s), the table rows (``n_rows``) and the total run time per
+    1,000 samples (``total_per_1k``) to fold rows.
 
-    ``results`` has one row per (pipeline, table, fold) with columns
-    ``pipeline, table, task, fold, score, fit_s, predict_s, n_train, n_test``.
+    ``results`` has ``n_train, n_test`` and ``total_s``, or ``fit_s`` and ``predict_s`` whose sum
+    is the total.
     """
-    r = results.assign(
-        fit_per_1k=results["fit_s"] / results["n_train"] * 1000,
-        predict_per_1k=results["predict_s"] / results["n_test"] * 1000,
-    )
-    t = r.groupby(["pipeline", "table", "task"], as_index=False).agg(
-        score=("score", "mean"),
-        n_folds=("fold", "nunique"),
-        fit_per_1k=("fit_per_1k", "mean"),
-        predict_per_1k=("predict_per_1k", "mean"),
-    )
-    return t
+    split = results["fit_s"] + results["predict_s"] if "fit_s" in results else np.nan
+    total = results["total_s"].fillna(split) if "total_s" in results else split
+    n_rows = results["n_train"] + results["n_test"]
+    return results.assign(total=total, n_rows=n_rows, total_per_1k=total / n_rows * 1000)
 
 
-def leaderboard(results: pd.DataFrame, view: str = "both", n_tables: int | None = None) -> pd.DataFrame:
-    """One row per pipeline: mean score, median fit and predict time per 1K rows.
+def pareto_front(board: pd.DataFrame) -> list[str]:
+    """Pipelines that no other pipeline beats on both score and total run time per 1K samples.
 
-    With ``n_tables``, pipelines that miss a table or a fold are flagged ``complete=False``.
+    ``board`` has one row per pipeline with ``score`` and ``total_per_1k``. Sort by
+    ``total_per_1k``, then keep a pipeline when its score is strictly higher than every faster one.
     """
-    t = table_scores(results)
-    t = t[t["task"].isin(VIEWS[view])]
-    board = t.groupby("pipeline").agg(
-        score=("score", "mean"),
-        fit_per_1k=("fit_per_1k", "median"),
-        predict_per_1k=("predict_per_1k", "median"),
-        n_tables=("table", "nunique"),
-        min_folds=("n_folds", "min"),
-    )
-    if n_tables is not None:
-        board["complete"] = (board["n_tables"] == n_tables) & (board["min_folds"] == 3)
-    return board.sort_values("score", ascending=False)
-
-
-def pareto_front(board: pd.DataFrame, time_col: str = "fit_per_1k", exclude=()) -> list[str]:
-    """Pipelines that no other pipeline beats on both score and time.
-
-    Sort by time, then keep a pipeline when its score is strictly higher than every faster
-    one. ``exclude`` removes pipelines from the front, if ever needed.
-    """
-    ordered = board.drop(index=[p for p in exclude if p in board.index])
-    ordered = ordered.sort_values([time_col, "score"], ascending=[True, False])
+    ordered = board.sort_values(["total_per_1k", "score"], ascending=[True, False])
     front, best = [], -np.inf
     for name, row in ordered.iterrows():
         if row["score"] > best + 1e-12:

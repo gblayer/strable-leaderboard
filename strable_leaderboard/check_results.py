@@ -2,12 +2,15 @@
 
     python -m strable_leaderboard.check_results results/<model>.csv
 
-One row per (encoder, table, outer fold). Prints the problems found and the coverage per
-view, and exits non-zero on any problem. The Checks workflow runs it on every results
-pull request, and the Claude review reads its output.
+One row per (encoder, variant, table, outer fold). Prints the problems found and the coverage
+per view (fold rows with a score out of those expected), and exits non-zero on any problem. Missing
+tables or folds are not a problem: the board shows the pipeline with its coverage and an
+incomplete tag. The Checks workflow runs it on every results pull request, and the Claude
+review reads its output.
 
 A row carries either ``fit_s`` and ``predict_s`` (runs by the runner) or only ``total_s``
-(rows imported from the paper, which timed fit and predict together).
+(rows imported from the paper, which timed fit and predict together). ``variant`` is ``default``
+or ``tuned``.
 """
 
 from __future__ import annotations
@@ -20,11 +23,11 @@ from pathlib import Path
 import pandas as pd
 
 from .data import MANIFEST
-from .metrics import VIEWS
+from .metrics import VARIANTS, VIEWS, expected_folds
+from .splits import N_OUTER
 
-COLUMNS = ["model", "encoder", "table", "task", "fold", "score", "fit_s", "predict_s", "total_s", "n_train", "n_test",
-           "hardware", "package", "checkpoint_revision", "protocol_version", "date"]
-FOLDS = 3
+COLUMNS = ["model", "encoder", "variant", "table", "task", "fold", "score", "fit_s", "predict_s", "total_s", "n_train",
+           "n_test", "hardware", "package", "checkpoint_revision", "protocol_version", "date"]
 ENCODER_ID = re.compile(r"^[a-z0-9][a-z0-9.+-]*$")
 
 
@@ -45,10 +48,15 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
     bad_enc = sorted(e for e in set(df["encoder"].astype(str)) if not ENCODER_ID.match(e))
     if bad_enc:
         problems.append(f"encoder ids must be lowercase slugs, found {bad_enc}")
-    dup = df.duplicated(["encoder", "table", "fold"]).sum()
+    bad_variant = sorted(set(df["variant"].astype(str)) - set(VARIANTS))
+    if bad_variant:
+        problems.append(f"variant must be one of {list(VARIANTS)}, found {bad_variant}")
+    dup = df.duplicated(["encoder", "variant", "table", "fold"]).sum()
     if dup:
-        problems.append(f"{dup} duplicate (encoder, table, fold) rows")
-    if not df["fold"].isin(range(FOLDS)).all():
+        problems.append(f"{dup} duplicate (encoder, variant, table, fold) rows")
+    if df["score"].isna().any():
+        problems.append(f"{df['score'].isna().sum()} rows without a score")
+    if not df["fold"].isin(range(N_OUTER)).all():
         problems.append("fold must be 0, 1 or 2")
     for col in ["hardware", "package", "protocol_version", "date"]:
         if df[col].isna().any() or (df[col].astype(str).str.strip() == "").any():
@@ -73,13 +81,12 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
     if (known["n_test"] != n_test).any() or (known["n_train"] != n_rows - known["n_test"]).any():
         problems.append("n_train or n_test disagree with the manifest's folds")
 
-    coverage = []
-    for encoder, g in known.groupby("encoder"):
-        done = g.groupby("table")["fold"].nunique()
+    coverage, expected = [], expected_folds(tables)
+    for (encoder, variant), g in known[known["score"].notna()].groupby(["encoder", "variant"]):
         for view, view_tasks in VIEWS.items():
-            wanted = [t for t, m in tables.items() if m["task"] in view_tasks]
-            complete = sum(1 for t in wanted if done.get(t, 0) == FOLDS)
-            coverage.append(f"{encoder:<14} {view:<15} {complete}/{len(wanted)} tables complete")
+            n = int(g["task"].isin(view_tasks).sum())
+            coverage.append(f"{encoder:<22} {variant:<8} {view:<15} {n}/{expected[view]} folds"
+                            + ("" if n == expected[view] else " incomplete"))
     return problems, coverage
 
 
