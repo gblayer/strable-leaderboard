@@ -210,3 +210,25 @@ def test_lock_blocks_a_second_pass(clone):
 def test_next_version(clone):
     assert clone.next_version([]) == "v0.1.0"
     assert clone.next_version([{"version": "v0.1.9"}]) == "v0.1.10"
+
+
+def test_token_file_must_exist_and_be_private(tmp_path):
+    path = tmp_path / "github_token"
+    with pytest.raises(SystemExit, match="no GitHub token"):
+        dispatch.token_file(path)
+    path.write_text("github_pat_x\n")
+    path.chmod(0o644)
+    with pytest.raises(SystemExit, match="chmod 600"):
+        dispatch.token_file(path)
+    path.chmod(0o600)
+    assert dispatch.GitHub(path=path).token() == "github_pat_x"
+
+
+def test_git_reads_the_token_file_not_the_store(clone, tmp_path):
+    path = tmp_path / "github_token"
+    path.write_text("github_pat_x\n")
+    path.chmod(0o600)
+    env = dict(clone.env, STRABLE_GH_TOKEN_FILE=str(path))
+    out = subprocess.run(["git", "credential", "fill"], input="protocol=https\nhost=github.com\n\n", env=env,
+                         capture_output=True, text=True, check=True).stdout
+    assert "password=github_pat_x" in out

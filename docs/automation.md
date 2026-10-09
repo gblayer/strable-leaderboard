@@ -109,7 +109,7 @@ No message is sent when things work. Two kinds of message exist, both comments b
 - the gate's "@gblayer your review is needed: <reason>" (section 3);
 - a cluster failure. The dispatcher sends a `repository_dispatch` event, type `smoke-failed`, `run-failed`, `results-failed` or `runner-failed`, with `client_payload: {pr, model, reason}`. `.github/workflows/notify.yml` comments on the model's pull request and labels it `needs-maintainer`, or opens an issue when there is no pull request. For a private model the payload names no model and gives no details.
 
-There is no bot account. The dispatcher uses the maintainer's classic token (scopes `repo`, `workflow`) from her git credential store, read with `git credential fill`; it is never printed or logged. Git pushes use the same stored credential.
+There is no bot account. The dispatcher uses a fine-grained token limited to this repository (section 9), read from a file; it is never printed or logged. The REST calls and every git fetch and push of the dispatcher use it; the maintainer's own git credentials are never read.
 
 ## 6. How the board updates
 
@@ -141,6 +141,11 @@ Merged contributor code runs on the cluster under the maintainer's account, so t
 2. Labels `claude`, `claude-approved`, `needs-maintainer`.
 3. Each workflow sets its own token permissions in its `permissions` block; nothing to change in the settings.
 4. On the cluster, in the clone on `main`: `python scripts/prepare.py` (shared env, data, encoders, sandbox image), `private/runner.env` with the partition flags, the cron line above.
-5. Branch protection on `main`, requiring the "Checks" workflow, once the repository is public; the gate checks Checks itself in the meantime. Do not require approving reviews: the gate merges with `GITHUB_TOKEN`, which cannot approve.
+5. The dispatcher's token, on the cluster. On github.com: Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Resource owner `gblayer`; Repository access: *Only select repositories*, `gblayer/strable-leaderboard` only; Repository permissions: Contents read and write, Pull requests read and write, Issues read and write, Metadata read-only (set by default); nothing else, in particular not Workflows; expiration at most one year (put a reminder in the calendar). Store it, readable by you only, without leaving it in the shell history:
+   ```
+   install -d -m 700 ~/.config/strable && (umask 077; read -rs -p "token: " t && printf '%s\n' "$t" > ~/.config/strable/github_token)
+   ```
+   `STRABLE_GH_TOKEN_FILE` points elsewhere if needed. The dispatcher refuses to start when the file is missing or readable by anyone else (mode other than 0600). It reaches git through a credential helper that reads the file, set in the dispatcher's environment only, which also switches off every other helper (`credential.helper=store` included).
+6. Branch protection on `main`, requiring the "Checks" workflow, once the repository is public; the gate checks Checks itself in the meantime. Do not require approving reviews: the gate merges with `GITHUB_TOKEN`, which cannot approve.
 
 GitHub Actions and Pages are free for public repositories; Claude's reviews run on the subscription; Tally's free plan is enough.

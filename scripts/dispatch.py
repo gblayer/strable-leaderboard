@@ -22,8 +22,9 @@ folder of models/ on main, or of private/ (closed models, never on GitHub). Its 
 State lives in cache/dispatch/<model>.json. A failure stops the model (step "failed") and sends ONE
 repository_dispatch event (smoke-failed, run-failed, results-failed or runner-failed) that the
 Notify workflow turns into a comment mentioning @gblayer. Nothing is posted on success. Delete the
-state file to retry. GitHub access uses the maintainer's token from `git credential fill`; it is
-never printed or logged.
+state file to retry. GitHub access, API and git, uses the fine-grained token in
+$STRABLE_GH_TOKEN_FILE (default ~/.config/strable/github_token, mode 0600; docs/automation.md,
+section 9), never the git credential store; it is never printed or logged.
 """
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ import fcntl
 import json
 import os
 import re
+import stat
 import subprocess
 import sys
 import urllib.request
@@ -46,29 +48,37 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 REPO = os.environ.get("STRABLE_REPO", "gblayer/strable-leaderboard")
+REMOTE = f"https://github.com/{REPO}.git"  # explicit, so git always goes through the token's helper
 MAINTAINER = "gblayer"
 GATE_BOT = "github-actions[bot]"
 APPROVED = "claude-approved"
 SLUG = re.compile(r"^[a-z0-9][a-z0-9.-]*$")
+TOKEN_FILE = Path(os.environ.get("STRABLE_GH_TOKEN_FILE", "~/.config/strable/github_token")).expanduser()
+# git reads the same file through this helper; the empty first value drops every other helper (the store).
+GIT_HELPER = '!f() { test "$1" = get && printf "username=x-access-token\\npassword=%s\\n" "$(cat "$STRABLE_GH_TOKEN_FILE")"; }; f'
 
 
 def log(*parts) -> None:
     print(datetime.now().isoformat(timespec="seconds"), *parts, flush=True)
 
 
-class GitHub:
-    """The few REST calls the dispatcher needs, with the maintainer's stored credential."""
+def token_file(path: Path = TOKEN_FILE) -> Path:
+    """The token file, checked: present, and readable by its owner only."""
+    if not path.is_file():
+        sys.exit(f"no GitHub token at {path}: create the fine-grained token as in docs/automation.md, section 9")
+    if stat.S_IMODE(path.stat().st_mode) & 0o077:
+        sys.exit(f"{path} is readable by others: chmod 600 {path}")
+    return path
 
-    def __init__(self, repo: str = REPO):
-        self.repo = repo
-        self._token = None
+
+class GitHub:
+    """The few REST calls the dispatcher needs, with the fine-grained token of the token file."""
+
+    def __init__(self, repo: str = REPO, path: Path = TOKEN_FILE):
+        self.repo, self.path = repo, path
 
     def token(self) -> str:
-        if self._token is None:
-            out = subprocess.run(["git", "credential", "fill"], input="protocol=https\nhost=github.com\n\n",
-                                 capture_output=True, text=True, check=True).stdout
-            self._token = dict(line.split("=", 1) for line in out.splitlines() if "=" in line)["password"]
-        return self._token
+        return token_file(self.path).read_text().strip()
 
     def call(self, method: str, path: str, data=None):
         req = urllib.request.Request(f"https://api.github.com/repos/{self.repo}{path}", method=method,
@@ -94,7 +104,9 @@ class Dispatcher:
         self.gh = gh or GitHub()
         self.python = python or str(self.cache / "env" / "bin" / "python")
         self.env = dict(os.environ, PYTHONNOUSERSITE="1", PYTHONPATH=str(self.root), STRABLE_CACHE=str(self.cache),
-                        STRABLE_LOGS=str(self.cache / "logs"))
+                        STRABLE_LOGS=str(self.cache / "logs"), STRABLE_GH_TOKEN_FILE=str(TOKEN_FILE),
+                        GIT_TERMINAL_PROMPT="0", GIT_CONFIG_COUNT="2", GIT_CONFIG_KEY_0="credential.helper",
+                        GIT_CONFIG_VALUE_0="", GIT_CONFIG_KEY_1="credential.helper", GIT_CONFIG_VALUE_1=GIT_HELPER)
 
     # ---- helpers -------------------------------------------------------------------------------
     def sh(self, *cmd, cwd=None, check=True) -> subprocess.CompletedProcess:
@@ -313,7 +325,7 @@ class Dispatcher:
     def open_results_pr(self, name: str, version: str, note: str, check_output: str, st: dict) -> int:
         """Branch results/<name> from origin/main with the rebuilt site/results.json, pushed; the PR opened."""
         branch, wt = f"results/{name}", self.state_dir / "worktrees" / name
-        self.sh("git", "fetch", "origin", "main")
+        self.sh("git", "fetch", REMOTE, "+refs/heads/main:refs/remotes/origin/main")
         self.sh("git", "worktree", "remove", "--force", wt, check=False)
         self.sh("git", "worktree", "add", "--force", "-B", branch, wt, "origin/main")
         try:
@@ -322,7 +334,7 @@ class Dispatcher:
             self.sh(self.python, "scripts/build_site_data.py", "--check", "site/results.json", cwd=wt)
             self.sh("git", "add", "site/results.json", cwd=wt)
             self.sh("git", "commit", "-m", f"Results: {note} ({version})", cwd=wt)
-            self.sh("git", "push", "--force", "origin", f"HEAD:refs/heads/{branch}", cwd=wt)
+            self.sh("git", "push", "--force", REMOTE, f"HEAD:refs/heads/{branch}", cwd=wt)
         finally:
             self.sh("git", "worktree", "remove", "--force", wt, check=False)
         model_pr = f"Model pull request: #{st['pr']}.\n" if st.get("pr") else ""
@@ -334,9 +346,9 @@ class Dispatcher:
 
     def tag(self, version: str | None, sha: str | None) -> None:
         if version and sha:
-            self.sh("git", "fetch", "origin", "main", check=False)
+            self.sh("git", "fetch", REMOTE, "+refs/heads/main:refs/remotes/origin/main", check=False)
             if self.sh("git", "tag", version, sha, check=False).returncode == 0:
-                self.sh("git", "push", "origin", version, check=False)
+                self.sh("git", "push", REMOTE, version, check=False)
 
     # ---- the pass --------------------------------------------------------------------------------
     def run(self, pull: bool = True) -> int:
@@ -352,7 +364,7 @@ class Dispatcher:
                 if branch != "main":
                     log("the clone is on", branch, "not main; nothing done")
                     return 1
-                pulled = self.sh("git", "pull", "--ff-only", "origin", "main", check=False)
+                pulled = self.sh("git", "pull", "--ff-only", REMOTE, "main", check=False)
                 if pulled.returncode:
                     self.notify("runner-failed", {}, "git pull --ff-only failed:\n" + pulled.stderr[-800:])
                     return 1
@@ -369,6 +381,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--no-pull", action="store_true", help="skip git pull (tests, manual passes)")
     args = parser.parse_args(argv)
+    token_file()  # fail at once, with the fix, when the token is missing or exposed
     return Dispatcher().run(pull=not args.no_pull)
 
 
