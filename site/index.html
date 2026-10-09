@@ -97,6 +97,8 @@ section { scroll-margin-top: 76px; }
 .nav-links { display: flex; gap: 24px; font-size: 16.5px; color: var(--ink-2); }
 .nav-links a { text-decoration: none; }
 .nav-links a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+.nav-links a.demo-btn { display: inline-flex; align-items: center; }
+.nav-links a.demo-btn:hover { color: var(--bg); text-decoration: none; }
 @media (max-width: 760px) { .nav-links { display: none; } }
 
 .btn {
@@ -317,6 +319,8 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         <a href="https://huggingface.co/datasets/inria-soda/STRABLE-benchmark">Datasets</a>
         <a href="https://github.com/soda-inria/strable">Benchmark code</a>
         <a href="https://arxiv.org/abs/2605.12292">Paper</a>
+        <!-- TODO: set href to the NeurIPS 2026 talk video once it is online, and remove title and aria-disabled. -->
+        <a class="demo-btn" id="talk-btn" href="#" title="Video coming soon" aria-disabled="true">Talk</a>
         <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
       </nav>
       <div class="nav-btns">
@@ -1023,6 +1027,7 @@ document.querySelectorAll('[data-dl]').forEach((b) => b.addEventListener('click'
 document.addEventListener('click', (ev) => {
   const a = ev.target.closest ? ev.target.closest('a[href^="#"]') : null;
   if (!a) return;
+  if (a.getAttribute('href') === '#') { ev.preventDefault(); return; }  // a link still to come, such as Talk
   const t = document.getElementById(a.getAttribute('href').slice(1));
   if (!t) return;
   ev.preventDefault();
