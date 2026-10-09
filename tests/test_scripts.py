@@ -3,11 +3,12 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
-from build_site_data import build, parquet_problems, problems  # noqa: E402
+from build_site_data import PER_FOLD, build, parquet_problems, per_fold_problems, problems  # noqa: E402
 from import_paper_results import convert  # noqa: E402
 from strable_leaderboard.metrics import pareto_front  # noqa: E402
 
@@ -39,21 +40,33 @@ def test_build_site_data(tmp_path):
     assert data["version"] == "v0.1.0" and data["history"][0]["note"] == "First version"
     p, t = data["pipelines"]
     assert p["id"] == "tfidf+ridge" and p["enc"] == "Tf-Idf" and p["lrn"] == "Ridge" and p["kind"] == "modular"
-    assert p["variant"] == "default" and "paper" not in p
+    assert p["variant"] == "default" and p["hw"] == "cpu" and "paper" not in p
     assert p["both"][0] == 0.6 and p["clf"][0] == 0.6  # the median: one negative table does not move it
     assert all(len(p[v]) == 4 for v in ("both", "reg", "clf"))  # [score, time, fold rows, expected]: no fit or predict
     assert p["reg"][1] > 0  # total run time per 1K samples
     assert p["both"][2:] == [324, 324] and p["reg"][2:] == [228, 228] and p["clf"][2:] == [96, 96]
-    assert t["id"] == "tfidf+ridge:tuned" and t["variant"] == "tuned" and t["paper"] is True
-    assert t["reg"][1] > 0  # paper rows: their total run time
+    assert t["id"] == "tfidf+ridge:tuned" and t["variant"] == "tuned" and "hw" not in t  # imported rows record no hardware
+    assert t["reg"][1] > 0  # imported rows: their total run time
     assert t["reg"][2:] == [225, 228] and t["clf"][2:] == [95, 96]  # a table missing in reg, a score in clf: both incomplete
     assert problems(data) == []
     long = pd.read_parquet(tmp_path / "results.parquet")  # all views, one row per pipeline and view
     assert len(long) == 6 and set(long["view"]) == {"both", "reg", "clf"} and long["pareto_front"].dtype == bool
     assert parquet_problems(data, tmp_path / "results.parquet") == []
+    folds = pd.read_parquet(tmp_path / "results_per_fold.parquet")  # one row per pipeline, table and fold with a score
+    assert list(folds.columns) == PER_FOLD and len(folds) == 324 + 320
+    row = folds[(folds["id"] == "tfidf+ridge") & (folds["table"] == A_REGRESSION_TABLE)].iloc[0]
+    assert row["encoder"] == "Tf-Idf" and row["learner"] == "Ridge" and row["total_s"] == 1.5
+    assert row["time_per_1k_s"] == pytest.approx(1500 / row["n_rows"])
+    assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == []
     t["both"][2] = 325
     assert parquet_problems(data, tmp_path / "results.parquet")
+    assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == ["tfidf+ridge:tuned: medians or fold rows differ from results_per_fold.parquet"]
     assert problems(data)
+    t["both"][2] = 320
+    p["reg"][0] = 0.5  # a median that the fold rows do not give
+    assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == ["tfidf+ridge: medians or fold rows differ from results_per_fold.parquet"]
+    folds.iloc[:-1].to_csv(tmp_path / "results_per_fold.csv", index=False)
+    assert "results_per_fold.csv does not match results_per_fold.parquet: rebuild both" in per_fold_problems(data, tmp_path / "results_per_fold.parquet")
 
 
 def test_import_paper_rows():
@@ -97,22 +110,22 @@ def test_paper_selection_is_figure_4a():
 
 
 def test_published_board_reproduces_table_e10():
-    """The paper rows of site/results.json reproduce Table E.10, the Pareto front of the "both" view.
+    """The six pipelines of the paper's Table E.10, checked by id: their numbers, and the Pareto front of the
+    "both" view among the 75 Figure 4a pipelines.
 
-    Runner rows join without changing this; a re-run replaces a pipeline's paper rows (same id), and
-    once that happens to a pipeline of E.10 the paper rows no longer hold the paper's front.
+    Valid until a re-run replaces the fold rows of one of these 75 ids; then update or drop this test.
     """
     data = json.loads((ROOT / "site" / "results.json").read_text())
     assert problems(data) == []
     assert parquet_problems(data, ROOT / "site" / "results.parquet") == []  # the download holds the same numbers and front
-    paper = [p for p in data["pipelines"] if p.get("paper")]
-    board = pd.DataFrame([{"id": p["id"], "score": p["both"][0], "total_per_1k": p["both"][1]} for p in paper]).set_index("id")
+    assert per_fold_problems(data, ROOT / "site" / "results_per_fold.parquet") == []  # the medians come from the fold rows
+    board = pd.DataFrame([{"id": p["id"], "score": p["both"][0], "total_per_1k": p["both"][1]}
+                          for p in data["pipelines"] if p.get("both")]).set_index("id")
     e10 = {"targetencoder+ridge": (0.6593, 0.0924), "targetencoder+extratrees": (0.7290, 0.1695),
           "tfidf+extratrees": (0.7407, 0.9679), "e5-small-v2-pca30+extratrees": (0.7422, 2.5152),
           "tfidf+tabicl-v2": (0.7799, 2.9988), "tfidf+tabpfn-2.5": (0.7891, 6.6700)}
-    still = [i for i in e10 if i in board.index]
-    assert {i: tuple(board.loc[i]) for i in still} == {i: e10[i] for i in still}
-    if len(still) == len(e10):
-        assert pareto_front(board) == list(e10)
-    # with the filled fold rows, every paper pipeline covers every table and fold: no incomplete tag
-    assert all(p["both"][2:] == [324, 324] and p["reg"][2:] == [228, 228] and p["clf"][2:] == [96, 96] for p in paper)
+    assert {i: tuple(board.loc[i]) for i in e10} == e10
+    sel = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())  # the 75 pipelines of Figure 4a
+    ids = [(p["model"] if p["encoder"] == "none" else p["encoder"] + "+" + p["model"]) + ("" if p["variant"] == "default" else ":" + p["variant"])
+           for methods in sel["pipelines"].values() for p in methods.values()]
+    assert pareto_front(board.loc[ids]) == list(e10)

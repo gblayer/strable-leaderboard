@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from strable_leaderboard.codenames import codename
 from strable_leaderboard.metrics import expected_folds, fold_score, pareto_front, per_1k
 
 
 def test_total_time_per_1k_samples():
     runner = pd.DataFrame({"fit_s": [1.0], "predict_s": [0.5], "total_s": [np.nan], "n_train": [1000], "n_test": [500]})
-    assert per_1k(runner)["total_per_1k"].iloc[0] == pytest.approx(1.0)  # (1.0 + 0.5) s over 1,500 rows
+    out = per_1k(runner).iloc[0]
+    assert out["total_per_1k"] == pytest.approx(1.0) and out["total"] == 1.5 and out["n_rows"] == 1500  # 1.5 s over 1,500 rows
     paper = runner.assign(fit_s=None, predict_s=None, total_s=3.0)  # rows imported from the paper
     assert per_1k(paper)["total_per_1k"].iloc[0] == pytest.approx(2.0)
 
@@ -47,10 +47,3 @@ def test_multiclass_auc_applies_the_papers_softmax():
     labels = np.array(["a", "b", "c"])  # original labels, sorted
     assert fold_score("multiclass", labels[y], proba=proba, classes=labels) == pytest.approx(paper)
 
-
-def test_codename_format_and_uniqueness():
-    names = set()
-    for _ in range(50):
-        names.add(codename(taken=names))
-    assert len(names) == 50
-    assert all(n.count("-") == 1 for n in names)

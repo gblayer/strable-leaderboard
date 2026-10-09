@@ -18,7 +18,7 @@ The board currently holds the paper's 75 Figure 4a pipelines, version v0.1.0-pre
 
 ## Submit a model
 
-<!-- The page's "Submit a pipeline" button links to this heading (#submit-a-model): keep its text. -->
+<!-- The page's "Submit a model" button links to this heading (#submit-a-model): keep its text. -->
 
 You submit code, not results.
 
@@ -54,9 +54,10 @@ The first line installs this package, the smoke-test tools and your model's pack
 | [env/](env/) | The shared environment every model runs in: `requirements.txt` (pins), `requirements.in` (where new packages are added) |
 | [docs/protocol.md](docs/protocol.md) | Data, cross-validation, score, time, encoders, hardware |
 | [docs/submitting.md](docs/submitting.md) | The contract, the model card, versions, examples |
+| [site/](site/) | The page and its data: `results.json`, `results.parquet`, and every fold in `results_per_fold.csv` and `results_per_fold.parquet` |
 | [AGENTS.md](AGENTS.md) | Where coding agents start |
 
-Maintainer and infrastructure files: `scripts/`, `site/`, `tests/`, `docs/`.
+Maintainer and infrastructure files: `scripts/`, `tests/`, [docs/automation.md](docs/automation.md).
 
 ## Contact
 

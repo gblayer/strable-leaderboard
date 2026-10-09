@@ -12,16 +12,17 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300..800&display=swap">
 <script>
 (function () {
-  var root = document.documentElement;
-  (location.hash || '').replace('#', '').split('.').forEach(function (t) {
-    if (t === 'dark' || t === 'light') root.setAttribute('data-theme', t);
-  });
+  var t = null;
+  try { t = localStorage.getItem('strable-theme'); } catch (e) {}
+  (location.hash || '').replace('#', '').split('.').forEach(function (h) { if (h === 'dark' || h === 'light') t = h; });
+  if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
 })();
 </script>
 <style>
 /* Layout, one column: nav, hero (name, pronunciation, spreadsheet art), ticker, controls, the board
    (table beside the Pareto plot), version history, a Pine Grove suggestion panel.
-   Everything stacks under 1000px. The theme follows the system, or #dark / #light in the URL. */
+   Everything stacks under 1000px. The theme follows the system unless the Auto / Light / Dark control
+   (kept in localStorage) or #dark / #light in the URL says otherwise. */
 :root {
   --f-display: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -32,6 +33,7 @@
   --ink: #13273F; --ink-2: #34465E; --ink-3: #4C5767; --line: #D4BBA6;
   --head: #4E0000; --accent: #4E0000; --accent-ink: #F3E6DA; --btn-edge: #4E0000;
   --accent-2: #223631;
+  --accent-text: #4E0000;  /* the accent as text on surfaces */
   --mark: #8E2A33; --mark-muted: #AC9C90;
   --hdr: #223631; --hdr-ink: #F3E6DA;
   /* Pine Grove panel: the same in both themes */
@@ -45,6 +47,7 @@
     --ink: #E9D4C3; --ink-2: #CDBBAC; --ink-3: #A2A9B3; --line: #2E4768;
     --head: #E9D4C3; --accent: #9E2F3A; --accent-ink: #F3E6DA; --btn-edge: #E9D4C3;
     --accent-2: #91ACA5;
+  --accent-text: #D0646E;
     --mark: #D0646E; --mark-muted: #4F6483;
     --hdr: #3A5A50; --hdr-ink: #F3E6DA;
     color-scheme: dark;
@@ -55,6 +58,7 @@
   --ink: #E9D4C3; --ink-2: #CDBBAC; --ink-3: #A2A9B3; --line: #2E4768;
   --head: #E9D4C3; --accent: #9E2F3A; --accent-ink: #F3E6DA; --btn-edge: #E9D4C3;
   --accent-2: #91ACA5;
+  --accent-text: #D0646E;
   --mark: #D0646E; --mark-muted: #4F6483;
   --hdr: #3A5A50; --hdr-ink: #F3E6DA;
   color-scheme: dark;
@@ -93,10 +97,13 @@ section { scroll-margin-top: 76px; }
 .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); border-radius: 6px; }
 .logo-mark { width: 34px; height: 34px; display: block; flex: none; }
 .lm-h { fill: var(--ink); } .lm-c { fill: var(--surface); stroke: var(--line); stroke-width: 1; } .lm-s { fill: var(--accent); }
-.nav-right { display: flex; align-items: center; gap: 24px; }
+.nav-right { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 10px 24px; }
+.seg.theme button { font-size: 12px; padding: 6px 10px; min-height: 28px; }
 .nav-links { display: flex; gap: 24px; font-size: 16.5px; color: var(--ink-2); }
 .nav-links a { text-decoration: none; }
 .nav-links a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+.nav-links a.demo-btn { display: inline-flex; align-items: center; }
+.nav-links a.demo-btn:hover { color: var(--bg); text-decoration: none; }
 @media (max-width: 760px) { .nav-links { display: none; } }
 
 .btn {
@@ -176,6 +183,7 @@ section { scroll-margin-top: 76px; }
 
 /* ---------- board ---------- */
 .board-head { margin-bottom: 18px; }
+.board-sub { margin: 0 0 12px; font-size: 14.5px; color: var(--ink-3); }
 .controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
 .ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-radius: 999px; }
 .board { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -203,9 +211,7 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .lrn { color: var(--ink); font-weight: 600; white-space: nowrap; }
 .tag { font: 600 10px/1 var(--f-mono); letter-spacing: 0.1em; color: var(--ink-3); border: 1px solid var(--line); padding: 3px 5px; border-radius: 999px; white-space: nowrap; }
 .tag.e2e { color: var(--accent-2); border-color: var(--accent-2); }
-.tag.anon { color: var(--mark); border-color: var(--mark); }
-.tag.closed { color: var(--ink-2); border-color: var(--ink-3); }
-.tag.tuned { color: var(--accent); border-color: var(--accent); }
+.tag.tuned { color: var(--accent-text); border-color: var(--accent-text); }
 .tag.incomplete { color: var(--ink-2); border-style: dashed; border-color: var(--ink-3); }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
@@ -228,7 +234,6 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .sw { width: 10px; height: 10px; display: inline-block; }
 .sw-on { background: var(--mark); }
 .sw-off { background: var(--mark-muted); }
-.sw-top { background: transparent; box-shadow: 0 0 0 2px var(--mark); width: 8px; height: 8px; margin: 1px; }
 .sw-line { width: 16px; height: 2px; background: var(--mark); }
 #plot { position: relative; margin-top: 10px; touch-action: pan-y; }
 #plot svg { display: block; width: 100%; height: auto; }
@@ -239,7 +244,6 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .pt { fill: var(--mark-muted); stroke: var(--surface); stroke-width: 2; }
 .pt.on { fill: var(--mark); }
 .pt.hot { stroke: var(--ink); stroke-width: 2.5; }
-.top-ring { fill: none; stroke: var(--mark); stroke-width: 2; pointer-events: none; }
 .plabel { fill: var(--ink); font: 600 13.5px var(--f-mono); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
 .better { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
 .better-head { fill: var(--ink-3); }
@@ -319,10 +323,17 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         <a href="https://huggingface.co/datasets/inria-soda/STRABLE-benchmark">Datasets</a>
         <a href="https://github.com/soda-inria/strable">Benchmark code</a>
         <a href="https://arxiv.org/abs/2605.12292">Paper</a>
+        <!-- TODO: set href to the NeurIPS 2026 talk video once it is online, and remove title and aria-disabled. -->
+        <a class="demo-btn" id="talk-btn" href="#" title="Video coming soon" aria-disabled="true">Talk</a>
         <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
       </nav>
+      <div class="seg theme" role="group" aria-label="Theme">
+        <button type="button" data-theme-set="auto" aria-pressed="true" title="Follow the system setting">Auto</button>
+        <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+        <button type="button" data-theme-set="dark" aria-pressed="false">Dark</button>
+      </div>
       <div class="nav-btns">
-        <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-model">Submit a pipeline</a>
+        <a class="btn" id="submit-btn" href="https://github.com/gblayer/strable-leaderboard#submit-a-model">Submit a model</a>
         <button type="button" class="btn ghost" id="cite-btn" aria-haspopup="dialog" aria-controls="cite-dialog">Cite</button>
       </div>
     </div>
@@ -333,7 +344,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
       <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip"></span><a class="ver-link" href="#history">Version history</a><span class="updated" id="updated"></span><button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button></p>
       <h1 id="hero-title">STRABLE</h1>
       <p class="expand"><span class="xp"><b>STR</b>ing-t<b>ABLE</b></span><span class="ipa">/ˈstreɪ.bəl/</span><span class="say">stray-buhl</span></p>
-      <p class="lede">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. New models come out all the time, so the board does not list all ~445 pipelines from <a href="https://arxiv.org/abs/2605.12292">the paper</a>.</p>
+      <p class="lede">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. The board continues <a href="https://arxiv.org/abs/2605.12292">the paper</a> and grows as new models come out.</p>
       <ul class="stats">
         <li><b>108</b> tables</li>
         <li><b>76</b> regression</li>
@@ -410,6 +421,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
   <section id="board" aria-labelledby="board-title">
     <h2 class="sr-only" id="board-title">Leaderboard</h2>
     <div class="board-head">
+      <p class="board-sub" id="board-sub">Median over 108 tables × 3 folds (R² for regression, AUC for classification) · run time per 1K samples, log scale</p>
       <div class="controls">
         <div class="ctl" id="ctl-task">
           <span class="cap" id="task-lbl">Task</span>
@@ -456,7 +468,6 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
           <ul class="legend">
             <li><span class="sw sw-on"></span>On the Pareto Front</li>
             <li><span class="sw sw-off"></span>Not on the Pareto Front</li>
-            <li><span class="sw sw-top"></span>Top 3 in this order</li>
             <li><span class="sw sw-line"></span>Pareto Front</li>
           </ul>
         </div>
@@ -489,8 +500,15 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
           <a class="linkbtn" id="dl-parquet" href="results.parquet" download>Parquet · all views</a>
         </div>
       </div>
+      <div class="dl">
+        <span class="cap" id="dl-raw-lbl">Raw results, per table and fold</span>
+        <div class="dl-btns" role="group" aria-labelledby="dl-raw-lbl">
+          <a class="linkbtn" href="results_per_fold.csv" download>CSV</a>
+          <a class="linkbtn" href="results_per_fold.parquet" download>Parquet</a>
+        </div>
+      </div>
     </div>
-    <p class="note">The plot and the CSV, JSON and XLSX tables follow the Task and Sort chosen above. The Parquet file holds all three views at once, one row per pipeline and view. <span class="form-msg" id="dl-msg" role="status"></span></p>
+    <p class="note">The plot follows the Task chosen above; the CSV, JSON and XLSX rankings follow the Task and Sort. The Parquet file holds all three views at once, one row per pipeline and view. The raw results hold every fold: one row per pipeline, table and outer fold, with its score and run time. <span class="form-msg" id="dl-msg" role="status"></span></p>
   </section>
 
   <section class="history" id="history" aria-labelledby="history-title">
@@ -554,17 +572,18 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 <script>
 /* Pipelines from results.json, see loadResults(). Per task (both, reg, clf): [median score, median
    total s per 1K samples, fold rows, fold rows expected] or null. kind: "modular" or "e2e" (reads raw
-   strings itself), variant: "default" or "tuned", hw: what it ran on, shown in the tooltip.
-   Optional flags: paper (imported from the paper), anon (codename, name never revealed), closed
-   (named, weights not public). Empty until the file has loaded. */
-let DATA = [], HISTORY = [], VERSION = '', BUILT = '', LOADED = false;  // HISTORY: results/versions.yaml
+   strings itself), variant: "default" or "tuned", hw: what it ran on when recorded, shown in the
+   tooltip. Empty until the file has loaded. */
+let DATA = [], HISTORY = [], VERSION = '', BUILT = '', LOADED = false, LOADS = 0;  // HISTORY: results/versions.yaml; LOADS: successful loads
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model';  // the README heading "Submit a model"
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
+const TIME_SUB = ' · run time per 1K samples, log scale';
 const TASKS = {
-  both: { metric: 'Score', colSub: 'R² & AUC, median', axis: 'Median score (R² & AUC)' },
-  reg: { metric: 'R²', colSub: 'median', axis: 'Median R²' },
-  clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC' }
+  both: { metric: 'Score', colSub: 'R² & AUC, median', axis: 'Median score (R² & AUC)',
+    sub: 'Median over ' + N_ALL + ' tables × 3 folds (R² for regression, AUC for classification)' + TIME_SUB },
+  reg: { metric: 'R²', colSub: 'median', axis: 'Median R²', sub: 'Median R² over ' + N_REG + ' tables × 3 folds' + TIME_SUB },
+  clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC', sub: 'Median AUC over ' + N_CLF + ' tables × 3 folds' + TIME_SUB }
 };
 const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
 const state = { task: 'both', sort: 'pareto', hot: null };
@@ -584,8 +603,8 @@ function items(task) {
   for (const d of DATA) {
     const v = d[task];
     if (!v) continue;
-    rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw,
-      tuned: d.variant === 'tuned', paper: !!d.paper, incomplete: v.length > 3 && v[2] < v[3],
+    rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, hw: d.hw,
+      tuned: d.variant === 'tuned', incomplete: v.length > 3 && v[2] < v[3],
       s: v[0], t: num(v[1]) });
   }
   return rows;
@@ -608,10 +627,7 @@ function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n 
 const fmtS = (v) => v.toFixed(3);
 function fmtN(t) { if (Number.isNaN(t)) return '—'; if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
 const fmtT = (t) => fmtN(t) + ' s';
-const PAPER_TIP = 'From the paper: timed by the paper\'s code on mixed hardware, including the hyperparameter search for tuned rows. '
-  + 'Other rows are timed by the runner on the reference node, so time comparisons between the two are approximate.';
-const TAGS = [['e2e', 'end-to-end', (d) => d.kind === 'e2e'], ['tuned', 'tuned', (d) => d.tuned], ['anon', 'anonymous', (d) => d.anon],
-  ['closed', 'closed', (d) => d.closed && !d.anon], ['paper', 'paper', (d) => d.paper, PAPER_TIP], ['incomplete', 'incomplete', (d) => d.incomplete]];
+const TAGS = [['e2e', 'end-to-end', (d) => d.kind === 'e2e'], ['tuned', 'tuned', (d) => d.tuned], ['incomplete', 'incomplete', (d) => d.incomplete]];
 const tagsOf = (d) => TAGS.filter((t) => t[2](d));
 function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
 function timeText(d) { return 'total run time ' + fmtT(d.t) + ' per 1K samples'; }
@@ -641,12 +657,12 @@ function renderTable(list, front, rows) {
       }
     }
     const tr = el('tr', 'row' + (i < nTop ? ' top' : '') + (i === 0 ? ' top-first' : '') + (i === nTop - 1 ? ' top-last' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
-    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + ', ' + (d.paper ? 'from the paper' : 'runs on ' + d.hw) + (d.incomplete ? ', incomplete' : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
+    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + (d.hw ? ', runs on ' + d.hw : '') + (d.incomplete ? ', incomplete' : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
     if (d.kind !== 'e2e') { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); }
     p.appendChild(el('span', 'lrn', d.lrn));
-    for (const [cls, name, , tip] of tagsOf(d)) { const t = el('span', 'tag ' + cls, name.toUpperCase()); if (tip) t.title = tip; p.appendChild(t); }
+    for (const [cls, name] of tagsOf(d)) p.appendChild(el('span', 'tag ' + cls, name.toUpperCase()));
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
@@ -665,7 +681,8 @@ function niceStep(range) {
   const raw = range / 5, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
   return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
 }
-function renderPlot(list, front, top) {
+/* The plot depends only on the data and the Task view, never on Sort. */
+function renderPlot(list, front) {
   const host = $('plot'); host.textContent = '';
   const W = Math.max(280, host.clientWidth || 520);
   const H = Math.round(Math.max(300, Math.min(440, W * 0.8)));
@@ -728,7 +745,6 @@ function renderPlot(list, front, top) {
     const on = front.has(d.id), sz = on ? 10 : 8, cx = X(d.t), cy = Y(d.s);
     const r = sv('rect', { class: 'pt' + (on ? ' on' : ''), x: cx - sz / 2, y: cy - sz / 2, width: sz, height: sz });
     pts.appendChild(r); geo.push({ d, cx, cy, node: r, on });
-    if (top && top.has(d.id)) pts.appendChild(sv('rect', { class: 'top-ring', x: cx - sz / 2 - 4, y: cy - sz / 2 - 4, width: sz + 8, height: sz + 8 }));
   }
   svg.appendChild(pts);
 
@@ -773,7 +789,7 @@ function showTip(id) {
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
   tip.appendChild(l1);
   tip.appendChild(el('div', null, timeText(g.d)));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.anon ? ' · anonymous' : g.d.closed ? ' · closed' : '') + (g.d.paper ? ' · from the paper' : ' · runs on ' + g.d.hw) + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.hw ? ' · runs on ' + g.d.hw : '') + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -808,12 +824,15 @@ function renderTicker(list, front) {
   }
 }
 
+let plotKey = null;  // the Task view and load the plot was drawn for
 function render() {
+  $('board-sub').textContent = TASKS[state.task].sub;
   const list = items(state.task);
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
-  renderPlot(list, front, topSet(rows, front));
+  if (plotKey !== state.task + LOADS) { renderPlot(list, front); plotKey = state.task + LOADS; }
+  setHot(state.hot);  // the table rows are new; the plot may be the same
   renderTicker(list, front);
   $('stat-n').textContent = String(list.length);
   $('ver-chip').textContent = VERSION;
@@ -834,7 +853,7 @@ async function loadResults() {
     const r = await fetch('results.json', { cache: 'no-store' });
     if (!r.ok) return false;
     const j = await r.json();
-    DATA = j.pipelines; VERSION = j.version; BUILT = j.built; HISTORY = j.history || [];
+    DATA = j.pipelines; VERSION = j.version; BUILT = j.built; HISTORY = j.history || []; LOADS++;
     return (LOADED = true);
   } catch (e) { return false; }
 }
@@ -899,7 +918,7 @@ const COLUMNS = {
   rank: 'position in the current order',
   pipeline: 'encoder + learner, or the learner alone for end-to-end pipelines',
   variant: 'default configuration, or tuned',
-  tags: 'end-to-end, tuned, anonymous, closed, paper, incomplete',
+  tags: 'end-to-end, tuned, incomplete',
   median_score: { both: 'median over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification), as in the paper\'s Figure 4a',
     reg: 'median R² over the 76 regression tables x 3 outer folds', clf: 'median ROC-AUC over the 32 classification tables x 3 outer folds' },
   median_time_per_1k_s: 'median over the same fold rows of the total run time (encoding, training, prediction) in seconds per 1,000 samples',
@@ -920,8 +939,9 @@ function loadLib(name) {
     document.head.appendChild(s);
   }));
 }
-const viewKey = () => state.task + (state.sort === 'pareto' ? '' : '-by-' + state.sort);
-const fileName = (ext) => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey() + '.' + ext;
+const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task only, the ranking also the Sort
+const viewKey = (plot) => state.task + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort);
+const fileName = (ext, plot) => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey(plot) + '.' + ext;
 function saveFile(name, blob) {
   const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
@@ -961,12 +981,12 @@ async function xlsxBlob() {
 
 /* The plot of the current view as a standalone SVG: light colours on white, styles written on each
    element (the page's CSS does not travel with the file), a line with the version at the bottom. */
-const PAPER_INK = { bg: '#FFFFFF', ink: '#13273F', ink2: '#34465E', ink3: '#4C5767', line: '#D4BBA6', mark: '#8E2A33', muted: '#AC9C90' };
+const PRINT_INK = { bg: '#FFFFFF', ink: '#13273F', ink2: '#34465E', ink3: '#4C5767', line: '#D4BBA6', mark: '#8E2A33', muted: '#AC9C90' };
 const MONO = "'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace", SANS = "Outfit, system-ui, 'Segoe UI', sans-serif";
 function exportSvg() {
   const src = $('plot').querySelector('svg');
   if (!src) throw new Error('no plot to export');
-  const svg = src.cloneNode(true), c = PAPER_INK, W = +svg.getAttribute('width'), H0 = +svg.getAttribute('height'), H = H0 + 24;
+  const svg = src.cloneNode(true), c = PRINT_INK, W = +svg.getAttribute('width'), H0 = +svg.getAttribute('height'), H = H0 + 24;
   const set = (sel, attrs) => svg.querySelectorAll(sel).forEach((n) => { for (const k in attrs) n.setAttribute(k, attrs[k]); });
   svg.setAttribute('xmlns', SVGNS); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('height', H);
   svg.querySelectorAll('.hot').forEach((n) => n.classList.remove('hot'));
@@ -976,7 +996,6 @@ function exportSvg() {
   set('.frontier', { fill: 'none', stroke: c.mark, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'square' });
   set('.pt', { fill: c.muted, stroke: c.bg, 'stroke-width': 2 });
   set('.pt.on', { fill: c.mark });
-  set('.top-ring', { fill: 'none', stroke: c.mark, 'stroke-width': 2 });
   set('.better', { fill: 'none', stroke: c.ink3, 'stroke-width': 1.5 });
   set('.better-head', { fill: c.ink3 });
   set('.better-t', { fill: c.ink, 'font-family': SANS, 'font-size': 15, 'font-weight': 'bold' });
@@ -999,7 +1018,7 @@ async function rasterBlob(type) {
   const img = new Image();
   await new Promise((ok, fail) => { img.onload = ok; img.onerror = () => fail(new Error('the browser could not draw the plot')); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text); });
   const cv = document.createElement('canvas'); cv.width = W * k; cv.height = H * k;
-  const g = cv.getContext('2d'); g.fillStyle = PAPER_INK.bg; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+  const g = cv.getContext('2d'); g.fillStyle = PRINT_INK.bg; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
   return new Promise((ok, fail) => cv.toBlob((b) => (b ? ok(b) : fail(new Error('the browser could not encode the image'))), type, 0.95));
 }
 async function pdfBlob() {
@@ -1018,17 +1037,29 @@ const EXPORTS = {
   csv: async () => new Blob([csvText()], { type: 'text/csv;charset=utf-8' }), json: async () => new Blob([jsonText()], { type: 'application/json' })
 };
 document.querySelectorAll('[data-dl]').forEach((b) => b.addEventListener('click', async () => {
-  const kind = b.dataset.dl, name = fileName(kind === 'jpeg' ? 'jpg' : kind), msg = $('dl-msg');
+  const kind = b.dataset.dl, name = fileName(kind === 'jpeg' ? 'jpg' : kind, PLOT_KINDS.includes(kind)), msg = $('dl-msg');
   b.disabled = true; msg.textContent = kind === 'pdf' || kind === 'xlsx' ? 'Preparing ' + kind.toUpperCase() + '…' : '';
   try { saveFile(name, await EXPORTS[kind]()); msg.textContent = 'Saved ' + name + '.'; }
   catch (e) { msg.textContent = 'Could not make the ' + kind.toUpperCase() + ' file: ' + e.message + '.'; }
   b.disabled = false;
 }));
 
+/* Theme: Auto follows the system; Light or Dark is remembered in localStorage when the browser allows it. */
+function setTheme(t, save) {
+  const root = document.documentElement;
+  if (t === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
+  document.querySelectorAll('[data-theme-set]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themeSet === t)));
+  if (!save) return;
+  try { if (t === 'auto') localStorage.removeItem('strable-theme'); else localStorage.setItem('strable-theme', t); } catch (e) {}
+}
+document.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet, true)));
+setTheme(document.documentElement.getAttribute('data-theme') || 'auto', false);
+
 /* In-page links scroll inside the page instead of navigating the frame. */
 document.addEventListener('click', (ev) => {
   const a = ev.target.closest ? ev.target.closest('a[href^="#"]') : null;
   if (!a) return;
+  if (a.getAttribute('href') === '#') { ev.preventDefault(); return; }  // a link still to come, such as Talk
   const t = document.getElementById(a.getAttribute('href').slice(1));
   if (!t) return;
   ev.preventDefault();
@@ -1047,9 +1078,9 @@ const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
     text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
   { sel: '#ctl-sort', block: 'center', sort: 'score',
-    text: 'Sort. Pareto first, or by score or time. The top three rows of any order get a red frame, here and in the plot.' },
+    text: 'Sort. Pareto first, or by score or time. The top three rows of the order get a red frame; the plot stays the same.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
-    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned, anonymous, closed, paper and incomplete rows, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
+    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
     text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
   { sel: '#refresh', block: 'center',
@@ -1057,11 +1088,11 @@ const TOUR = [
   { sel: '#history', block: 'center',
     text: 'Version history lists what changed in each version. The version chip at the top shows the current one.' },
   { sel: '#paper-use', block: 'center',
-    text: 'Using the leaderboard in your paper: download the plot (SVG, PNG, JPEG, PDF) or the ranking (CSV, JSON, XLSX) of the current view, named with the version and date. The Parquet file holds all views.' },
+    text: 'Using the leaderboard in your paper: download the plot (SVG, PNG, JPEG, PDF) or the ranking (CSV, JSON, XLSX) of the current view, named with the version and date. The Parquet file holds all views, the raw results every fold.' },
   { sel: '#cite-btn', block: 'start',
     text: 'Cite opens the BibTeX of the STRABLE paper, with a button to copy it.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
-    text: 'Adding a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
+    text: 'Submit a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
 ];
 let tour = null;
 function clearFocus() { document.querySelectorAll('.tour-focus').forEach((n) => n.classList.remove('tour-focus')); }
@@ -1138,7 +1169,7 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();
 let rz = null;
-new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task); if (list.length) { const front = paretoSet(list); renderPlot(list, front, topSet(ordered(list, state.sort, front), front)); } }); }).observe($('plot'));
+new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task); if (list.length) renderPlot(list, paretoSet(list)); }); }).observe($('plot'));
 </script>
 
 </body>
