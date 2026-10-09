@@ -64,12 +64,12 @@ One time, the total run time per 1,000 samples, as in the paper's Figure 4a:
 - **Per fold:** encoding plus training plus prediction seconds, divided by the table's total rows, times 1,000. For rows imported from the paper it is the paper's `run_time`, which for tuned rows also includes the hyperparameter search.
 - **Per pipeline:** the median over the fold rows of the view, like the score.
 - The plot shows it on a log x axis, "Total run time per 1K samples (s), log scale". There are no separate fit or predict views.
-- Embeddings are computed once per table, encoder and fold, then reused by every model. Their time is measured once and added to every pipeline that uses them.
+- Language-model embeddings are computed once per table and encoder, for every distinct string of the table, then cached and reused by every fold and every model. The extraction time of the whole table is measured once and added to every fold of every pipeline that uses them. Tf-Idf is fitted on each fold's training rows and timed in that fold.
 - An untimed warm-up runs first: imports, CUDA start-up and weight loading are not counted.
 
 ## Pareto front
 
-Sort pipelines by the total run time per 1,000 samples, the only time on the board. A pipeline is Pareto-optimal when its score is strictly higher than that of every faster pipeline. The front is computed from the results, in the browser by `site/index.html` and in Python by `strable_leaderboard.metrics.pareto_front`; nobody places a row on it by hand. API models are shown but excluded from the computation, since their time includes the network. Open, closed, anonymous, tuned, paper and incomplete rows are all eligible, as every pipeline of the paper's Figure 4a was. With the paper's 75 pipelines, the front of the default view is the six of the paper's Table E.10.
+Sort pipelines by the total run time per 1,000 samples, the only time on the board. A pipeline is Pareto-optimal when its score is strictly higher than that of every faster pipeline. The front is computed from the results, in the browser by `site/index.html` and in Python by `strable_leaderboard.metrics.pareto_front`; nobody places a row on it by hand. Open, closed, anonymous, tuned, paper and incomplete rows are all eligible, as every pipeline of the paper's Figure 4a was. With the paper's 75 pipelines, the front of the default view is the six of the paper's Table E.10.
 
 The top three rows of the current order, Pareto, score or time, carry a red border in the table and a ring in the plot.
 
@@ -98,7 +98,7 @@ Default configurations: every model runs with the hyperparameters it ships with.
 
 ## Hardware
 
-Each result records what it ran on. GPU rows: one GPU of the reference type, fixed at launch, with 32 CPU cores and 128 GB of RAM. CPU rows: the same node without the GPU. API rows: the vendor's servers. A model too large for the reference node runs on a larger one, and the row says so.
+Each result records what it ran on. GPU rows: one GPU of the reference type, fixed at launch, with 32 CPU cores and 128 GB of RAM. CPU rows: the same node without the GPU. A model too large for the reference node runs on a larger one, and the row says so.
 
 ## Result records
 
@@ -109,6 +109,7 @@ One file per model, `<model>.csv`, one row per encoder, variant, table and outer
 - `encoder` is `none` for end-to-end models. `score` is the raw fold score.
 - Runs by the runner fill `fit_s` and `predict_s` (embedding included); the board uses only their sum. `hardware` is the GPU model or `cpu`.
 - `variant` is `default` or `tuned`.
+- A row without a score is an error for `check_results`, and only rows with a score count towards a view's fold rows.
 - Rows imported from the paper (`scripts/import_paper_results.py`) fill `total_s` only, with `hardware: paper` and `package: paper`, since the paper timed fit and predict together on mixed hardware. Exactly the pipelines of `scripts/paper_selection.yaml` are imported: the 75 of the paper's Figure 4a. They name encoders outside the three above. The board tags them **paper**.
 - For three of the paper's CSVs the importer reads a filled copy, listed under `filled` in `scripts/paper_selection.yaml`: the original plus 17 fold rows completed after publication, 12 re-run on 2026-10-08 with the paper's code and 5 finished in April but never compiled. They complete Mambular (7 rows), LLaMA-3.1-8B · PCA-30 + TabICLv2 (5), Qwen-3-8B · PCA-30 + TabICLv2 (3) and LLaMA-3.1-8B · SS+PCA-30 + TabPFN-2.5 (2). Every imported pipeline has 324 fold rows.
 - `python -m strable_leaderboard.check_results` validates a file and prints its coverage per view.
@@ -116,5 +117,7 @@ One file per model, `<model>.csv`, one row per encoder, variant, table and outer
 ## Differences from the paper
 
 - The paper times one total per fold, with the embedding time measured once per table and added to every fold. The runner records fit and predict apart, but the board shows only their total, like the paper.
-- The board opens with the paper's 75 Figure 4a pipelines, imported as published (score, total time); a re-run on the reference node replaces a pipeline's paper rows.
+- The board opens with the paper's 75 Figure 4a pipelines, with the paper's scores and total times: the published rows, plus 17 fold rows of four pipelines (Mambular, LLaMA-3.1-8B · PCA-30 + TabICLv2, Qwen-3-8B · PCA-30 + TabICLv2, LLaMA-3.1-8B · SS+PCA-30 + TabPFN-2.5) completed after publication with the paper's code (see Result records).
+- Paper rows were timed by the paper's code on mixed hardware, and for tuned rows the time includes the hyperparameter search. Runner rows are timed by the runner on the reference node (see Hardware). Time comparisons between the two kinds of rows are approximate.
+- Paper rows of a learner that also has a `models/<name>/` folder, such as Ridge and ExtraTrees, carry the same pipeline id as a re-run with the same encoder and variant (for example `tfidf+ridge`). The re-run's rows replace them fold by fold (`scripts/gather_results.py`), and the pipeline keeps the **paper** tag only while all its rows come from the paper.
 - The paper evaluates about 445 pipelines. The leaderboard opens with a launch set, chosen around mid-November 2026, and grows.
