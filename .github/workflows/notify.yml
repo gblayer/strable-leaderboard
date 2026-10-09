@@ -7,7 +7,7 @@ name: Notify
 #   POST /repos/gblayer/strable-leaderboard/dispatches
 #   {"event_type": "run-failed", "client_payload": {"pr": 12, "model": "extratrees", "reason": "..."}}
 #
-# Without a pull request number (private models, runner problems) it opens an issue instead.
+# Without a pull request number (runner problems) it opens an issue instead.
 on:
   repository_dispatch:
     types: [smoke-failed, run-failed, results-failed, runner-failed]

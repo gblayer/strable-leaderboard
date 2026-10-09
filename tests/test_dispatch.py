@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import dispatch  # noqa: E402
 
 CARD = {"name": "ExtraTrees", "version": "sklearn-1.7", "handles_strings": False, "tasks": ["regression"],
-        "variant": "default", "access": "open", "hardware": "cpu", "package": "scikit-learn==1.7.2",
+        "variant": "default", "hardware": "cpu", "package": "scikit-learn==1.7.2",
         "checkpoint": None, "licence": "BSD-3-Clause", "trained_on_strable": []}
 
 
@@ -183,13 +183,6 @@ def test_auto_merge_needs_the_label(clone):
     assert not d.approval(Path("models/extratrees"))[0]
     d.gh.pulls = False  # pushed to main directly: only the maintainer can
     assert d.approval(Path("models/extratrees"))[0]
-
-
-def test_private_failures_do_not_leak_the_name(clone):
-    d = clone
-    d.notify("run-failed", {"model": "secret-model", "folder": "private/secret-model"}, "secret details")
-    payload = d.gh.posts[0][1]["client_payload"]
-    assert "secret" not in json.dumps(payload)
 
 
 def test_only_one_results_pull_request_at_a_time(clone):

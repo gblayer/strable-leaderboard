@@ -4,6 +4,7 @@
 
 Follow `.claude/skills/add-model/SKILL.md`, with `docs/submitting.md` and `strable_leaderboard/model.py`. In short:
 
+- Open models only (public code and weights): no closed, anonymous or API-only models.
 - One pull request, from a fork, adding one folder `models/<name>/`: `model.py`, `model.yaml`, `requirements.txt`. One folder per model version; the version lives in `model.yaml`. The folder names of the paper's learners are reserved (list in `docs/submitting.md`).
 - Fill every field of `model.yaml` yourself from the model's package, documentation and paper, and run the smoke test before opening the pull request.
 - Every model runs in one shared environment, `env/requirements.txt`; a model never brings its own. A missing package is ADDED as one line to `env/requirements.in`; an existing pin never changes.

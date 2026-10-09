@@ -15,11 +15,10 @@ import yaml
 from .check_requirements import PIN
 from .data import MANIFEST
 
-REQUIRED = ["name", "version", "handles_strings", "tasks", "variant", "access", "hardware", "package", "checkpoint",
-            "licence", "trained_on_strable"]
-OPTIONAL = ["code", "paper", "anonymous"]
-VARIANTS = {"default"}  # tuned and tuned-ensembled come later
-ACCESS = {"open", "closed"}
+REQUIRED = ["name", "version", "handles_strings", "tasks", "variant", "hardware", "package", "checkpoint", "licence",
+            "trained_on_strable"]
+OPTIONAL = ["code", "paper"]
+VARIANTS = {"default"}  # tuned and tuned-ensembled come later, with a fixed protocol, each in its own folder
 HARDWARE = {"gpu", "cpu"}
 TASKS = {"regression", "binary", "multiclass"}
 # Values copied from models/_template/model.yaml and never replaced.
@@ -44,7 +43,7 @@ def card_problems(card) -> list[str]:
         out.append("handles_strings must be true or false")
     if "tasks" in card and (not isinstance(card["tasks"], list) or not card["tasks"] or not set(card["tasks"]) <= TASKS):
         out.append(f"tasks must be a non-empty list from {sorted(TASKS)}")
-    for key, allowed in [("variant", VARIANTS), ("access", ACCESS), ("hardware", HARDWARE)]:
+    for key, allowed in [("variant", VARIANTS), ("hardware", HARDWARE)]:
         if key in card and card[key] not in allowed:
             out.append(f"{key} must be one of {sorted(allowed)}")
     if "package" in card and not (isinstance(card["package"], str) and PIN.match(card["package"])):
@@ -69,8 +68,6 @@ def card_problems(card) -> list[str]:
     for key in ["code", "paper"]:
         if key in card and not (isinstance(card[key], str) and card[key].startswith(("https://", "http://"))):
             out.append(f"{key} must be a URL")
-    if "anonymous" in card and not isinstance(card["anonymous"], bool):
-        out.append("anonymous must be true or false")
     return out
 
 

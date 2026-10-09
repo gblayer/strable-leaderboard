@@ -6,7 +6,6 @@ version: "1.0"                  # one folder per model version; the version live
 handles_strings: false          # false: paired with the three string encoders. true: end-to-end
 tasks: [regression, binary, multiclass]
 variant: default                # default now; tuned and tuned-ensembled later, one folder each
-access: open                    # open | closed
 hardware: gpu                   # gpu | cpu
 
 package: my-model==1.0.0        # the code, same pin as requirements.txt and env/requirements.txt

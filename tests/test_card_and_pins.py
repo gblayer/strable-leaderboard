@@ -10,7 +10,7 @@ from strable_leaderboard.smoke import code_problems, static_problems
 ROOT = Path(__file__).resolve().parent.parent
 GOOD = {
     "name": "TabPFN", "version": "2.5", "handles_strings": False, "tasks": ["regression", "binary"],
-    "variant": "default", "access": "open", "hardware": "gpu", "package": "tabpfn==6.0.6",
+    "variant": "default", "hardware": "gpu", "package": "tabpfn==6.0.6",
     "checkpoint": {"repo": "Prior-Labs/TabPFN-v2.5", "revision": "a" * 40}, "licence": "Prior Labs licence",
     "trained_on_strable": [], "code": "https://github.com/PriorLabs/TabPFN",
 }
@@ -35,7 +35,7 @@ def test_every_missing_or_invalid_field_is_reported():
     bad.update(variant="tuned", access="api", hardware="tpu", tasks=["ranking"], typo_field=1,
                checkpoint={"repo": "x/y", "revision": "main"}, trained_on_strable=["not-a-table"])
     found = "\n".join(card_problems(bad))
-    for word in ["missing field licence", "unknown field typo_field", "variant", "access", "hardware", "tasks",
+    for word in ["missing field licence", "unknown field typo_field", "unknown field access", "variant", "hardware", "tasks",
                  "40-character commit hash", "unknown tables"]:
         assert word in found
 

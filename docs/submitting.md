@@ -18,8 +18,7 @@ No container and no environment of your own: every model runs in **one shared Py
 
 ```mermaid
 flowchart TD
-  A([A model]) --> B{Code and weights public?}
-  B -- yes --> K[Fork the repository on GitHub, clone your fork]
+  A([An open model: public code and weights]) --> K[Fork the repository on GitHub, clone your fork]
   K --> C[Copy models/_template, fill model.py, model.yaml, requirements.txt]
   C --> D[Smoke test: card, pins, code, three small tables]
   D --> E[Push a branch to your fork, open a pull request here]
@@ -30,9 +29,6 @@ flowchart TD
   I -- all conditions hold --> R
   I -- otherwise --> J[The maintainer reviews, merges or asks for changes]
   J --> R
-  B -- "no: closed or anonymous" --> P[Private Hugging Face repo shared with the runner account, card by email]
-  P --> Q[Private folder on the runner, codename if anonymous]
-  Q --> R
   R[Runner: smoke test on our hardware, then 108 tables x 3 folds] --> S[Results pull request, same checks and gate]
   S --> T[Site rebuilds, patch version +1]
 ```
@@ -77,7 +73,6 @@ version: "2.5"
 handles_strings: false          # false: three encoder rows. true: end-to-end
 tasks: [regression, binary, multiclass]
 variant: default                # default now; tuned and tuned-ensembled later
-access: open                    # open | closed
 hardware: gpu                   # gpu | cpu
 
 package: tabpfn==6.0.6          # the code, same pin as requirements.txt
@@ -96,14 +91,11 @@ What the board derives from it:
 | Field | On the board |
 |---|---|
 | `handles_strings` | The end-to-end tag, or one row per encoder |
-| `access` | `closed`: a closed tag |
 | `hardware` | Whether the row used the GPU, shown when hovering the row |
 | `variant` | Nothing yet: only `default` is accepted. Tuned and tuned-ensembled rows come later, each from its own folder |
 | `trained_on_strable` | A contamination note on the row |
 
-Why `access` matters: *open* means anyone can rerun the pipeline, since the code, the weights, the folder and the folds are public; *closed* means we ran it on our hardware with weights shared privately, so the numbers are comparable but only we could produce them. The Pareto front is computed from the results, so a closed model is on it only if nothing beats it.
-
-Models reachable only through a vendor's API are not on the board: they would run on the vendor's servers, so neither the time nor the hardware would be comparable. A vendor who wants a row shares the weights privately and the model runs as closed.
+**Open models only.** The code is on PyPI and the weights are on a public Hugging Face repository, so anyone can rerun the pipeline from the folder and the public folds. Closed models (private code or weights) and anonymous submissions are not accepted, and neither are models reachable only through a vendor's API: they would run on the vendor's servers, so neither the time nor the hardware would be comparable.
 
 Why a commit hash in `checkpoint.revision`: a Hugging Face repository is a git repository, and vendors update weights in place. The hash pins the exact weights that were benchmarked, so the row can be reproduced later; a branch name like `main` would silently point to newer weights.
 
@@ -121,30 +113,13 @@ Each model version is its own folder and its own row, forever: `models/tabpfn-3/
 
 A version whose package is incompatible with the shared environment (TabPFN-3.5 needs tabpfn 9, the environment has tabpfn 6.0.6) cannot enter through a normal pull request: it needs an environment change, which the maintainer decides.
 
-## Open, closed, anonymous
-
-| | Code and weights | Runs on | Eligible for the front | How to submit |
-|---|---|---|---|---|
-| Open | Public | Our hardware | Yes | Public pull request |
-| Closed | Private, shared with us | Our hardware | Yes, with a *closed* tag | Private channel |
-| Anonymous | Private, shared with us | Our hardware | Yes, under a codename with an *anonymous* tag | Private channel |
-
-Closed and anonymous are the same case; anonymous also hides the name. Neither fits a public pull request. Instead:
-
-1. The submitter creates a repository on huggingface.co, sets it to private (Settings → *Make private*: only the owner and the people listed under Settings → *Collaborators* can see or download it), uploads the package and the weights, and adds our runner account as a read collaborator. Our runner account is a Hugging Face user that exists only to download submissions.
-2. The submitter emails the model card and `model.py` to the maintainer.
-3. The maintainer puts the folder into `private/<name>/` of the repository clone on the cluster, a folder that `.gitignore` keeps off GitHub, with the same layout as `models/`. Anonymous entries get a codename from `strable_leaderboard.codenames` and `anonymous: true` in the card; the codename-to-model mapping never leaves the cluster.
-4. The runner downloads the private Hugging Face repository with the runner account's token, runs the model like any other, and the aggregates are published here under the name or the codename. The weights never become public.
-
 ## Examples
 
 **Open, numeric-only: Kumo Tabular.** NVIDIA's in-context model takes numerical and categorical columns; text needs preprocessing, so on STRABLE it is paired with the three encoders, like TabPFN and TabICL.
 1. `cp -r models/_template models/kumo-tabular-1.0`
 2. `model.py`: `handles_strings = False`; `fit` builds `sdm.models.KumoTabular` on `self.device` and stores the context; `predict_proba` returns the class probabilities in the order of `self.classes_`.
-3. `model.yaml`: `access: open`, `hardware: gpu`, `package: structured-data-models==<version>`, `checkpoint: {repo: nvidia/Kumo-Tabular, revision: <commit hash>}`, `licence: OpenMDW-1.1 weights, Apache-2.0 code`.
+3. `model.yaml`: `hardware: gpu`, `package: structured-data-models==<version>`, `checkpoint: {repo: nvidia/Kumo-Tabular, revision: <commit hash>}`, `licence: OpenMDW-1.1 weights, Apache-2.0 code`.
 4. `structured-data-models` is not in the shared environment: the pull request also adds the line `structured-data-models==<version>` to `env/requirements.in`, and the maintainer relocks.
 5. Smoke test on a GPU machine, then the pull request `Add Kumo Tabular 1.0`.
 
 **Open, end-to-end: a model that reads strings itself.** Same steps with `handles_strings = True`; `fit` receives the raw DataFrame with its string, numeric and datetime columns. The board shows one row with an end-to-end tag.
-
-**Closed or anonymous.** The private channel above. On the board the row looks like any other, plus its tag.

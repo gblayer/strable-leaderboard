@@ -13,6 +13,8 @@ The user cannot push to `gblayer/strable-leaderboard`. If the clone's `origin` i
 
 ## 1. Facts: find every one yourself
 
+Only open models are accepted: public code (PyPI) and public weights (Hugging Face). Closed, anonymous or API-only models stop here: point to `docs/submitting.md`, "Open models only".
+
 Fill the card without asking the user, from the model's sources, in this order: the package's metadata on PyPI (`pip index versions <pkg>`, `pip show`, the project page), its README and documentation, the Hugging Face model card and its commit history, the paper. Ask only for what none of them gives, and say where you looked.
 
 | Card field | Where it comes from |
@@ -21,7 +23,6 @@ Fill the card without asking the user, from the model's sources, in this order: 
 | `handles_strings` | Does `fit` accept raw string columns? Check the docs or try it. Yes: `true` (end-to-end). No: `false` |
 | `tasks` | Regression, binary, multiclass: what the package supports |
 | `variant` | Always `default` |
-| `access` | `open`. Closed, anonymous or API-only models stop here: point to `docs/submitting.md`, "Open, closed, anonymous" |
 | `hardware` | `gpu` if it needs or is meant for a GPU, else `cpu` |
 | `package` | `name==version`, the version in `env/requirements.txt` if the package is there |
 | `checkpoint` | Hugging Face `repo` and the full 40-character commit hash of the weights (`huggingface_hub.HfApi().model_info(repo).sha`, or the repository's commit list), never `main`. `null` if there are no weights |

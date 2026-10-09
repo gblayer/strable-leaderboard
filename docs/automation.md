@@ -58,7 +58,7 @@ Otherwise the gate adds `needs-maintainer` and comments once per commit: "@gblay
 
 ## 4. Runner
 
-The runner works from the repository clone on the cluster's shared storage, under the maintainer's account; the clone holds `cache/`, `results/`, `runs/` and `private/`. One task = one model, one encoder, one table, one outer fold.
+The runner works from the repository clone on the cluster's shared storage, under the maintainer's account; the clone holds `cache/`, `results/`, `runs/` and `private/` (the runner's settings and the maintainer's notes). One task = one model, one encoder, one table, one outer fold.
 
 **One shared environment.** Every model runs in the same Python environment, `cache/env`, built by `python scripts/prepare.py` from `env/requirements.txt`: the paper's versions of every package (torch 2.9.1, scikit-learn 1.7.2, skrub 0.6.2, tabpfn 6.0.6, tabicl 2.0.3, sentence-transformers 5.2.3, ...) plus this package. A model's `requirements.txt` only repeats the pins it relies on, at the same versions. A model that needs a package the environment lacks adds one line to `env/requirements.in` in its pull request; Checks fails if any existing pin changes, and the gate leaves the pull request to the maintainer, who merges it, runs `scripts/lock_env.sh` (the paper's full environment, `env/paper-freeze.txt`, as constraints, so no existing version moves) and lets `prepare.py` rebuild `cache/env`. Another version of a package already there is the maintainer's decision alone, since it moves the whole board. Until the lock is regenerated, `prepare.py` stops on the model: the runner accepts only what `env/requirements.txt` pins. `cache/` is gitignored: it holds the env, its Python interpreter, the dataset, the checkpoints, the embeddings, the sandbox image and the dispatcher's state.
 
@@ -68,11 +68,11 @@ The runner works from the repository clone on the cluster's shared storage, unde
 */15 * * * * cd <clone> && PYTHONNOUSERSITE=1 cache/env/bin/python scripts/dispatch.py >> cache/dispatch/cron.log 2>&1
 ```
 
-Each pass takes a lock, fetches `main` and moves every model one step, keeping its state in `cache/dispatch/<model>.json`. It never pulls or changes the clone's working copy, which may be on any branch: it reads the models from a checkout of `origin/main`, records the commit of `main` when a model starts, and runs every job of that model from a checkout of that commit, `cache/dispatch/checkouts/<sha>` (a `git worktree`; private folders are copied in). A push to `main` or an edit in the clone therefore never changes the code of a model in flight; checkouts no model uses are removed. GitHub and git network calls are tried three times, after 10 and 20 seconds, before a model is marked failed.
+Each pass takes a lock, fetches `main` and moves every model one step, keeping its state in `cache/dispatch/<model>.json`. It never pulls or changes the clone's working copy, which may be on any branch: it reads the models from a checkout of `origin/main`, records the commit of `main` when a model starts, and runs every job of that model from a checkout of that commit, `cache/dispatch/checkouts/<sha>` (a `git worktree`). A push to `main` or an edit in the clone therefore never changes the code of a model in flight; checkouts no model uses are removed. GitHub and git network calls are tried three times, after 10 and 20 seconds, before a model is marked failed.
 
 | Step | What happens |
 |---|---|
-| approve | `models/<name>/`: the pull request that added it was merged by `gblayer`, or by the gate with `claude-approved`. `private/<name>/`: closed models, approved by being there |
+| approve | `models/<name>/`: the pull request that added it was merged by `gblayer`, or by the gate with `claude-approved` |
 | prepare | `scripts/prepare.py` downloads the checkpoint, refused above 20 GB unless the maintainer lists the folder in `LARGE_CHECKPOINTS` in that script; the pins must match the shared environment |
 | smoke | `run.py --smoke` as a 30-minute job on the reference hardware: the parent and the sandboxed child of section 8 on fold 0 of three small tables |
 | embed | numeric-only models: one array computes the missing language-model embeddings, before any model task, so tasks never race to write the same cache file |
@@ -92,7 +92,7 @@ python scripts/make_tasks.py models/<name> > tasks.txt && bash scripts/run_array
 python scripts/gather_results.py runs results <name> && python -m strable_leaderboard.check_results results/<name>.csv
 ```
 
-**Where results live.** In `results/` of the clone. That folder is gitignored, so the per-fold CSVs never reach GitHub; the public repository gets only `site/results.json` and `site/results.parquet`, the aggregates the page shows and offers for download. Closed and anonymous model folders live in the gitignored `private/`.
+**Where results live.** In `results/` of the clone. That folder is gitignored, so the per-fold CSVs never reach GitHub; the public repository gets only `site/results.json` and `site/results.parquet`, the aggregates the page shows and offers for download. Only open models are run: every model is a public `models/<name>/` folder.
 
 **Cost.** A numeric-only model is 3 encoders × 108 tables × 3 folds = 972 tasks. Embeddings are computed once per encoder and table and kept in `cache/embeddings/`, so a new model adds only its own run time.
 
@@ -101,7 +101,7 @@ python scripts/gather_results.py runs results <name> && python -m strable_leader
 No message is sent when things work. Two kinds of message exist, both comments by `github-actions[bot]` that mention `@gblayer`, so GitHub emails her (a comment made with her own token would not):
 
 - the gate's "@gblayer your review is needed: <reason>" (section 3);
-- a cluster failure. The dispatcher sends a `repository_dispatch` event, type `smoke-failed`, `run-failed`, `results-failed` or `runner-failed`, with `client_payload: {pr, model, reason}`. `.github/workflows/notify.yml` comments on the model's pull request and labels it `needs-maintainer`, or opens an issue when there is no pull request. For a private model the payload names no model and gives no details.
+- a cluster failure. The dispatcher sends a `repository_dispatch` event, type `smoke-failed`, `run-failed`, `results-failed` or `runner-failed`, with `client_payload: {pr, model, reason}`. `.github/workflows/notify.yml` comments on the model's pull request and labels it `needs-maintainer`, or opens an issue when there is no pull request.
 
 There is no bot account. The dispatcher uses a fine-grained token limited to this repository (section 9), read from a file; it is never printed or logged. The REST calls and every git fetch and push of the dispatcher use it; the maintainer's own git credentials are never read.
 

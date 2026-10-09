@@ -16,7 +16,8 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 - The folder has `model.py`, `model.yaml` and `requirements.txt`.
 
 **Card: complete**
-- Every field of `models/_template/model.yaml` is present and filled with this model's real values, no template placeholder left: `name`, `version`, `handles_strings`, `tasks`, `variant` (`default`), `access` (`open`), `hardware` (`gpu` or `cpu`), `package`, `checkpoint`, `licence`, `trained_on_strable`.
+- Every field of `models/_template/model.yaml` is present and filled with this model's real values, no template placeholder left: `name`, `version`, `handles_strings`, `tasks`, `variant` (`default`), `hardware` (`gpu` or `cpu`), `package`, `checkpoint`, `licence`, `trained_on_strable`.
+- An open model: the package on PyPI and the checkpoint on a public Hugging Face repository. No `access` or `anonymous` field. Closed, anonymous or API-only models: REJECT.
 - `checkpoint.revision` is a full 40-character commit hash, or `checkpoint` is null for a model without weights.
 - The values match the code and the package: `handles_strings` as in `model.py`, `package` as in `requirements.txt`, `tasks` what the model supports.
 - `trained_on_strable` is filled in; mention any listed table in the verdict.

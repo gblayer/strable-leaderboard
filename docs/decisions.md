@@ -10,7 +10,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 09-29 | The MVP shows pipeline, score and times, Pareto-optimal pipelines first. Users can sort by score or time |
 | 09-30 | Versions follow v0.MINOR.PATCH: a new model is a patch, a protocol change a minor version. No "seasons" |
 | 09-30 | Default configurations only. Tuned and tuned-plus-ensembled variants later, as extra rows |
-| 09-30 | Anyone can submit, from academia or industry, open or closed source |
+| 09-30 | Anyone can submit, from academia or industry, open or closed source. Reversed 10-09: open models only |
 | 09-30 | The launch set is chosen around mid-November 2026, not all ~445 paper pipelines |
 | 10-01 | Nothing merges automatically. Claude reviews every pull request twice and posts a short recommendation; a maintainer merges |
 | 10-01 | A maintainer can hand an issue to Claude with the label `claude` |
@@ -41,13 +41,14 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 09-30 | Numeric-only models get five encoders: Tf-Idf, E5-small-v2, all-MiniLM-L6-v2, LLaMA-3.1-8B, Qwen-3-8B |
 | 10-01 | Three encoders instead of five: Tf-Idf (SVD to 30), all-MiniLM-L6-v2 and LLaMA-3.1-8B (first 30 embedding dimensions). E5-small-v2 and Qwen-3-8B dropped to keep a new model at 972 runs |
 | 09-30 | API models allowed with a tag, off the Pareto front. Reversed 10-01: no API models, since their time and hardware are not comparable; a vendor shares weights privately instead |
-| 10-01 | Anonymous models are allowed: run on our hardware, codename like "jumping-carrot" (an action verb and a fruit or vegetable) with an anonymous tag, on the Pareto front, name never revealed |
+| 10-01 | Anonymous models are allowed: run on our hardware, codename like "jumping-carrot" (an action verb and a fruit or vegetable) with an anonymous tag, on the Pareto front, name never revealed. Reversed 10-09: open models only |
 | 10-01 | The model card has no family field |
-| 10-01 | Access is open or closed. Anonymous is closed with the name hidden |
+| 10-01 | Access is open or closed. Anonymous is closed with the name hidden. Reversed 10-09: open models only |
 | 10-01 | The card carries `variant: default`; tuned and tuned-ensembled rows come later from their own folders |
 | 10-08 | All 75 pipelines of the paper's Figure 4a are imported, listed one by one in `scripts/paper_selection.yaml`, Mambular included although incomplete (317/324 folds). Not the OHE CT=30 Ridge runs, not TabPFN-3/3.5 |
 | 10-08 | Paper encoders get honest ids and names: "E5-small-v2 · PCA-30", "LLaMA-3.1-8B · SS+PCA-30", "Qwen-3-8B · first-30" and so on. Only the paper's Tf-Idf is the leaderboard's `tfidf`; a PCA-30 row never takes a first-30 id |
 | 10-08 | The paper's tuned rows (XGBoost, ExtraTrees, CatBoost) are imported with `variant: tuned` and shown with a "tuned" tag; result records, site data and page carry the variant |
+| 10-09 | Open models only: public code and public weights, through a public pull request. Closed and anonymous models are dropped, with the card's `access` field and `private/<name>/` model folders; `private/` stays a gitignored folder for the runner's settings and notes |
 
 ## Site
 
@@ -68,7 +69,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-01 | Larger type on a wider page; the Pareto line starts at the x axis |
 | 10-01 | No key panel: the paper defines the numbers. No preview bar: the theme follows the system, Demo sits in the navigation |
 | 10-01 | The first board imports the paper's Figure 3 and 4a pipelines (raw scores, total time, hardware "paper"); re-runs on the reference node replace them |
-| 10-01 | Per-fold results stay private in the gitignored results/ folder of the clone on the cluster, closed model folders in private/. One repository; GitHub holds only the aggregates in site/results.json |
+| 10-01 | Per-fold results stay private in the gitignored results/ folder of the clone on the cluster, closed model folders in private/ (dropped 10-09). One repository; GitHub holds only the aggregates in site/results.json |
 | 10-04 | A rank is cited as "STRABLE leaderboard vX.Y.Z, date"; every version is a tagged commit of site/results.json |
 | 10-01 | The hero art uses invented company names only |
 | 10-01 | The README carries the site's palette and type through an SVG banner; the leaderboard URL goes in the README and the repository's About box |

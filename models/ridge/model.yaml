@@ -3,7 +3,6 @@ version: "sklearn-1.7"
 handles_strings: false
 tasks: [regression, binary, multiclass]
 variant: default
-access: open
 hardware: cpu
 
 package: scikit-learn==1.7.2

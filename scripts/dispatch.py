@@ -8,12 +8,11 @@ One pass: take the lock, fetch main, then move every model one step forward. The
 copy is never pulled or changed. Models are read from a checkout of origin/main, and every job of a
 model runs from a checkout of the commit recorded in its state when it started
 (cache/dispatch/checkouts/<sha>), so neither a later push nor an edit in the clone changes the
-code of a model in flight. A model is a folder of models/ on main, or of private/ (closed models,
-never on GitHub, copied into the checkout). Its steps:
+code of a model in flight. A model is a folder of models/ on main. Its steps:
 
-  approve   models/: the pull request that added the folder was merged, by gblayer or by the
-            auto-merge gate with the label claude-approved (a folder pushed to main without a pull
-            request was pushed by the maintainer). private/: approved by being there.
+  approve   the pull request that added the folder was merged, by gblayer or by the auto-merge
+            gate with the label claude-approved (a folder pushed to main without a pull request was
+            pushed by the maintainer).
   prepare   scripts/prepare.py downloads its checkpoint; its pins must match the shared env.
   smoke     run.py --smoke as a short job on the reference hardware (the reference GPU for GPU models).
   embed     numeric-only models: one array fills the missing language-model embeddings.
@@ -40,7 +39,6 @@ import fcntl
 import json
 import os
 import re
-import shutil
 import stat
 import subprocess
 import sys
@@ -184,15 +182,11 @@ class Dispatcher:
         return path
 
     def code(self, folder: Path, st: dict) -> Path:
-        """The checkout of the model's commit; a private folder is copied in, as git never has it."""
-        code = self.checkout(st["commit"])
-        if folder.parts[0] == "private":
-            shutil.copytree(self.root / folder, code / folder, dirs_exist_ok=True)
-        return code
+        """The checkout of the model's commit."""
+        return self.checkout(st["commit"])
 
     def models(self, head: Path) -> list[Path]:
-        found = list((head / "models").glob("*/model.yaml")) + list((self.root / "private").glob("*/model.yaml"))
-        return sorted(Path(p.parent.parent.name, p.parent.name) for p in found
+        return sorted(Path("models", p.parent.name) for p in (head / "models").glob("*/model.yaml")
                       if SLUG.match(p.parent.name) and p.parent.name != "_template")
 
     def card(self, folder: Path, code: Path) -> dict:
@@ -235,9 +229,7 @@ class Dispatcher:
 
     def notify(self, kind: str, st: dict, reason: str) -> None:
         """One repository_dispatch event; the Notify workflow comments as github-actions[bot]."""
-        private = str(st.get("folder", "")).startswith("private/")
-        payload = {"pr": st.get("pr"), "model": "a private model" if private else st.get("model"),
-                   "reason": "see cache/dispatch on the cluster" if private else public(reason, 1500)}
+        payload = {"pr": st.get("pr"), "model": st.get("model"), "reason": public(reason, 1500)}
         try:
             self.gh.post("/dispatches", {"event_type": kind, "client_payload": payload})
         except Exception as exc:  # never let a notification failure stop the pass
@@ -252,8 +244,6 @@ class Dispatcher:
     # ---- approval --------------------------------------------------------------------------------
     def approval(self, folder: Path) -> tuple[bool, int | None, str]:
         """(approved, pull request number, why)."""
-        if folder.parts[0] == "private":
-            return True, None, "private folder"
         shas = self.git("log", "--format=%H", "--diff-filter=A", self.ref, "--", folder / "model.yaml").stdout.split()
         if not shas:
             return False, None, "model.yaml not found in main's history"
