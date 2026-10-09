@@ -1,12 +1,13 @@
 """Check that a model's requirements.txt is satisfied by the shared environment.
 
-    python -m strable_leaderboard.check_requirements models/<name> [models/...] [--installed]
+    python -m strable_leaderboard.check_requirements models/<name> [models/...] [--base-env <folder>]
 
-Every model runs in ONE shared environment, built from env/requirements.txt (the paper's
-versions). A model's requirements.txt may only list ``name==version`` pins, and each pin must
-equal the shared environment's version. ``--installed`` also compares with the packages
-installed in the running interpreter. A model that needs another version proposes the change to
-env/requirements.txt in its pull request; that never merges automatically.
+Every model runs in ONE shared environment, env/requirements.txt (the paper's versions), locked
+from env/requirements.in by scripts/lock_env.sh. A model's requirements.txt may only list
+``name==version`` pins, and each pin must equal the shared environment's version. A package the
+shared environment lacks may be added to env/requirements.in in the same pull request; the
+maintainer then relocks. ``--base-env`` gives the base branch's env/ folder: every pin there must
+be unchanged, since a pull request may only add packages.
 """
 
 from __future__ import annotations
@@ -14,13 +15,13 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from importlib import metadata
 from pathlib import Path
 
 import yaml
 
-ENV_REQUIREMENTS = Path(__file__).resolve().parent.parent / "env" / "requirements.txt"
-LINE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[A-Za-z0-9,._-]+\])?==([A-Za-z0-9.+!_-]+)$")
+ENV = Path(__file__).resolve().parent.parent / "env"
+ENV_REQUIREMENTS, ENV_INPUT = ENV / "requirements.txt", ENV / "requirements.in"
+PIN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[A-Za-z0-9,._-]+\])?==([A-Za-z0-9.+!_-]+)$")
 
 
 def normalize(name: str) -> str:
@@ -35,7 +36,7 @@ def read_pins(path: Path) -> tuple[dict[str, str], list[str]]:
         line = raw.split("#", 1)[0].strip()
         if not line:
             continue
-        m = LINE.match(line)
+        m = PIN.match(line)
         if not m:
             problems.append(f"{line!r}: only exact pins name==version are allowed (no ranges, URLs, paths or options)")
             continue
@@ -43,48 +44,60 @@ def read_pins(path: Path) -> tuple[dict[str, str], list[str]]:
     return pins, problems
 
 
-def problems(folder: Path, env_file: Path = ENV_REQUIREMENTS, installed: bool = False) -> list[str]:
-    """Everything that keeps the shared environment from satisfying ``folder``'s requirements."""
+def problems(folder: Path, env_files=(ENV_REQUIREMENTS, ENV_INPUT)) -> list[str]:
+    """Everything that keeps the shared environment, as ``env_files`` pin it, from satisfying
+    ``folder``'s requirements. The default also accepts a package just added to env/requirements.in;
+    the runner passes only the lock."""
     folder = Path(folder)
     req = folder / "requirements.txt"
     if not req.exists():
         return ["requirements.txt is missing"]
-    env, _ = read_pins(env_file)
+    env = {}
+    for path in env_files:
+        env.update(read_pins(path)[0])
     pins, out = read_pins(req)
     if normalize("strable-leaderboard") in pins:
         out.append("do not list strable-leaderboard itself")
     for name, version in sorted(pins.items()):
         if name not in env:
-            out.append(f"{name}=={version}: not in the shared environment (env/requirements.txt); "
-                       "propose it there, the maintainer decides")
+            out.append(f"{name}=={version}: not in the shared environment; add this pin to env/requirements.in")
         elif env[name] != version:
-            out.append(f"{name}=={version}: the shared environment has {name}=={env[name]}; "
-                       f"pin {env[name]} or propose the change in env/requirements.txt")
-        elif installed:
-            try:
-                have = metadata.version(name)
-            except metadata.PackageNotFoundError:
-                have = None
-            if have != version:
-                out.append(f"{name}=={version}: installed here is {have}; rebuild the env with scripts/prepare.py")
+            out.append(f"{name}=={version}: the shared environment has {name}=={env[name]}; pin that version")
     card_path = folder / "model.yaml"
     if card_path.exists():
         card = yaml.safe_load(card_path.read_text()) or {}
-        m = LINE.match(str(card.get("package", "")))
+        m = PIN.match(str(card.get("package", "")))
         if m and pins.get(normalize(m.group(1))) != m.group(3):
             out.append(f"model.yaml package {card['package']} is not pinned the same way in requirements.txt")
     return out
 
 
+def pin_changes(base: Path, head: Path = ENV) -> list[str]:
+    """Pins of the base branch's env/ that ``head`` changes or removes: a pull request only adds."""
+    files = ("requirements.in", "requirements.txt")
+    old = {f: read_pins(base / f)[0] for f in files}
+    new_in, found = read_pins(head / "requirements.in")
+    new = {"requirements.in": new_in, "requirements.txt": read_pins(head / "requirements.txt")[0]}
+    out = [f"env/{f}: {n}=={v} is changed or removed; existing pins never change in a pull request"
+           for f in files for n, v in sorted(old[f].items()) if new[f].get(n) != v]
+    locked = old["requirements.txt"]
+    out += [f"env/requirements.in: {n}=={v}, but the shared environment has {n}=={locked[n]}"
+            for n, v in sorted(new_in.items()) if n not in old["requirements.in"] and locked.get(n, v) != v]
+    return out + [f"env/requirements.in: {p}" for p in found]
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("folders", nargs="+", type=Path)
-    parser.add_argument("--env", type=Path, default=ENV_REQUIREMENTS, help="the shared environment's pins")
-    parser.add_argument("--installed", action="store_true", help="also compare with the installed packages")
+    parser.add_argument("folders", nargs="*", type=Path)
+    parser.add_argument("--base-env", type=Path, help="the base branch's env/ folder")
     args = parser.parse_args(argv)
     status = 0
+    if args.base_env:
+        found = pin_changes(args.base_env)
+        print("env: " + ("only additions" if not found else "PROBLEMS"), *found, sep="\n   ")
+        status |= bool(found)
     for folder in args.folders:
-        found = problems(folder, args.env, args.installed)
+        found = problems(folder)
         print(f"{folder.name}: " + ("pins ok" if not found else "PROBLEMS"))
         for p in found:
             print("  ", p)

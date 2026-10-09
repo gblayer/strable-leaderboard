@@ -12,6 +12,9 @@ from pathlib import Path
 
 import yaml
 
+from .check_requirements import PIN
+from .data import MANIFEST
+
 REQUIRED = ["name", "version", "handles_strings", "tasks", "variant", "access", "hardware", "package", "checkpoint",
             "licence", "trained_on_strable"]
 OPTIONAL = ["code", "paper", "anonymous"]
@@ -22,9 +25,7 @@ TASKS = {"regression", "binary", "multiclass"}
 # Values copied from models/_template/model.yaml and never replaced.
 PLACEHOLDERS = {"My Model", "my-model==1.0.0", "my-org/my-model", "0123456789abcdef",
                 "https://github.com/my-org/my-model", "https://arxiv.org/abs/0000.00000"}
-PIN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*==[A-Za-z0-9.+!_-]+$")
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
-MANIFEST = Path(__file__).resolve().parent.parent / "splits" / "manifest.json"
 
 
 def card_problems(card) -> list[str]:
@@ -61,7 +62,7 @@ def card_problems(card) -> list[str]:
         seen = card["trained_on_strable"]
         if not isinstance(seen, list):
             out.append("trained_on_strable must be a list of table names, or []")
-        elif MANIFEST.exists():
+        else:
             unknown = sorted(set(map(str, seen)) - set(json.loads(MANIFEST.read_text())["tables"]))
             if unknown:
                 out.append(f"trained_on_strable names unknown tables {unknown[:5]}")

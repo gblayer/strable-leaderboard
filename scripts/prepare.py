@@ -109,9 +109,10 @@ def main(argv=None) -> int:
 
     status = 0
     for folder in args.folders:
-        found = pin_problems(folder)
+        found = pin_problems(folder, (ENV_REQUIREMENTS,))  # the lock only: what cache/env has
         if found:
-            print(f"{folder.name}: requirements not satisfied by the shared env:", *found, sep="\n  ")
+            print(f"{folder.name}: requirements not satisfied by env/requirements.txt (relock with "
+                  "scripts/lock_env.sh after adding a package):", *found, sep="\n  ")
             status = 1
     if status:
         return status

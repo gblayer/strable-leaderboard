@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 
 from strable_leaderboard.card import card_problems
-from strable_leaderboard.check_requirements import problems as pin_problems
+from strable_leaderboard.check_requirements import pin_changes, problems as pin_problems
 from strable_leaderboard.smoke import code_problems, static_problems
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -71,3 +71,29 @@ def test_own_folds_and_seeds_are_flagged(tmp_path):
 def test_example_models_pass_the_static_checks():
     assert static_problems(ROOT / "models" / "ridge") == []
     assert static_problems(ROOT / "models" / "_template") != []
+
+
+def _env(folder, txt, req_in):
+    folder.mkdir(parents=True)
+    (folder / "requirements.txt").write_text(txt)
+    (folder / "requirements.in").write_text(req_in)
+    return folder
+
+
+def test_a_pull_request_may_only_add_packages(tmp_path):
+    base = _env(tmp_path / "base", "numpy==2.3.4\nfilelock==3.20.0\n", "numpy==2.3.4\n")
+    added = _env(tmp_path / "added", "numpy==2.3.4\nfilelock==3.20.0\n", "numpy==2.3.4\nkumo==1.0\n")
+    assert pin_changes(base, added) == []
+    for name, txt, req_in in [("bumped", "numpy==2.3.4\nfilelock==3.20.0\n", "numpy==2.4.0\n"),
+                              ("removed", "numpy==2.3.4\n", "numpy==2.3.4\n"),
+                              ("dependency", "numpy==2.3.4\nfilelock==3.20.0\n", "numpy==2.3.4\nfilelock==3.21\n"),
+                              ("range", "numpy==2.3.4\nfilelock==3.20.0\n", "numpy==2.3.4\nkumo>=1\n")]:
+        assert pin_changes(base, _env(tmp_path / name, txt, req_in)), name
+
+
+def test_a_package_added_to_requirements_in_satisfies_the_model_but_not_the_runner(tmp_path):
+    env = _env(tmp_path / "env", "scikit-learn==1.7.2\n", "scikit-learn==1.7.2\nkumo==1.0\n")
+    card = dict(GOOD, package="kumo==1.0", checkpoint=None)
+    folder = _folder(tmp_path / "m", card=card, requirements="kumo==1.0\n")
+    assert pin_problems(folder, (env / "requirements.txt", env / "requirements.in")) == []
+    assert pin_problems(folder, (env / "requirements.txt",)) != []

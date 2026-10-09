@@ -4,6 +4,8 @@ name: Checks
 # can be a required check; steps with nothing to check do nothing. It is the only place where
 # contributor code runs before the merge.
 # - tests: pytest on the pull request's code.
+# - env: in a contributor's pull request, env/requirements.in and env/requirements.txt only gain
+#   lines; no existing pin changes.
 # - models: for each changed model folder, the card, the pins and the code (`smoke --static`),
 #   then the smoke test on CPU. A `hardware: gpu` model gets its smoke test with `--device cpu`
 #   too; if that fails, the package may need a GPU, so only the static checks count here and the
@@ -56,6 +58,18 @@ jobs:
           echo "models=$(echo $models)" >> "$GITHUB_OUTPUT"
           echo "results=$(echo $results)" >> "$GITHUB_OUTPUT"
           echo "Model folders: ${models:-none}. Results files: ${results:-none}."
+
+      - name: The shared environment only gains packages
+        # A contributor may add lines to env/requirements.in, never change a pin; the maintainer
+        # (the repository's owner) changes pins herself.
+        if: github.event.pull_request.user.login != github.repository_owner
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p /tmp/base-env
+          for f in requirements.in requirements.txt; do git show "$BASE_SHA:env/$f" > "/tmp/base-env/$f"; done
+          pip install --quiet pyyaml
+          python -m strable_leaderboard.check_requirements --base-env /tmp/base-env
 
       - name: Card, pins, code and smoke test of each changed model
         if: steps.changed.outputs.models != ''
