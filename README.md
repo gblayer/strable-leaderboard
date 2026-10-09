@@ -46,10 +46,10 @@ The first line installs this package, the smoke-test tools and your model's pack
 
 | Path | |
 |---|---|
-| [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a working example |
+| [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a working example (it never runs; the board's Ridge rows come from the paper) |
 | [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, the model contract and the smoke test |
 | [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
-| [docs/protocol.md](docs/protocol.md) | Data, cross-validation, score, time, encoders, hardware |
+| [Paper](https://arxiv.org/abs/2605.12292) | The evaluation protocol: data, cross-validation, scores, time, encoders |
 | [docs/submitting.md](docs/submitting.md) | The contract, the model card, versions, examples |
 | [site/](site/) | The page and its data: `results.json`, `results.parquet`, and every fold in `results_per_fold.csv` and `results_per_fold.parquet` |
 | [AGENTS.md](AGENTS.md) | Where coding agents start |

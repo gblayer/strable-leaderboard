@@ -1,6 +1,6 @@
 # Cross-validation folds
 
-One file per table: `<table>.parquet`, with one row per row of that table's `data.parquet`, in the same order. The folds reproduce the paper's protocol exactly. See [docs/protocol.md](../docs/protocol.md#cross-validation).
+One file per table: `<table>.parquet`, with one row per row of that table's `data.parquet`, in the same order. The folds reproduce the paper's protocol exactly. See the [paper](https://arxiv.org/abs/2605.12292).
 
 | Column | Meaning |
 |---|---|
