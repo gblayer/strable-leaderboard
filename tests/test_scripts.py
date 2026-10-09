@@ -89,6 +89,8 @@ def test_paper_selection_is_figure_4a():
     assert ("catboost", "none", "tuned") in keys and ("mambular", "none", "default") in keys
     assert ("tabpfn-2.5", "nemotron-1b-pca30", "default") in keys
     assert not any("tabpfn3" in m or "30_thresh" in csv for csv, m, _ in rows)
+    assert set(sel["filled"]) <= set(sel["pipelines"])  # filled files replace listed source CSVs only
+    assert all(f == c.replace(".csv", "_filled_2026-10-09.csv") for c, f in sel["filled"].items())
 
 
 def test_published_board_reproduces_table_e10():
@@ -103,5 +105,5 @@ def test_published_board_reproduces_table_e10():
           "tfidf+tabicl-v2": (0.7799, 2.9988), "tfidf+tabpfn-2.5": (0.7891, 6.6700)}
     assert pareto_front(board) == list(e10)
     assert {i: tuple(board.loc[i]) for i in e10} == e10
-    incomplete = {p["id"] for p in paper if p["both"][2] < p["both"][3]}
-    assert "mambular" in incomplete
+    # with the filled fold rows, every paper pipeline covers every table and fold: no incomplete tag
+    assert all(p["both"][2:] == [324, 324] and p["reg"][2:] == [228, 228] and p["clf"][2:] == [96, 96] for p in paper)

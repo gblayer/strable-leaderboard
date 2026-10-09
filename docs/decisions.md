@@ -30,6 +30,7 @@ Taken by Gioia Blayer while planning the leaderboard with Claude, 29 September t
 | 10-08 | Time: total run time per 1K samples only, as in Figure 4a; no fit or predict views |
 | 10-08 | A pipeline is shown in every view where it has rows, with an "incomplete" tag, without counts, when tables or folds are missing. Replaces "must cover every table and fold or not be ranked" |
 | 10-09 | Multiclass AUC keeps the paper's softmax over the predicted probabilities, so re-runs stay comparable with the imported paper rows |
+| 10-09 | The 17 fold rows missing from four paper pipelines are filled (12 re-run with the paper's code, 5 finished in April but never compiled); every paper pipeline covers 324 fold rows. The incomplete tag stays for future rows |
 
 ## Models
 

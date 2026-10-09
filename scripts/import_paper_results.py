@@ -8,7 +8,8 @@ listed pipeline missing from its CSV is an error. The paper timed fit and predic
 imported rows carry ``total_s`` only (the paper's ``run_time``), with ``hardware`` and
 ``package`` set to ``paper``. Scores are the raw per-fold R² or ROC-AUC. A ``data_name`` that
 is not a table of the dataset (a table renamed before the Hugging Face release) goes into
-``RENAMES`` as old name -> new name.
+``RENAMES`` as old name -> new name. The selection's ``filled`` section names, for some source
+CSVs, the file read instead: the original plus the fold rows completed after publication.
 """
 
 import argparse
@@ -68,8 +69,9 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, default=os.environ.get("STRABLE_RESULTS", "results"))
     args = parser.parse_args(argv)
     tables = json.loads(MANIFEST.read_text())["tables"]
-    pipelines = yaml.safe_load(SELECTION.read_text())["pipelines"]
-    frames = {csv: pd.read_csv(args.compiled / csv) for csv in pipelines}
+    selection = yaml.safe_load(SELECTION.read_text())
+    pipelines, filled = selection["pipelines"], selection.get("filled", {})
+    frames = {csv: pd.read_csv(args.compiled / filled.get(csv, csv)) for csv in pipelines}
     df, problems = convert(frames, tables, pipelines)
     if problems:
         print("\n".join(problems))

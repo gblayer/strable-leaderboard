@@ -53,7 +53,7 @@ Checked on 2026-10-09 for all 108 tables: the outer and inner folds in `splits/`
 | Regression | The 76 regression tables × 3 = 228 |
 | Classification | The 32 classification tables × 3 = 96 |
 
-The Regression and Classification views are the same metric on a subset of rows. There is no per-table normalization, so a pipeline's score never changes when other pipelines join. A pipeline is shown in every view where it has rows. When rows are missing, as for Mambular, whose paper runs miss one table and a few folds, the row carries the tag **INCOMPLETE**; the page shows no counts, and `site/results.json` keeps the fold rows present and expected.
+The Regression and Classification views are the same metric on a subset of rows. There is no per-table normalization, so a pipeline's score never changes when other pipelines join. A pipeline is shown in every view where it has rows. When tables or folds are missing, the row carries the tag **INCOMPLETE**; the page shows no counts, and `site/results.json` keeps the fold rows present and expected. No row carries it now: the paper's 75 pipelines cover all 324 fold rows.
 
 This is the only score on the board. Elo, improvability and normalized scores are relative to the field and change whenever a model joins, so they are not shown.
 
@@ -110,6 +110,7 @@ One file per model, `<model>.csv`, one row per encoder, variant, table and outer
 - Runs by the runner fill `fit_s` and `predict_s` (embedding included); the board uses only their sum. `hardware` is the GPU model or `cpu`.
 - `variant` is `default` or `tuned`.
 - Rows imported from the paper (`scripts/import_paper_results.py`) fill `total_s` only, with `hardware: paper` and `package: paper`, since the paper timed fit and predict together on mixed hardware. Exactly the pipelines of `scripts/paper_selection.yaml` are imported: the 75 of the paper's Figure 4a. They name encoders outside the three above. The board tags them **paper**.
+- For three of the paper's CSVs the importer reads a filled copy, listed under `filled` in `scripts/paper_selection.yaml`: the original plus 17 fold rows completed after publication, 12 re-run on 2026-10-08 with the paper's code and 5 finished in April but never compiled. They complete Mambular (7 rows), LLaMA-3.1-8B · PCA-30 + TabICLv2 (5), Qwen-3-8B · PCA-30 + TabICLv2 (3) and LLaMA-3.1-8B · SS+PCA-30 + TabPFN-2.5 (2). Every imported pipeline has 324 fold rows.
 - `python -m strable_leaderboard.check_results` validates a file and prints its coverage per view.
 
 ## Differences from the paper

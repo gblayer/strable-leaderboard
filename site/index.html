@@ -526,10 +526,7 @@ let DATA = [
   { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.75], clf: [0.868, 8.82] }
 ];
 let VERSION = 'v0.1.1', BUILT = '2026-10-01', PLACEHOLDER = true;
-let HISTORY = [
-  { version: 'v0.1.1', note: 'Re-ran CatBoost on 3 tables after a timing fix. Other scores unchanged. Example entry.' },
-  { version: 'v0.1.0', note: 'First public version: 13 pipelines on 108 tables, default configs. Example entry.' }
-];
+let HISTORY = [];  // only real entries, from results.json (results/versions.yaml)
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-new-model';
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
@@ -813,6 +810,7 @@ function renderHistory() {
   $('cite').textContent = 'STRABLE leaderboard ' + VERSION + ', ' + BUILT + ', ' + SITE;
   const ol = $('history-list'); ol.textContent = '';
   for (const h of HISTORY) { const li = el('li'); li.appendChild(el('b', null, h.version)); li.appendChild(el('span', null, h.note)); ol.appendChild(li); }
+  if (!HISTORY.length) { const li = el('li'); li.appendChild(el('b', null, '')); li.appendChild(el('span', null, 'No version published yet.')); ol.appendChild(li); }
   $('tbl-foot').hidden = !PLACEHOLDER;
 }
 async function refresh() {
