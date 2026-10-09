@@ -33,6 +33,7 @@
   --ink: #13273F; --ink-2: #34465E; --ink-3: #4C5767; --line: #D4BBA6;
   --head: #4E0000; --accent: #4E0000; --accent-ink: #F3E6DA; --btn-edge: #4E0000;
   --accent-2: #223631;
+  --accent-text: #4E0000;  /* the accent as text on surfaces */
   --mark: #8E2A33; --mark-muted: #AC9C90;
   --hdr: #223631; --hdr-ink: #F3E6DA;
   /* Pine Grove panel: the same in both themes */
@@ -46,6 +47,7 @@
     --ink: #E9D4C3; --ink-2: #CDBBAC; --ink-3: #A2A9B3; --line: #2E4768;
     --head: #E9D4C3; --accent: #9E2F3A; --accent-ink: #F3E6DA; --btn-edge: #E9D4C3;
     --accent-2: #91ACA5;
+  --accent-text: #D0646E;
     --mark: #D0646E; --mark-muted: #4F6483;
     --hdr: #3A5A50; --hdr-ink: #F3E6DA;
     color-scheme: dark;
@@ -56,6 +58,7 @@
   --ink: #E9D4C3; --ink-2: #CDBBAC; --ink-3: #A2A9B3; --line: #2E4768;
   --head: #E9D4C3; --accent: #9E2F3A; --accent-ink: #F3E6DA; --btn-edge: #E9D4C3;
   --accent-2: #91ACA5;
+  --accent-text: #D0646E;
   --mark: #D0646E; --mark-muted: #4F6483;
   --hdr: #3A5A50; --hdr-ink: #F3E6DA;
   color-scheme: dark;
@@ -208,7 +211,7 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .lrn { color: var(--ink); font-weight: 600; white-space: nowrap; }
 .tag { font: 600 10px/1 var(--f-mono); letter-spacing: 0.1em; color: var(--ink-3); border: 1px solid var(--line); padding: 3px 5px; border-radius: 999px; white-space: nowrap; }
 .tag.e2e { color: var(--accent-2); border-color: var(--accent-2); }
-.tag.tuned { color: var(--accent); border-color: var(--accent); }
+.tag.tuned { color: var(--accent-text); border-color: var(--accent-text); }
 .tag.incomplete { color: var(--ink-2); border-style: dashed; border-color: var(--ink-3); }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
