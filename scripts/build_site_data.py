@@ -1,4 +1,4 @@
-"""Build site/results.json from the private results folder, the model cards and its versions.yaml.
+"""Build site/results.json and site/results.parquet from the private results folder, the model cards and its versions.yaml.
 
     python scripts/build_site_data.py --results $STRABLE_RESULTS
     python scripts/build_site_data.py --check site/results.json
@@ -14,6 +14,10 @@ time the median of the total run time per 1,000 samples (encoding, training and 
 seconds over the table's rows). A view with fewer fold rows than expected is shown with an
 incomplete tag. ``paper`` marks rows imported from the paper. The page computes the ranking and
 the Pareto front from this file.
+
+results.parquet holds the same numbers for all views in long format, one row per pipeline and view,
+with its place on the Pareto front, for download. ``--check`` also compares it with the JSON when
+it sits next to it.
 """
 
 import argparse
@@ -31,10 +35,20 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from strable_leaderboard.data import MANIFEST  # noqa: E402
 from strable_leaderboard.encoders import NAMES  # noqa: E402
-from strable_leaderboard.metrics import N_FOLDS, VIEWS, leaderboard  # noqa: E402
+from strable_leaderboard.metrics import N_FOLDS, VIEWS, leaderboard, pareto_front  # noqa: E402
 
 VIEW_KEYS = {"both": "both", "regression": "reg", "classification": "clf"}
 VARIANTS = ("default", "tuned")
+VIEW_NAMES = {"both": "Both (R² & AUC)", "reg": "Regression (R²)", "clf": "Classification (AUC)"}
+SITE = "https://gblayer.github.io/strable-leaderboard/"
+CITATION = ("Blayer et al., STRABLE: Benchmarking Tabular Machine Learning with Strings, arXiv:2605.12292 (2026), "
+            "https://arxiv.org/abs/2605.12292")
+COLUMNS = {
+    "median_score": "median over the view's fold rows (tables x 3 outer folds) of R² (regression) and ROC-AUC (classification)",
+    "median_time_per_1k_s": "median over the same fold rows of the total run time (encoding, training, prediction) in s per 1,000 samples",
+    "fold_rows": "fold rows present; fewer than fold_rows_expected means incomplete",
+    "pareto_front": "the score is strictly higher than that of every faster pipeline of the view",
+}
 PAPER = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())  # display names of paper rows
 
 
@@ -93,8 +107,43 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json") -> dict
     data = {"version": versions[0]["version"] if versions else "v0.0.0", "built": date.today().isoformat(),
             "history": [{"version": v["version"], "note": v["note"]} for v in versions], "pipelines": pipelines}
     out.write_text(json.dumps(data, indent=1, ensure_ascii=False))
+    write_parquet(data, out.with_suffix(".parquet"))
     print(out, len(pipelines), "pipelines")
     return data
+
+
+def long_table(data: dict) -> pd.DataFrame:
+    """All views in long format: one row per pipeline and view, with its place on the Pareto front."""
+    rows = []
+    for view in VIEW_KEYS.values():
+        have = [p for p in data["pipelines"] if p.get(view)]
+        board = pd.DataFrame([{"id": p["id"], "score": p[view][0], "total_per_1k": p[view][1]} for p in have
+                              if p[view][1] is not None], columns=["id", "score", "total_per_1k"]).set_index("id")
+        front = set(pareto_front(board))
+        for p in have:
+            score, time, n, expected = p[view]
+            rows.append({"version": data["version"], "date": data["built"], "view": view, "view_name": VIEW_NAMES[view],
+                         "id": p["id"], "encoder": p["enc"], "learner": p["lrn"], "kind": p["kind"], "variant": p["variant"],
+                         "paper": bool(p.get("paper")), "anonymous": bool(p.get("anon")), "closed": bool(p.get("closed")),
+                         "median_score": score, "median_time_per_1k_s": time, "fold_rows": n, "fold_rows_expected": expected,
+                         "pareto_front": p["id"] in front})
+    return pd.DataFrame(rows)
+
+
+def write_parquet(data: dict, out: Path) -> None:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    table = pa.Table.from_pandas(long_table(data), preserve_index=False)
+    meta = {"board": "STRABLE leaderboard", "version": data["version"], "date": data["built"], "url": SITE,
+            "views": VIEW_NAMES, "columns": COLUMNS, "citation": CITATION}
+    pq.write_table(table.replace_schema_metadata({**table.schema.metadata, b"strable": json.dumps(meta, ensure_ascii=False).encode()}), out)
+
+
+def parquet_problems(data: dict, path: Path) -> list[str]:
+    """The Parquet next to a results.json must hold the same numbers."""
+    found = pd.read_parquet(path).astype(str).reset_index(drop=True)
+    return [] if found.equals(long_table(data).astype(str)) else [f"{path.name} does not match the JSON: rebuild both"]
 
 
 def problems(data: dict) -> list[str]:
@@ -136,7 +185,10 @@ if __name__ == "__main__":
     parser.add_argument("--check", type=Path, help="validate this JSON instead of building")
     args = parser.parse_args()
     if args.check:
-        found = problems(json.loads(args.check.read_text()))
+        data = json.loads(args.check.read_text())
+        found = problems(data)
+        if not found and args.check.with_suffix(".parquet").exists():
+            found = parquet_problems(data, args.check.with_suffix(".parquet"))
         print("\n".join(found) if found else f"{args.check}: ok")
         sys.exit(1 if found else 0)
     if not args.results:

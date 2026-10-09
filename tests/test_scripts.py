@@ -7,7 +7,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
-from build_site_data import build, problems  # noqa: E402
+from build_site_data import build, parquet_problems, problems  # noqa: E402
 from import_paper_results import convert  # noqa: E402
 from strable_leaderboard.metrics import pareto_front  # noqa: E402
 
@@ -47,7 +47,11 @@ def test_build_site_data(tmp_path):
     assert t["reg"][1] > 0  # paper rows: their total run time
     assert t["reg"][2:] == [225, 228] and t["clf"][2:] == [96, 96]  # one table missing: incomplete in reg only
     assert problems(data) == []
+    long = pd.read_parquet(tmp_path / "results.parquet")  # all views, one row per pipeline and view
+    assert len(long) == 6 and set(long["view"]) == {"both", "reg", "clf"} and long["pareto_front"].dtype == bool
+    assert parquet_problems(data, tmp_path / "results.parquet") == []
     t["both"][2] = 325
+    assert parquet_problems(data, tmp_path / "results.parquet")
     assert problems(data)
     t["both"] = [0.6, 1.0, None, 1.5, 324, 324]  # the old format with fit and predict
     assert problems(data)
@@ -104,6 +108,9 @@ def test_published_board_reproduces_table_e10():
           "tfidf+extratrees": (0.7407, 0.9679), "e5-small-v2-pca30+extratrees": (0.7422, 2.5152),
           "tfidf+tabicl-v2": (0.7799, 2.9988), "tfidf+tabpfn-2.5": (0.7891, 6.6700)}
     assert pareto_front(board) == list(e10)
+    long = pd.read_parquet(ROOT / "site" / "results.parquet")  # the download holds the same numbers and front
+    assert parquet_problems(data, ROOT / "site" / "results.parquet") == []
+    assert set(long[(long["view"] == "both") & long["pareto_front"]]["id"]) == set(e10)
     assert {i: tuple(board.loc[i]) for i in e10} == e10
     # with the filled fold rows, every paper pipeline covers every table and fold: no incomplete tag
     assert all(p["both"][2:] == [324, 324] and p["reg"][2:] == [228, 228] and p["clf"][2:] == [96, 96] for p in paper)
