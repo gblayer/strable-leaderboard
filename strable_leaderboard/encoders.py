@@ -15,6 +15,7 @@ the paper may name other encoders; ``NAMES`` gives their display names.
 
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 
@@ -77,8 +78,13 @@ def embed_table(X: pd.DataFrame, encoder: str, table: str, cache_dir: Path, devi
     table_embeddings = pd.DataFrame(vectors[:, :N_DIMS], columns=[f"X{i}" for i in range(N_DIMS)])
     table_embeddings.insert(0, "name", strings)
     folder.mkdir(parents=True, exist_ok=True)
-    table_embeddings.to_parquet(path, index=False)
+    # The parquet file marks the table as done, so it is written last and renamed into place:
+    # a reader never sees half a file. scripts/run_array.sh fills this cache in its own step,
+    # before any model runs, so tasks never race to write the same table.
     time_path.write_text(f"{seconds:.4f}")
+    tmp = path.with_suffix(f".tmp{os.getpid()}")
+    table_embeddings.to_parquet(tmp, index=False)
+    os.replace(tmp, path)
     return table_embeddings, seconds
 
 

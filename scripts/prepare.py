@@ -118,7 +118,8 @@ def main(argv=None) -> int:
     snapshot_download(HF_DATASET, repo_type="dataset", revision=HF_REVISION, local_dir=cache / "data")
     for encoder, spec in ENCODERS.items():
         if spec["checkpoint"]:
-            snapshot_download(spec["checkpoint"], local_dir=cache / "weights" / encoder)
+            # original/ holds a second copy of the weights in Meta's format, which nothing reads
+            snapshot_download(spec["checkpoint"], local_dir=cache / "weights" / encoder, ignore_patterns=["original/*"])
     for folder in args.folders:
         card = load_card(folder)
         if card["checkpoint"]:

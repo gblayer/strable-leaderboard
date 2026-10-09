@@ -1,25 +1,83 @@
 #!/bin/bash
-# One SLURM array task per line of tasks.txt: "<model folder> <encoder> <table> <fold>".
+# The SLURM job array of the runner. On the login node it submits itself; inside SLURM each array
+# task runs one line of the tasks file:
 #
-#   python scripts/make_tasks.py models/tabpfn-2.5 > tasks.txt
-#   sbatch --array=0-$(( $(wc -l < tasks.txt) - 1 ))%16 scripts/run_array.sh tasks.txt
+#   embed <encoder> <table>                    fill the embedding cache (GPU; run before any model)
+#   smoke <models/name>                        the smoke test on the reference hardware, sandboxed
+#   <models/name> <encoder> <table> <fold>     one run of strable_leaderboard.run, sandboxed
 #
-# Before submitting, on a node with internet: python scripts/prepare.py models/tabpfn-2.5
-# (dataset, checkpoints and the model's environment go into $STRABLE_CACHE). Compute nodes run
-# offline. Finished tasks are skipped, so the same command resubmits after a preemption.
-#SBATCH --job-name=strable
-#SBATCH --gres=gpu:1
+#   python -m strable_leaderboard.embed --list --cache-dir cache > embed.txt && bash scripts/run_array.sh embed.txt
+#   echo "smoke models/<name>" > smoke.txt && bash scripts/run_array.sh smoke.txt
+#   python scripts/make_tasks.py models/<name> > tasks.txt && bash scripts/run_array.sh tasks.txt
+#
+# A tasks file holds one kind of line, for one model. Hardware comes from the model card: gpu jobs
+# get $STRABLE_SBATCH_GPU (one GPU of the reference type), cpu jobs $STRABLE_SBATCH_CPU (no GPU),
+# both 32 CPUs and 128G. The cluster's partition and node flags live in private/runner.env
+# (gitignored: the repository names no cluster), for example
+#   STRABLE_SBATCH_GPU="--partition=<gpu partition> --exclude=<other GPU types> --gres=gpu:1"
+#   STRABLE_SBATCH_CPU="--partition=<cpu partition>"
+# Extra arguments go to sbatch after these, so they win. The job id is
+# printed. Logs go to $STRABLE_LOGS (default logs/), created before submission, since SLURM fails
+# silently on a missing output folder. Finished tasks are skipped, so the same file resubmits after
+# a preemption. Model code runs through scripts/sandbox.sh: network cut, Singularity by default.
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=128G
-#SBATCH --time=12:00:00
-#SBATCH --output=logs/%A_%a.out
 #SBATCH --requeue
-
 set -euo pipefail
-: "${STRABLE_CACHE:?set STRABLE_CACHE to the shared cache folder}"
-read -r MODEL ENCODER TABLE FOLD < <(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" "$1")
+# SLURM runs a copy of this file from its spool folder, so the clone is passed on in STRABLE_ROOT.
+export STRABLE_ROOT=${STRABLE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
+ROOT=$STRABLE_ROOT
+[ -f "$ROOT/private/runner.env" ] && source "$ROOT/private/runner.env"
+export STRABLE_CACHE=${STRABLE_CACHE:-$ROOT/cache}
+CACHE=$STRABLE_CACHE
 
-export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
-source "$STRABLE_CACHE/envs/$(basename "$MODEL")/bin/activate"
-python -m strable_leaderboard.run "$MODEL" --encoder "$ENCODER" --table "$TABLE" --fold "$FOLD" \
-  --data-dir "$STRABLE_CACHE/data" --cache-dir "$STRABLE_CACHE" --out runs --n-jobs "$SLURM_CPUS_PER_TASK"
+if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
+  TASKS=$(realpath "$1"); shift
+  n=$(grep -c . "$TASKS" || true)
+  [ "$n" -gt 0 ] || { echo "no tasks in $TASKS" >&2; exit 1; }
+  read -r a b _ < "$TASKS"
+  hw_of() { (cd "$ROOT" && awk '/^hardware:/{print $2}' "$1/model.yaml"); }
+  case "$a" in
+    embed) kind=embed; time=04:00:00; hw=gpu ;;
+    smoke) kind=smoke; time=00:30:00; hw=$(hw_of "$b") ;;
+    *)     kind=run;   time=12:00:00; hw=$(hw_of "$a") ;;
+  esac
+  case "$hw" in
+    gpu) read -ra where <<< "${STRABLE_SBATCH_GPU:---gres=gpu:1}" ;;
+    cpu) read -ra where <<< "${STRABLE_SBATCH_CPU:-}" ;;
+    *) echo "unknown hardware '$hw'" >&2; exit 1 ;;
+  esac
+  LOGS=${STRABLE_LOGS:-$ROOT/logs}
+  mkdir -p "$LOGS"
+  exec sbatch --parsable --array=0-$((n - 1))%"${STRABLE_PARALLEL:-16}" --job-name="strable-$kind" \
+    --time="$time" --output="$LOGS/%A_%a.out" --export=ALL "${where[@]}" "$@" "$0" "$TASKS"
+fi
+
+cd "$ROOT"
+read -r a b c d < <(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" "$1")
+export PYTHONNOUSERSITE=1 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=$ROOT
+PY=$CACHE/env/bin/python
+DEVICE=cpu; { [ -n "${CUDA_VISIBLE_DEVICES:-}" ] || [ -n "${SLURM_JOB_GPUS:-}" ]; } && DEVICE=cuda
+echo "task $SLURM_ARRAY_TASK_ID on $(hostname): $a $b $c $d (device $DEVICE, sandbox ${STRABLE_SANDBOX:-singularity})"
+
+case "$a" in
+  embed)
+    "$PY" -m strable_leaderboard.embed --encoder "$b" --table "$c" --cache-dir "$CACHE" --device "$DEVICE" ;;
+  smoke)
+    # The result goes next to the writable folder, written here, outside the sandbox.
+    name=$(basename "$b"); dir=$CACHE/dispatch/smoke; mkdir -p "$dir"
+    set +e
+    scripts/sandbox.sh "$b" "$dir/$name.work" "$PY" -m strable_leaderboard.smoke "$ROOT/$b" \
+      --data-dir "$CACHE/data" --device "$DEVICE" 2>&1 | tee "$dir/$name.log"
+    rc=${PIPESTATUS[0]}
+    set -e
+    echo "$rc" > "$dir/$name.rc"
+    exit "$rc" ;;
+  *)
+    name=$(basename "$a")
+    out=$ROOT/runs/$name/$b/$c
+    [ -f "$out/$d.json" ] && { echo "exists $out/$d.json"; exit 0; }
+    scripts/sandbox.sh "$a" "$out" "$PY" -m strable_leaderboard.run "$ROOT/$a" --encoder "$b" --table "$c" \
+      --fold "$d" --data-dir "$CACHE/data" --cache-dir "$CACHE" --out "$ROOT/runs" --device "$DEVICE" \
+      --n-jobs "${SLURM_CPUS_PER_TASK:-32}" ;;
+esac

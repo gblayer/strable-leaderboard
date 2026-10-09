@@ -4,7 +4,8 @@
 
 A numeric-only model gets the three encoders, an end-to-end model one line per table and fold.
 Tasks with a row in runs/ or in $STRABLE_RESULTS/<model>.csv are left out, so the list is what
-the job array still has to do.
+the job array still has to do. Rows imported from the paper (hardware "paper") do not count: the
+runner re-runs them on the reference hardware, and the new rows replace them.
 """
 
 import json
@@ -18,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from strable_leaderboard.data import MANIFEST  # noqa: E402
 from strable_leaderboard.encoders import ENCODERS  # noqa: E402
-from strable_leaderboard.smoke import load_card  # noqa: E402
+from strable_leaderboard.card import load_card  # noqa: E402
 
 FOLDS = 3
 
@@ -30,6 +31,7 @@ def done(model: str, runs: Path, results: Path) -> set:
     csv = results / f"{model}.csv"
     if csv.exists():
         df = pd.read_csv(csv)
+        df = df[df["hardware"].astype(str) != "paper"]
         keys |= set(zip(df["encoder"], df["table"], df["fold"]))
     return keys
 
