@@ -247,8 +247,14 @@ table.hs { width: 100%; border-collapse: collapse; font-family: var(--f-mono); f
 .tip b { font-weight: 600; font-size: 13px; }
 .tip .muted { opacity: 0.8; }
 
-/* ---------- version history ---------- */
-.history { margin-top: 44px; display: grid; gap: 14px; }
+/* ---------- downloads, version history ---------- */
+.history, .paper-use { margin-top: 44px; display: grid; gap: 14px; }
+.dl-list { display: grid; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); }
+.dl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 13px 16px; border-bottom: 1px solid var(--line); }
+.dl:last-child { border-bottom: 0; }
+.dl .cap { min-width: 9em; }
+.dl-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 .history-sub { margin: 6px 0 0; color: var(--ink-3); font-size: 14.5px; }
 .history-sub span { font-family: var(--f-mono); color: var(--ink-2); }
 .history ol { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); }
@@ -468,6 +474,34 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
     </div>
   </section>
 
+  <section class="paper-use" id="paper-use" aria-labelledby="paper-use-title">
+    <div>
+      <h2 class="title" id="paper-use-title">Using the leaderboard in your paper</h2>
+      <p class="history-sub">Download the current board, with the version and date, to include it in a paper. Current view: <span id="dl-view"></span></p>
+    </div>
+    <div class="dl-list">
+      <div class="dl">
+        <span class="cap" id="dl-plot-lbl">Pareto plot</span>
+        <div class="dl-btns" role="group" aria-labelledby="dl-plot-lbl">
+          <button type="button" class="linkbtn" data-dl="svg">SVG</button>
+          <button type="button" class="linkbtn" data-dl="png">PNG</button>
+          <button type="button" class="linkbtn" data-dl="jpeg">JPEG</button>
+          <button type="button" class="linkbtn" data-dl="pdf">PDF</button>
+        </div>
+      </div>
+      <div class="dl">
+        <span class="cap" id="dl-table-lbl">Ranking table</span>
+        <div class="dl-btns" role="group" aria-labelledby="dl-table-lbl">
+          <button type="button" class="linkbtn" data-dl="csv">CSV</button>
+          <button type="button" class="linkbtn" data-dl="json">JSON</button>
+          <button type="button" class="linkbtn" data-dl="xlsx">XLSX</button>
+          <a class="linkbtn" id="dl-parquet" href="results.parquet" download>Parquet · all views</a>
+        </div>
+      </div>
+    </div>
+    <p class="note">The plot and the CSV, JSON and XLSX tables follow the Task and Sort chosen above. The Parquet file holds all three views at once, one row per pipeline and view. <span class="form-msg" id="dl-msg" role="status"></span></p>
+  </section>
+
   <section class="history" id="history" aria-labelledby="history-title">
     <div>
       <h2 class="title" id="history-title">Version history</h2>
@@ -612,6 +646,9 @@ function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n 
 const fmtS = (v) => v.toFixed(3);
 function fmtN(t) { if (Number.isNaN(t)) return '—'; if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
 const fmtT = (t) => fmtN(t) + ' s';
+const TAGS = [['e2e', 'end-to-end', (d) => d.kind === 'e2e'], ['tuned', 'tuned', (d) => d.tuned], ['anon', 'anonymous', (d) => d.anon],
+  ['closed', 'closed', (d) => d.closed && !d.anon], ['paper', 'paper', (d) => d.paper], ['incomplete', 'incomplete', (d) => d.incomplete]];
+const tagsOf = (d) => TAGS.filter((t) => t[2](d));
 function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
 function timeText(d) { return 'total run time ' + fmtT(d.t) + ' per 1K samples'; }
 
@@ -643,13 +680,9 @@ function renderTable(list, front, rows) {
     tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + ', ' + (d.paper ? 'from the paper' : 'runs on ' + d.hw) + (d.incomplete ? ', incomplete' : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
-    if (d.kind === 'e2e') { p.appendChild(el('span', 'lrn', d.lrn)); p.appendChild(el('span', 'tag e2e', 'END-TO-END')); }
-    else { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); p.appendChild(el('span', 'lrn', d.lrn)); }
-    if (d.tuned) p.appendChild(el('span', 'tag tuned', 'TUNED'));
-    if (d.anon) p.appendChild(el('span', 'tag anon', 'ANONYMOUS'));
-    else if (d.closed) p.appendChild(el('span', 'tag closed', 'CLOSED'));
-    if (d.paper) p.appendChild(el('span', 'tag', 'PAPER'));
-    if (d.incomplete) p.appendChild(el('span', 'tag incomplete', 'INCOMPLETE'));
+    if (d.kind !== 'e2e') { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); }
+    p.appendChild(el('span', 'lrn', d.lrn));
+    for (const [cls, name] of tagsOf(d)) p.appendChild(el('span', 'tag ' + cls, name.toUpperCase()));
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
@@ -822,6 +855,7 @@ function render() {
   $('ver-chip').textContent = VERSION;
   ['both', 'reg', 'clf'].forEach((k) => $('task-' + k).setAttribute('aria-pressed', String(state.task === k)));
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
+  $('dl-view').textContent = VIEW_NAMES[state.task] + ', ' + SORT_NAMES[state.sort];
 }
 
 document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; render(); }));
@@ -846,6 +880,9 @@ function renderHistory() {
   for (const h of HISTORY) { const li = el('li'); li.appendChild(el('b', null, h.version)); li.appendChild(el('span', null, h.note)); ol.appendChild(li); }
   if (!HISTORY.length) { const li = el('li'); li.appendChild(el('b', null, '')); li.appendChild(el('span', null, 'No version published yet.')); ol.appendChild(li); }
   $('tbl-foot').hidden = !PLACEHOLDER;
+  document.querySelectorAll('[data-dl]').forEach((b) => { b.disabled = PLACEHOLDER; });  // placeholders are not for papers
+  $('dl-parquet').hidden = PLACEHOLDER;
+  $('dl-parquet').download = 'strable-leaderboard_' + VERSION + '_' + BUILT + '_all-views.parquet';
 }
 async function refresh() {
   const btn = $('refresh'); btn.disabled = true; btn.textContent = 'Refreshing…';
@@ -890,6 +927,139 @@ $('cite-modal').addEventListener('keydown', (ev) => {
   f[(i + (ev.shiftKey ? f.length - 1 : 1) + f.length) % f.length].focus();
 });
 
+
+/* ---------- downloads: the plot and the ranking of the current view ---------- */
+const VIEW_NAMES = { both: 'Both (R² & AUC)', reg: 'Regression (R²)', clf: 'Classification (AUC)' };
+const SORT_NAMES = { pareto: 'Pareto Front first', score: 'by score', time: 'by time' };
+const COLUMNS = {
+  rank: 'position in the current order',
+  pipeline: 'encoder + learner, or the learner alone for end-to-end pipelines',
+  variant: 'default configuration, or tuned',
+  tags: 'end-to-end, tuned, anonymous, closed, paper, incomplete',
+  median_score: { both: 'median over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification), as in the paper\'s Figure 4a',
+    reg: 'median R² over the 76 regression tables x 3 outer folds', clf: 'median ROC-AUC over the 32 classification tables x 3 outer folds' },
+  median_time_per_1k_s: 'median over the same fold rows of the total run time (encoding, training, prediction) in seconds per 1,000 samples',
+  pareto_front: 'yes when the score is strictly higher than that of every faster pipeline'
+};
+/* Libraries for PDF and XLSX, loaded only when those buttons are clicked. */
+const LIBS = {
+  jspdf: ['https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js', 'sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3'],
+  svg2pdf: ['https://cdn.jsdelivr.net/npm/svg2pdf.js@2.8.1/dist/svg2pdf.umd.min.js', 'sha384-7hc/mtl4lyRUMzYFqHxwNbYZwh27MESE5AWa2nEuVChLn8bCQcrn18OgGv9uHgzz'],
+  xlsx: ['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw']
+};
+const libs = {};
+function loadLib(name) {
+  return libs[name] || (libs[name] = new Promise((ok, fail) => {
+    const s = document.createElement('script');
+    s.src = LIBS[name][0]; s.integrity = LIBS[name][1]; s.crossOrigin = 'anonymous';
+    s.onload = ok; s.onerror = () => { delete libs[name]; fail(new Error('could not load ' + name)); };
+    document.head.appendChild(s);
+  }));
+}
+const viewKey = () => state.task + (state.sort === 'pareto' ? '' : '-by-' + state.sort);
+const fileName = (ext) => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey() + '.' + ext;
+function saveFile(name, blob) {
+  const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* The ranking of the current view, as on the page. */
+function exportRows() {
+  const list = items(state.task), front = paretoSet(list);
+  return ordered(list, state.sort, front).map((d, i) => ({
+    rank: i + 1, pipeline: d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn, variant: d.tuned ? 'tuned' : 'default',
+    tags: tagsOf(d).map((t) => t[1]).join('; '), median_score: d.s, median_time_per_1k_s: Number.isNaN(d.t) ? null : d.t,
+    pareto_front: front.has(d.id) ? 'yes' : 'no' }));
+}
+function exportMeta() {
+  const columns = Object.assign({}, COLUMNS, { median_score: COLUMNS.median_score[state.task] });
+  return { board: 'STRABLE leaderboard', version: VERSION, date: BUILT, view: VIEW_NAMES[state.task] + ', ' + SORT_NAMES[state.sort],
+    url: SITE, columns: columns, citation: BIB };
+}
+function csvText() {
+  const m = exportMeta(), rows = exportRows(), cols = Object.keys(rows[0]);
+  const q = (v) => (v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
+  const head = ['board', 'version', 'date', 'view', 'url'].map((k) => '# ' + k + ': ' + m[k])
+    .concat(cols.map((c) => '# ' + c + ': ' + m.columns[c]), '# citation:', BIB.split('\n').map((l) => '#   ' + l));
+  return head.concat(cols.join(','), rows.map((r) => cols.map((c) => q(r[c])).join(','))).join('\n') + '\n';
+}
+const jsonText = () => JSON.stringify(Object.assign(exportMeta(), { rows: exportRows() }), null, 1) + '\n';
+async function xlsxBlob() {
+  await loadLib('xlsx');
+  const m = exportMeta(), wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportRows()), 'Leaderboard');
+  const about = [['board', m.board], ['version', m.version], ['date', m.date], ['view', m.view], ['url', m.url]]
+    .concat(Object.entries(m.columns), [['citation', BIB]]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(about), 'About');
+  return new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+/* The plot of the current view as a standalone SVG: light colours on white, styles written on each
+   element (the page's CSS does not travel with the file), a line with the version at the bottom. */
+const PAPER_INK = { bg: '#FFFFFF', ink: '#13273F', ink2: '#34465E', ink3: '#4C5767', line: '#D4BBA6', mark: '#8E2A33', muted: '#AC9C90' };
+const MONO = "'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace", SANS = "Outfit, system-ui, 'Segoe UI', sans-serif";
+function exportSvg() {
+  const src = $('plot').querySelector('svg');
+  if (!src) throw new Error('no plot to export');
+  const svg = src.cloneNode(true), c = PAPER_INK, W = +svg.getAttribute('width'), H0 = +svg.getAttribute('height'), H = H0 + 24;
+  const set = (sel, attrs) => svg.querySelectorAll(sel).forEach((n) => { for (const k in attrs) n.setAttribute(k, attrs[k]); });
+  svg.setAttribute('xmlns', SVGNS); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('height', H);
+  svg.querySelectorAll('.hot').forEach((n) => n.classList.remove('hot'));
+  set('.ax text', { fill: c.ink2, 'font-family': MONO, 'font-size': 13 });
+  set('.ax .ttl', { fill: c.ink, 'font-weight': 'bold', 'font-size': 14 });  // bold, not 600: PDF fonts know bold only
+  set('.grid-l', { stroke: c.line, 'stroke-width': 1, 'shape-rendering': 'crispEdges' });
+  set('.frontier', { fill: 'none', stroke: c.mark, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'square' });
+  set('.pt', { fill: c.muted, stroke: c.bg, 'stroke-width': 2 });
+  set('.pt.on', { fill: c.mark });
+  set('.top-ring', { fill: 'none', stroke: c.mark, 'stroke-width': 2 });
+  set('.better', { fill: 'none', stroke: c.ink3, 'stroke-width': 1.5 });
+  set('.better-head', { fill: c.ink3 });
+  set('.better-t', { fill: c.ink, 'font-family': SANS, 'font-size': 15, 'font-weight': 'bold' });
+  set('.plabel', { fill: c.ink, 'font-family': MONO, 'font-size': 13.5, 'font-weight': 'bold' });
+  svg.querySelectorAll('.plabel').forEach((t) => {  // a white halo drawn under each label
+    const h = t.cloneNode(true); h.setAttribute('fill', c.bg); h.setAttribute('stroke', c.bg); h.setAttribute('stroke-width', 4); h.setAttribute('stroke-linejoin', 'round');
+    t.parentNode.insertBefore(h, t);
+  });
+  svg.querySelectorAll('[class]').forEach((n) => n.removeAttribute('class'));  // no page CSS in the file
+  svg.querySelector('marker').id = 'better-head-export';  // the PDF copy sits in the page next to the original
+  svg.querySelector('[marker-end]').setAttribute('marker-end', 'url(#better-head-export)');
+  svg.insertBefore(sv('rect', { x: 0, y: 0, width: W, height: H, fill: c.bg }), svg.firstChild);
+  const foot = sv('text', { x: W - 8, y: H - 8, 'text-anchor': 'end', fill: c.ink3, 'font-family': MONO, 'font-size': 11 });
+  foot.textContent = 'STRABLE leaderboard ' + VERSION + ', ' + BUILT + ' · ' + VIEW_NAMES[state.task];
+  svg.appendChild(foot);
+  return { node: svg, text: new XMLSerializer().serializeToString(svg), W: W, H: H };
+}
+async function rasterBlob(type) {
+  const { text, W, H } = exportSvg(), k = 3;
+  const img = new Image();
+  await new Promise((ok, fail) => { img.onload = ok; img.onerror = () => fail(new Error('the browser could not draw the plot')); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text); });
+  const cv = document.createElement('canvas'); cv.width = W * k; cv.height = H * k;
+  const g = cv.getContext('2d'); g.fillStyle = PAPER_INK.bg; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+  return new Promise((ok, fail) => cv.toBlob((b) => (b ? ok(b) : fail(new Error('the browser could not encode the image'))), type, 0.95));
+}
+async function pdfBlob() {
+  await loadLib('jspdf'); await loadLib('svg2pdf');  // svg2pdf.js extends the jsPDF loaded first
+  const { node, W, H } = exportSvg();
+  const box = el('div'); box.style.cssText = 'position:absolute;left:-10000px;top:0'; box.appendChild(node); document.body.appendChild(box);
+  try {
+    const doc = new window.jspdf.jsPDF({ orientation: W > H ? 'landscape' : 'portrait', unit: 'pt', format: [W, H] });
+    await doc.svg(node, { x: 0, y: 0, width: W, height: H });
+    return doc.output('blob');
+  } finally { box.remove(); }
+}
+const EXPORTS = {
+  svg: async () => new Blob([exportSvg().text], { type: 'image/svg+xml' }), png: () => rasterBlob('image/png'),
+  jpeg: () => rasterBlob('image/jpeg'), pdf: pdfBlob, xlsx: xlsxBlob,
+  csv: async () => new Blob([csvText()], { type: 'text/csv;charset=utf-8' }), json: async () => new Blob([jsonText()], { type: 'application/json' })
+};
+document.querySelectorAll('[data-dl]').forEach((b) => b.addEventListener('click', async () => {
+  const kind = b.dataset.dl, name = fileName(kind === 'jpeg' ? 'jpg' : kind), msg = $('dl-msg');
+  b.disabled = true; msg.textContent = kind === 'pdf' || kind === 'xlsx' ? 'Preparing ' + kind.toUpperCase() + '…' : '';
+  try { saveFile(name, await EXPORTS[kind]()); msg.textContent = 'Saved ' + name + '.'; }
+  catch (e) { msg.textContent = 'Could not make the ' + kind.toUpperCase() + ' file: ' + e.message + '.'; }
+  b.disabled = false;
+}));
 
 /* In-page links scroll inside the page instead of navigating the frame. */
 document.addEventListener('click', (ev) => {
