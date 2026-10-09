@@ -24,14 +24,11 @@ Pull requests merge by themselves only when the gate's conditions all hold; ever
 
 ## 1. Checks
 
-`.github/workflows/checks.yml` runs on every pull request touching `models/` or `site/results.json`, on GitHub's machines, with a read-only token and no secrets. It is the only place where contributor code runs before the merge.
+`.github/workflows/checks.yml` runs on every pull request, whatever it changes, so that it can be a required check; a step with nothing to check does nothing. It runs on GitHub's machines, with a read-only token and no secrets. It is the only place where contributor code runs before the merge.
 
-For each changed model folder:
-- `python -m strable_leaderboard.check_requirements models/<name>`: every line of `requirements.txt` is `name==version`, and every version equals the shared environment's (`env/requirements.txt`).
-- The model is installed with `env/requirements.txt` as pip constraints, so its dependencies also get the shared environment's versions.
-- `python -m strable_leaderboard.smoke models/<name>`: fails on any missing or invalid card field, on an unshared pin, on code that makes its own split, searches hyperparameters or fixes its own seed, then runs outer fold 0 of three small tables. `hardware: gpu` models run only these static checks here (`--static`): GitHub's free machines have no GPU, so their smoke test runs on the reference GPU on the cluster as the dispatcher's first step after the merge.
-
-A pull request changing `site/results.json`: `python scripts/build_site_data.py --check`, which validates the file's shape, unique ids, score and time ranges.
+- `pytest` on the pull request's code.
+- For each changed model folder: `python -m strable_leaderboard.check_requirements models/<name>`: every line of `requirements.txt` is `name==version`, and every version equals the shared environment's (`env/requirements.txt`). The model is installed with `env/requirements.txt` as pip constraints, so its dependencies also get the shared environment's versions. Then `python -m strable_leaderboard.smoke models/<name> --device cpu`: fails on any missing or invalid card field, on an unshared pin and on code that a regular-expression hint flags as making its own split, searching hyperparameters or fixing its own seed (a hint only: the review is the real check), then runs outer fold 0 of three small tables. `hardware: gpu` models run it on CPU too; if that fails, the package may need a GPU, so the step falls back to the static checks (`--static`) and reports a warning, and the full smoke test runs on the reference GPU on the cluster as the dispatcher's first step after the merge.
+- A pull request changing `site/results.json`: `python scripts/build_site_data.py --check`, which validates the file's shape, unique ids, score and time ranges.
 
 ## 2. Claude review
 

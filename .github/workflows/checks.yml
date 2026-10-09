@@ -1,23 +1,37 @@
 name: Checks
 
-# Runs on every pull request, on GitHub's machines, with a read-only token and no secrets. It is the
-# only place where contributor code runs before the merge. For each changed model folder:
-# - the card, the pins and the code (`smoke --static`): every model.yaml field filled and valid,
-#   every pin equal to the shared environment's (env/requirements.txt), no own folds, search or seed;
-# - the smoke test on CPU for `hardware: cpu` models. GPU models get theirs on the reference GPU on
-#   the cluster, as the dispatcher's first step after the merge (GitHub's free runners have no GPU).
-# The model is installed with env/requirements.txt as constraints, so every package, dependencies
-# included, has the shared environment's version. A changed site/results.json is validated.
+# Runs on every pull request, on GitHub's machines, with a read-only token and no secrets, so that it
+# can be a required check; steps with nothing to check do nothing. It is the only place where
+# contributor code runs before the merge.
+# - tests: pytest on the pull request's code.
+# - models: for each changed model folder, the card, the pins and the code (`smoke --static`),
+#   then the smoke test on CPU. A `hardware: gpu` model gets its smoke test with `--device cpu`
+#   too; if that fails, the package may need a GPU, so only the static checks count here and the
+#   failure is reported as a warning: its full smoke test runs on the reference GPU on the
+#   cluster, as the dispatcher's first step after the merge. The model is installed with
+#   env/requirements.txt as constraints, so every package, dependencies included, has the shared
+#   environment's version. A changed site/results.json is validated.
 on:
   pull_request:
-    paths:
-      - "models/**"
-      - "site/results.json"
 
 permissions:
   contents: read
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install --quiet -c env/requirements.txt -e ".[dev]"
+          pytest -q
+
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -25,6 +39,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
@@ -59,11 +74,14 @@ jobs:
             "$py" -m pip install --quiet pyyaml
             if PYTHONPATH=. "$py" -m strable_leaderboard.check_requirements "models/$m"; then
               "$py" -m pip install --quiet -c env/requirements.txt -e ".[smoke]" -r "models/$m/requirements.txt"
-              if grep -qE '^hardware:[[:space:]]*cpu' "models/$m/model.yaml"; then
-                "$py" -m strable_leaderboard.smoke "models/$m" | tee -a "$GITHUB_STEP_SUMMARY" || status=1
-              else
+              hw=$("$py" -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["hardware"])' "models/$m/model.yaml")
+              if "$py" -m strable_leaderboard.smoke "models/$m" --device cpu | tee -a "$GITHUB_STEP_SUMMARY"; then
+                :
+              elif [ "$hw" = gpu ]; then
+                echo "::warning::$m: the smoke test failed on CPU; only the static checks count here, the reference GPU runs it after the merge"
                 "$py" -m strable_leaderboard.smoke "models/$m" --static | tee -a "$GITHUB_STEP_SUMMARY" || status=1
-                echo "GPU model: the smoke test runs on the reference GPU after the merge." | tee -a "$GITHUB_STEP_SUMMARY"
+              else
+                status=1
               fi
             else
               status=1
