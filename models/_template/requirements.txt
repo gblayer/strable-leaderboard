@@ -1,2 +1,3 @@
-# Exact versions only (==). The runner builds one environment per model from this file.
+# Exact versions only (==), each equal to the shared environment's (env/requirements.txt):
+# every model runs in that one environment. Do not list strable-leaderboard itself.
 my-model==1.0.0
