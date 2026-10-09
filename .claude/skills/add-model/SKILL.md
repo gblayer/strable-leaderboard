@@ -40,7 +40,7 @@ Never leave a template value (`My Model`, `my-model==1.0.0`, `0123456789abcdef`,
 
 `class Model(StrableModel)`:
 - Set `handles_strings`.
-- `fit(X, y)`: the default configuration; pass `self.seed`, `self.device`, `self.n_jobs`; for classification set `self.classes_ = np.unique(y)`.
+- `fit(X, y)`: the default configuration; pass `self.seed`, `self.device`, `self.n_jobs`; for classification set `self.classes_ = np.unique(y)`. Threads are already capped to `self.n_jobs`; if the package misreads `n_jobs` (read its source: tabicl 2.0.3 uses max(all cores, `n_jobs`)), leave it at the package's default.
 - **No folds or search of your own** (`models/ridge` keeps RidgeCV's alpha search: the paper's baseline, the only exception): never `train_test_split`, `KFold`, `cross_val_score`, `GridSearchCV` or a package option that holds out its own validation set. Early stopping only through `fit_idx, val_idx = self.validation_split(y)`, the paper's first inner fold. If the package splits internally by default, turn that off or pass the protocol's split.
 - **No seed of your own**: `random_state=self.seed` (1234), never a number; no `np.random.seed(0)` or `torch.manual_seed(0)`.
 - `predict(X)`: values or labels. `predict_proba(X)`: shape `(n_rows, n_classes)` in the order of `self.classes_`, rows summing to 1.

@@ -28,8 +28,9 @@ for p in "$CACHE/env" "$CACHE/python" "$CACHE/weights/$(basename "$MODEL")" "$RO
   [ -e "$p" ] && binds+=(--bind "$p:$p:ro")
 done
 nv=(); { [ -n "${CUDA_VISIBLE_DEVICES:-}" ] || [ -n "${SLURM_JOB_GPUS:-}" ]; } && nv=(--nv)
+# The thread caps are set by strable_leaderboard.run to its --n-jobs.
 for v in PYTHONNOUSERSITE HF_HUB_OFFLINE TRANSFORMERS_OFFLINE HF_DATASETS_OFFLINE PYTHONPATH OMP_NUM_THREADS \
-         CUDA_VISIBLE_DEVICES; do
+         MKL_NUM_THREADS OPENBLAS_NUM_THREADS NUMEXPR_NUM_THREADS CUDA_VISIBLE_DEVICES; do
   [ -n "${!v:-}" ] && export "SINGULARITYENV_$v=${!v}"
 done
 export SINGULARITYENV_XDG_CACHE_HOME=/tmp/.cache SINGULARITYENV_HF_HOME=/tmp/hf

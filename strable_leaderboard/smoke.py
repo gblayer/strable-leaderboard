@@ -1,7 +1,7 @@
 """Smoke test for one model folder: outer fold 0 of three small tables, one per task.
 
     python -m strable_leaderboard.smoke models/<name>
-    python -m strable_leaderboard.smoke models/<name> --data-dir /path/to/STRABLE-benchmark --device cuda
+    python -m strable_leaderboard.smoke models/<name> --data-dir /path/to/STRABLE-benchmark --device cuda --n-jobs 8
     python -m strable_leaderboard.smoke models/<name> --static     # card, pins and code only
 
 It fails on any missing or invalid model card field (``strable_leaderboard.card``), on a pin
@@ -9,7 +9,8 @@ that the shared environment does not satisfy (``strable_leaderboard.check_requir
 on code that ``FORBIDDEN`` flags as making its own folds or fixing its own seed: a
 regular-expression hint, easy to get around; the Claude review is the real check. Then it loads
 ``Model`` from ``model.py``, encodes strings with Tf-Idf when the model needs numbers, and checks
-the shapes and ranges of the predictions. It does not measure leaderboard scores: the full run
+the shapes and ranges of the predictions. Threads are capped to ``--n-jobs`` (default 1) as in the
+runner. It does not measure leaderboard scores: the full run
 happens on the cluster.
 """
 
@@ -25,6 +26,7 @@ from pathlib import Path
 from .card import card_problems, load_card
 from .check_requirements import problems as pin_problems
 from .data import load_table
+from .fit_predict import limit_threads
 from .metrics import checked_score
 from .model import load_model_class
 from .splits import SEED, outer_splits
@@ -74,7 +76,7 @@ def static_problems(folder: Path) -> list[str]:
     return out
 
 
-def check_one(model_cls, card: dict, table: str, data_dir=None, device: str = "cpu") -> dict:
+def check_one(model_cls, card: dict, table: str, data_dir=None, device: str = "cpu", n_jobs: int = 1) -> dict:
     X, y, task = load_table(table, data_dir=data_dir)
     train_idx, test_idx = outer_splits(y, task)[0]
     X_train, X_test, y_train, y_test = X.iloc[train_idx], X.iloc[test_idx], y[train_idx], y[test_idx]
@@ -87,7 +89,7 @@ def check_one(model_cls, card: dict, table: str, data_dir=None, device: str = "c
             X_train = encoder.fit_transform(X_train, y_train)
             X_test = encoder.transform(X_test)
 
-    model = model_cls(task=task, seed=SEED, device=device, n_jobs=1)
+    model = model_cls(task=task, seed=SEED, device=device, n_jobs=n_jobs)
     t0 = time.perf_counter()
     model.fit(X_train, y_train)
     fit_s = time.perf_counter() - t0
@@ -107,6 +109,7 @@ def main(argv=None) -> int:
     parser.add_argument("folder", type=Path, help="models/<name>")
     parser.add_argument("--data-dir", type=Path, default=None, help="local copy of the dataset (optional)")
     parser.add_argument("--device", default="cpu", help="cpu, cuda, or auto")
+    parser.add_argument("--n-jobs", type=int, default=1, help="CPU threads the model may use (the runner gives 32)")
     parser.add_argument("--static", action="store_true", help="check the card, the pins and the code, do not run")
     args = parser.parse_args(argv)
 
@@ -120,6 +123,7 @@ def main(argv=None) -> int:
     if bool(card["handles_strings"]) != bool(model_cls.handles_strings):
         print("  FAIL  handles_strings differs between model.yaml and model.py")
         return 1
+    limit_threads(args.n_jobs)
     print(f"{card['name']} {card['version']}  ({'end-to-end' if model_cls.handles_strings else 'numeric-only, Tf-Idf encoder'})")
     print("  ok    card, pins and code")
     if args.static:
@@ -135,7 +139,7 @@ def main(argv=None) -> int:
             print(f"  skip  {task:<10} not in model.yaml tasks")
             continue
         try:
-            r = check_one(model_cls, card, table, data_dir=args.data_dir, device=args.device)
+            r = check_one(model_cls, card, table, data_dir=args.data_dir, device=args.device, n_jobs=args.n_jobs)
             print(f"  ok    {task:<10} {table:<34} score {r['score']:.3f}  fit {r['fit_s']:.2f}s  predict {r['predict_s']:.2f}s")
         except Exception as exc:  # report every failure, then exit non-zero
             failures += 1

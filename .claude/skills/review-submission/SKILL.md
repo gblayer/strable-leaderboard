@@ -31,7 +31,7 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 - Default configuration: no search over hyperparameters (`GridSearchCV`, `RandomizedSearchCV`, optuna, loops over settings, built-in CV searches such as `RidgeCV`). The paper's Ridge baseline is the only exception. The smoke test's regular expressions are only a hint: read the code.
 - **No own split or cross-validation**: no `train_test_split`, `KFold`, `StratifiedKFold`, `ShuffleSplit`, `cross_val_score`, `cross_validate`, and no package option that holds out its own validation set (`validation_fraction`, `early_stopping=True` with an internal split, `eval_set` built from a split of its own). Early stopping only through `self.validation_split(y)`. The outer folds come from the runner; the model never reads `splits/`.
 - **No seed override**: every seed is `self.seed`; no literal `random_state=0`, `seed=42`, `np.random.seed(...)`, `torch.manual_seed(...)` with a number.
-- No use of the test rows; `predict_proba` returns one column per class in the order of `self.classes_`; device and n_jobs are passed through.
+- No use of the test rows; `predict_proba` returns one column per class in the order of `self.classes_`; device and n_jobs are passed through (or `n_jobs` left to the package's default when the package misreads it: the runner caps threads anyway).
 
 **Safety**
 - No network in `fit` or `predict`: no `requests`, `urllib`, `socket`, `http`, no downloads through `huggingface_hub` or `torch.hub`. Weights come from `self.weights_dir`. (Runs are sandboxed without network, but a model that needs it would fail.)

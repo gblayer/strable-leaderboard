@@ -60,7 +60,7 @@ The contract is the interface every model implements, so that the runner can tra
 - `predict(X)` returns values or labels. `predict_proba(X)` returns one column per class, in the order of `self.classes_`.
 - **No folds of your own.** Never split, cross-validate or search hyperparameters: no `train_test_split`, `KFold`, `GridSearchCV` or internal validation split of your own. Early stopping may only use `fit_idx, val_idx = self.validation_split(y)`, the paper's first inner fold (inner 8-fold, seed 1234). Turn off a package's own validation split (for example `early_stopping=False`, or pass the protocol's split as its validation set).
 - **No seed of your own.** Pass `self.seed` (1234) wherever a seed goes; never a number.
-- `self.device` and `self.n_jobs` are given. Weights load from `self.weights_dir`: there is no network during a run.
+- `self.device` and `self.n_jobs` are given, and the runner already caps BLAS, OpenMP and torch threads to `self.n_jobs`. Pass `self.n_jobs` to the package, unless the package misreads it (tabicl 2.0.3 uses max(all cores, `n_jobs`) threads): then leave its default. Weights load from `self.weights_dir`: there is no network during a run.
 - Default configuration. Never read the tables, the split files or the test rows yourself.
 
 ## The model card
