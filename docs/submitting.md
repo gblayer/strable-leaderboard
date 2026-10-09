@@ -8,9 +8,11 @@ You submit code, we run it. One pull request adds one folder, `models/<name>/`:
 | `model.yaml` | The model card, below. Every field filled |
 | `requirements.txt` | The packages the model imports, at exact versions: `tabpfn==6.0.6` |
 
-No container and no environment of your own: every model runs in **one shared Python environment**, the paper's, pinned in [`env/requirements.txt`](../env/requirements.txt) (torch 2.9.1, scikit-learn 1.7.2, skrub 0.6.2, tabpfn 6.0.6, tabicl 2.0.3, sentence-transformers 5.2.3, xgboost 3.1.1, catboost 1.2.8, ...). Each pin in your `requirements.txt` must equal the shared environment's version. If your model needs a package or a version that is not there, change `env/requirements.in` and `env/requirements.txt` in the same pull request and say why: the maintainer decides, since the change applies to every model.
+No container and no environment of your own: every model runs in **one shared Python environment**, the paper's, pinned in [`env/requirements.txt`](../env/requirements.txt) (torch 2.9.1, scikit-learn 1.7.2, skrub 0.6.2, tabpfn 6.0.6, tabicl 2.0.3, sentence-transformers 5.2.3, xgboost 3.1.1, catboost 1.2.8, ...). Each pin in your `requirements.txt` must equal the shared environment's version. If your model needs a package that is not there, ADD one line `name==version` to [`env/requirements.in`](../env/requirements.in) in the same pull request and say why; edit nothing else in `env/`. Never change an existing pin: Checks fails on it. The pull request then waits for the maintainer, who relocks the environment with `scripts/lock_env.sh` (the paper's full environment, `env/paper-freeze.txt`, as constraints). A model that needs another version of a package already there cannot come through a pull request: open an issue.
 
 `models/_template/` is the starting point, `models/ridge/` a complete example.
+
+**Folder names.** One folder per model version, named with lowercase letters, digits, dots and hyphens (`kumo-tabular-1.0`); the version itself lives in `model.yaml`. These names are reserved for the learners of the paper, which the maintainer adds: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`.
 
 ## How a submission travels
 
@@ -41,16 +43,17 @@ You need a GitHub account. You cannot push to this repository, so you work on yo
 
 1. **Fork.** On https://github.com/gblayer/strable-leaderboard, click *Fork*. GitHub makes a copy of the repository under your account, `github.com/<you>/strable-leaderboard`, which you can push to.
 2. **Clone your fork** to your machine: `git clone https://github.com/<you>/strable-leaderboard && cd strable-leaderboard`, then `git checkout -b add-<name>`.
-3. **Add the folder.** `cp -r models/_template models/<name>` and fill the three files. The folder name carries the version: `tabpfn-2.5`. Or tell your coding agent *"Add my model to the STRABLE leaderboard, test it, and open a pull request."*: it follows [`.claude/skills/add-model/SKILL.md`](../.claude/skills/add-model/SKILL.md), fills every card field from the model's package, documentation and paper, and runs the smoke test.
+3. **Add the folder.** `cp -r models/_template models/<name>` and fill the three files: one folder per model version, not a reserved name (above). Or tell your coding agent *"Add my model to the STRABLE leaderboard, test it, and open a pull request."*: it follows [`.claude/skills/add-model/SKILL.md`](../.claude/skills/add-model/SKILL.md), fills every card field from the model's package, documentation and paper, and runs the smoke test.
 4. **Test** in the shared environment's versions:
    ```
    pip install -c env/requirements.txt -e ".[smoke]" -r models/<name>/requirements.txt
    python -m strable_leaderboard.smoke models/<name>
    ```
-   It fails on any missing or invalid card field, on a pin that differs from the shared environment, on code that makes its own folds or fixes its own seed, and on wrong prediction shapes. Fix every FAIL line. A GPU model on a machine without a GPU: run `--static`, and say so in the pull request; we run its smoke test on our GPU.
-5. **Push and open the pull request.** `git push -u origin add-<name>`, then on GitHub open a pull request from your fork's branch to `gblayer/strable-leaderboard`, `main`, titled `Add <Name> <version>`, with the template filled and the smoke test output pasted. Only `models/<name>/` may change.
+   It fails on any missing or invalid card field, on a pin that differs from the shared environment, on wrong prediction shapes, and on code that a regular-expression hint flags as making its own folds or fixing its own seed (a hint only: the Claude review is the real check). Fix every FAIL line. A GPU model runs on CPU too if its package allows it (`--device cpu`, which Checks also tries); if not, run `--static` and say so in the pull request: we run its smoke test on our GPU.
+   Python 3.12 or later.
+5. **Push and open the pull request.** `git push -u origin add-<name>`, then on GitHub open a pull request from your fork's branch to `gblayer/strable-leaderboard`, `main`, titled `Add <Name> <version>`, with the template filled and the smoke test output pasted. Only `models/<name>/` may change, plus added lines in `env/requirements.in`.
 
-What happens next is automatic. GitHub runs the Checks; Claude reviews the pull request twice. If both reviews say MERGE, the Checks pass and the diff is exactly your new folder, the pull request merges by itself; otherwise the maintainer is asked to look. After the merge our runner smoke-tests the model on the reference hardware, runs all 108 tables and opens the results pull request, and the board updates. If anything fails, the maintainer is told on your pull request. See [automation.md](automation.md).
+What happens next is automatic. GitHub runs the Checks; Claude reviews the pull request twice. If both reviews say MERGE, the Checks pass and the diff is exactly your new folder, the pull request merges by itself; otherwise, for example when it adds a package, the maintainer is asked to look. After the merge our runner smoke-tests the model on the reference hardware, runs all 108 tables and opens the results pull request, and the board updates. If anything fails, the maintainer is told on your pull request. See [automation.md](automation.md).
 
 ## The model contract
 
@@ -114,7 +117,7 @@ There is no family field. Whether a model is a tree ensemble or a foundation mod
 
 ## Versions
 
-Each version is its own folder and its own row, forever: `models/tabpfn-2.5/`, `models/tabpfn-3/`, `models/tabpfn-3.5/`. Each pins its own checkpoint hash, so a new release never changes an older row. If a new checkpoint loads with the same package, the new folder can copy `model.py` and change only `model.yaml`. The runner computes only what is missing. A change to a folder that is already on `main` is never merged automatically.
+Each model version is its own folder and its own row, forever: `models/tabpfn-3/` and `models/tabpfn-3.5/`, each with its `version` in `model.yaml`. Each pins its own checkpoint hash, so a new release never changes an older row. If a new checkpoint loads with the same package, the new folder can copy `model.py` and change only `model.yaml`. The runner computes only what is missing. A change to a folder that is already on `main` is never merged automatically.
 
 A version whose package is incompatible with the shared environment (TabPFN-3.5 needs tabpfn 9, the environment has tabpfn 6.0.6) cannot enter through a normal pull request: it needs an environment change, which the maintainer decides.
 
@@ -139,7 +142,7 @@ Closed and anonymous are the same case; anonymous also hides the name. Neither f
 1. `cp -r models/_template models/kumo-tabular-1.0`
 2. `model.py`: `handles_strings = False`; `fit` builds `sdm.models.KumoTabular` on `self.device` and stores the context; `predict_proba` returns the class probabilities in the order of `self.classes_`.
 3. `model.yaml`: `access: open`, `hardware: gpu`, `package: structured-data-models==<version>`, `checkpoint: {repo: nvidia/Kumo-Tabular, revision: <commit hash>}`, `licence: OpenMDW-1.1 weights, Apache-2.0 code`.
-4. `structured-data-models` is not in the shared environment: the pull request also adds it to `env/requirements.in` and `env/requirements.txt`, and the maintainer reviews that.
+4. `structured-data-models` is not in the shared environment: the pull request also adds the line `structured-data-models==<version>` to `env/requirements.in`, and the maintainer relocks.
 5. Smoke test on a GPU machine, then the pull request `Add Kumo Tabular 1.0`.
 
 **Open, end-to-end: a model that reads strings itself.** Same steps with `handles_strings = True`; `fit` receives the raw DataFrame with its string, numeric and datetime columns. The board shows one row with an end-to-end tag.

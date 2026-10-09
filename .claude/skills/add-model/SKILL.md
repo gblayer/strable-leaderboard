@@ -17,7 +17,7 @@ Fill the card without asking the user, from the model's sources, in this order: 
 
 | Card field | Where it comes from |
 |---|---|
-| `name`, `version` | The model's own name and release. One folder per version: `tabpfn-3.5`, not `tabpfn` |
+| `name`, `version` | The model's own name and release. One folder per model version; the version lives here |
 | `handles_strings` | Does `fit` accept raw string columns? Check the docs or try it. Yes: `true` (end-to-end). No: `false` |
 | `tasks` | Regression, binary, multiclass: what the package supports |
 | `variant` | Always `default` |
@@ -33,14 +33,14 @@ Never leave a template value (`My Model`, `my-model==1.0.0`, `0123456789abcdef`,
 
 ## 2. Folder
 
-`cp -r models/_template models/<name>`. Lowercase letters, digits, dots and hyphens.
+`cp -r models/_template models/<name>`: lowercase letters, digits, dots and hyphens, one folder per model version. Never one of the names reserved for the paper's learners: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`; the gate refuses them.
 
 ## 3. `model.py`
 
 `class Model(StrableModel)`:
 - Set `handles_strings`.
 - `fit(X, y)`: the default configuration; pass `self.seed`, `self.device`, `self.n_jobs`; for classification set `self.classes_ = np.unique(y)`.
-- **No folds of your own**: never `train_test_split`, `KFold`, `cross_val_score`, `GridSearchCV` or a package option that holds out its own validation set. Early stopping only through `fit_idx, val_idx = self.validation_split(y)`, the paper's first inner fold. If the package splits internally by default, turn that off or pass the protocol's split.
+- **No folds or search of your own** (`models/ridge` keeps RidgeCV's alpha search: the paper's baseline, the only exception): never `train_test_split`, `KFold`, `cross_val_score`, `GridSearchCV` or a package option that holds out its own validation set. Early stopping only through `fit_idx, val_idx = self.validation_split(y)`, the paper's first inner fold. If the package splits internally by default, turn that off or pass the protocol's split.
 - **No seed of your own**: `random_state=self.seed` (1234), never a number; no `np.random.seed(0)` or `torch.manual_seed(0)`.
 - `predict(X)`: values or labels. `predict_proba(X)`: shape `(n_rows, n_classes)` in the order of `self.classes_`, rows summing to 1.
 - Weights load from `self.weights_dir`. No downloads in `fit` or `predict`: the runner runs the model without network. Point the package's cache setting at `self.weights_dir` if it downloads on first use.
@@ -51,17 +51,19 @@ Never leave a template value (`My Model`, `my-model==1.0.0`, `0123456789abcdef`,
 
 ## 4. `requirements.txt`: the shared environment
 
-Every model runs in one shared environment, `env/requirements.txt` (the paper's versions). List the packages `model.py` imports, each as `name==version` with exactly the version in `env/requirements.txt`; not `strable-leaderboard` itself. If the model needs a package that is missing or another version, say so to the user: the pull request must then also change `env/requirements.in` and `env/requirements.txt`, and it will wait for the maintainer instead of merging automatically.
+Every model runs in one shared environment, `env/requirements.txt` (the paper's versions). List the packages `model.py` imports, each as `name==version` with exactly the version in `env/requirements.txt`; not `strable-leaderboard` itself. If the model needs a package that is missing, ADD one line `name==version` for it to `env/requirements.in` and touch nothing else in `env/`; never change an existing pin, Checks fails on it. Tell the user that the pull request will then wait for the maintainer, who relocks the environment. If it needs another version of a package already there, stop and tell the user to open an issue.
 
 ## 5. Smoke test
 
+Python 3.12 or later:
+
 ```
 pip install -c env/requirements.txt -e ".[smoke]" -r models/<name>/requirements.txt
-python -m strable_leaderboard.smoke models/<name>
+python -m strable_leaderboard.smoke models/<name> --device cpu
 ```
 
-It checks the card, the pins and the code, then runs three small tables. Fix every FAIL line and run it again until it passes. A GPU model on a machine without a GPU: `--device cuda` is impossible, so run `python -m strable_leaderboard.smoke models/<name> --static` and say in the pull request that the full smoke test needs a GPU; the maintainers run it on theirs after the merge.
+It checks the card, the pins and the code, then runs three small tables. Its search for own folds and seeds is a regular-expression hint; the review is the real check, so follow step 3 whatever it says. Fix every FAIL line and run it again until it passes. A GPU model whose package cannot run on CPU: run `--static` and say in the pull request that the full smoke test needs a GPU; the maintainers run it on theirs after the merge.
 
 ## 6. Pull request
 
-Push `add-<name>` to the fork and open the pull request against `gblayer/strable-leaderboard`, `main`: title `Add <Name> <version>`, only `models/<name>/` in the diff (or also `env/` when step 4 required it), `.github/pull_request_template.md` filled, the smoke test output pasted. Then tell the user what happens next: Checks and two Claude reviews; if all pass it merges by itself and the maintainers run the full benchmark; otherwise the maintainer looks at it.
+Push `add-<name>` to the fork and open the pull request against `gblayer/strable-leaderboard`, `main`: title `Add <Name> <version>`, only `models/<name>/` in the diff (plus the added lines of `env/requirements.in` when step 4 required them), `.github/pull_request_template.md` filled, the smoke test output pasted. Then tell the user what happens next: Checks and two Claude reviews; if all pass it merges by itself and the maintainers run the full benchmark; otherwise the maintainer looks at it.

@@ -8,9 +8,9 @@
 
 ## Checklist
 
-- [ ] Only `models/<name>/` changes (opened from a fork, branch `add-<name>`)
+- [ ] Only `models/<name>/` changes (opened from a fork, branch `add-<name>`), plus at most added lines in `env/requirements.in`
 - [ ] Every field of `model.yaml` is filled, and the checkpoint revision is a full commit hash
-- [ ] `requirements.txt` pins each package with `==` at the version of `env/requirements.txt`, the shared environment
+- [ ] `requirements.txt` pins each package with `==` at the version of `env/requirements.txt`, the shared environment; a missing package is added as one line to `env/requirements.in`, no existing pin changed
 - [ ] Default configuration, with no hyperparameter search
 - [ ] No split or cross-validation of its own: early stopping only through `self.validation_split(y)`; every seed is `self.seed`
 - [ ] No network access in `fit` or `predict`: weights load from `self.weights_dir`

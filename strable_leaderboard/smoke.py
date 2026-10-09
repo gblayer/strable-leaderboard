@@ -6,10 +6,11 @@
 
 It fails on any missing or invalid model card field (``strable_leaderboard.card``), on a pin
 that the shared environment does not satisfy (``strable_leaderboard.check_requirements``) and
-on code that makes its own folds or fixes its own seed. Then it loads ``Model`` from
-``model.py``, encodes strings with Tf-Idf when the model needs numbers, and checks the shapes
-and ranges of the predictions. It does not measure leaderboard scores: the full run happens on
-the cluster.
+on code that ``FORBIDDEN`` flags as making its own folds or fixing its own seed: a
+regular-expression hint, easy to get around; the Claude review is the real check. Then it loads
+``Model`` from ``model.py``, encodes strings with Tf-Idf when the model needs numbers, and checks
+the shapes and ranges of the predictions. It does not measure leaderboard scores: the full run
+happens on the cluster.
 """
 
 from __future__ import annotations
@@ -35,8 +36,8 @@ SMOKE_TABLES = {
     "binary": "animalandveterinary-event",  # 1,345 rows
     "multiclass": "drug-ndc",  # 583 rows, 4 classes
 }
-# Models never make their own folds or seeds: the runner gives the outer fold, the seed is
-# self.seed, and early stopping uses self.validation_split(y).
+# A hint, not a guarantee: models never make their own folds or seeds (the runner gives the outer
+# fold, the seed is self.seed, early stopping uses self.validation_split(y)), and the review checks it.
 FORBIDDEN = {
     r"\b(train_test_split|(Repeated)?(Stratified)?(Group)?K[Ff]old|(Stratified)?ShuffleSplit|LeaveOneOut|"
     r"PredefinedSplit|TimeSeriesSplit|cross_val_(score|predict)|cross_validate)\b":

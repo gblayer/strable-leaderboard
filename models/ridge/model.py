@@ -19,6 +19,7 @@ class Model(StrableModel):
     handles_strings = False
 
     def fit(self, X, y):
+        # RidgeCV's internal alpha search is the paper's baseline: the only allowed exception to "no search".
         estimator = RidgeCV(alphas=ALPHAS) if self.task == "regression" else RidgeClassifierCV(alphas=ALPHAS)
         self.pipeline_ = make_pipeline(SimpleImputer(strategy="mean", keep_empty_features=True), estimator)
         self.pipeline_.fit(X, y)

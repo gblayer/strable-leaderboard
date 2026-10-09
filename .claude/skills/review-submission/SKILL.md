@@ -12,7 +12,7 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 ## A. A model folder, `models/<name>/`
 
 **Scope**
-- Only files under one new `models/<name>/` folder change; nothing in `strable_leaderboard/`, `scripts/`, `splits/`, `env/`, `.github/`, `.claude/` or other models. A change to `env/` is an environment change: recommend FIX or say the maintainer must decide.
+- Only files under one new `models/<name>/` folder change, plus at most added lines in `env/requirements.in`; nothing in `strable_leaderboard/`, `scripts/`, `splits/`, `.github/`, `.claude/`, other models or other `env/` files. The folder is not named after a learner of the paper (`docs/submitting.md`, "Folder names").
 - The folder has `model.py`, `model.yaml` and `requirements.txt`.
 
 **Card: complete**
@@ -23,11 +23,11 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 
 **Pins: the shared environment**
 - `requirements.txt` holds only `name==version` lines, each equal to the version in `env/requirements.txt` (the shared environment every model runs in). No ranges, URLs, local paths or archives, no `strable-leaderboard` itself.
-- A package not in the shared environment, or another version: FIX, unless the pull request also proposes the change to `env/requirements.in` and `env/requirements.txt`, which the maintainer decides.
+- A package not in the shared environment: fine when the pull request adds exactly that pin to `env/requirements.in` (the maintainer relocks; say so). Another version of a package already there, or any changed or removed pin in `env/`: FIX.
 
 **Protocol**
 - `class Model(StrableModel)`, with `handles_strings` matching the card.
-- Default configuration: no search over hyperparameters (`GridSearchCV`, `RandomizedSearchCV`, optuna, loops over settings).
+- Default configuration: no search over hyperparameters (`GridSearchCV`, `RandomizedSearchCV`, optuna, loops over settings, built-in CV searches such as `RidgeCV`). The paper's Ridge baseline is the only exception. The smoke test's regular expressions are only a hint: read the code.
 - **No own split or cross-validation**: no `train_test_split`, `KFold`, `StratifiedKFold`, `ShuffleSplit`, `cross_val_score`, `cross_validate`, and no package option that holds out its own validation set (`validation_fraction`, `early_stopping=True` with an internal split, `eval_set` built from a split of its own). Early stopping only through `self.validation_split(y)`. The outer folds come from the runner; the model never reads `splits/`.
 - **No seed override**: every seed is `self.seed`; no literal `random_state=0`, `seed=42`, `np.random.seed(...)`, `torch.manual_seed(...)` with a number.
 - No use of the test rows; `predict_proba` returns one column per class in the order of `self.classes_`; device and n_jobs are passed through.

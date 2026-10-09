@@ -2,7 +2,7 @@
 # the smoke test fails until each one is replaced by this model's own. The board derives its tags from it.
 
 name: My Model                  # shown on the board
-version: "1.0"                  # one folder per version: models/my-model-1.0
+version: "1.0"                  # one folder per model version; the version lives here
 handles_strings: false          # false: paired with the three string encoders. true: end-to-end
 tasks: [regression, binary, multiclass]
 variant: default                # default now; tuned and tuned-ensembled later, one folder each
