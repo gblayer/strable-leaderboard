@@ -178,6 +178,7 @@ section { scroll-margin-top: 76px; }
 
 /* ---------- board ---------- */
 .board-head { margin-bottom: 18px; }
+.board-sub { margin: 0 0 12px; font-size: 14.5px; color: var(--ink-3); }
 .controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
 .ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-radius: 999px; }
 .board { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -412,6 +413,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
   <section id="board" aria-labelledby="board-title">
     <h2 class="sr-only" id="board-title">Leaderboard</h2>
     <div class="board-head">
+      <p class="board-sub" id="board-sub">Median over 108 tables × 3 folds (R² for regression, AUC for classification) · run time per 1K samples, log scale</p>
       <div class="controls">
         <div class="ctl" id="ctl-task">
           <span class="cap" id="task-lbl">Task</span>
@@ -562,10 +564,12 @@ let DATA = [], HISTORY = [], VERSION = '', BUILT = '', LOADED = false;  // HISTO
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model';  // the README heading "Submit a model"
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
+const TIME_SUB = ' · run time per 1K samples, log scale';
 const TASKS = {
-  both: { metric: 'Score', colSub: 'R² & AUC, median', axis: 'Median score (R² & AUC)' },
-  reg: { metric: 'R²', colSub: 'median', axis: 'Median R²' },
-  clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC' }
+  both: { metric: 'Score', colSub: 'R² & AUC, median', axis: 'Median score (R² & AUC)',
+    sub: 'Median over ' + N_ALL + ' tables × 3 folds (R² for regression, AUC for classification)' + TIME_SUB },
+  reg: { metric: 'R²', colSub: 'median', axis: 'Median R²', sub: 'Median R² over ' + N_REG + ' tables × 3 folds' + TIME_SUB },
+  clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC', sub: 'Median AUC over ' + N_CLF + ' tables × 3 folds' + TIME_SUB }
 };
 const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
 const state = { task: 'both', sort: 'pareto', hot: null };
@@ -807,6 +811,7 @@ function renderTicker(list, front) {
 }
 
 function render() {
+  $('board-sub').textContent = TASKS[state.task].sub;
   const list = items(state.task);
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
