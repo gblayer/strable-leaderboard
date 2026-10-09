@@ -23,7 +23,7 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 
 ## Design
 
-`site/index.html` is the current design, built from a preview whose numbers are placeholders. The **Demo** button walks through the board.
+`site/index.html` is the page; every number on it comes from `results.json`. The **Demo** button walks through the board.
 
 **Palette:** the Pantone set. Light theme on Mother of Pearl, dark theme on Mystic Navy. Greens stay close to Pine Grove.
 
@@ -35,7 +35,7 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 | Second accent, suggestion panel | `#223631` | `#91ACA5` | Pine Grove 19-5406 TCX |
 | Pareto marks | `#8E2A33` | `#D0646E` | Red Inferno tints |
 
-**Type:** Balimo for headlines and text, a paid licence of about $24; the preview uses Outfit, a free look-alike. IBM Plex Mono for numbers and code.
+**Type:** Balimo for headlines and text, a paid licence of about $24; the page uses Outfit, a free look-alike. IBM Plex Mono for numbers and code.
 
 **Header:** STRABLE, then STRing-tABLE, /ˈstreɪ.bəl/ and *stray-buhl*. At the top: the version chip, the Version history link, the build date and the Refresh button, which re-reads `results.json` without reloading the page. Navigation: Datasets, Benchmark code, Paper, the Submit a pipeline button to the README's submission steps (`#submit-a-model`), and a Cite button that opens the paper's BibTeX in a dialog with a Copy button. One line: accepted to the NeurIPS 2026 Evaluation and Datasets track, and the board does not list the paper's ~445 pipelines. The art is a spreadsheet with a string column dropping into a table and a selected cell holding "str".
 
@@ -43,14 +43,14 @@ The [Impermanent leaderboard](https://impermanent.timecopilot.dev/) loads fast f
 
 **Controls:** Task (Both, Regression · R², Classification · AUC) and Sort (★ Pareto, Score, Time). No filters and no key: the paper defines the numbers, tags on the rows carry the rest.
 
-**Table:** rank, pipeline, score (median R² & AUC), time (total run time per 1K samples), at a fixed height with its own scrollbar, so every pipeline is always in it. Tags for end-to-end, tuned, anonymous, closed, paper and incomplete rows; the incomplete tag carries no counts. A star marks the rows on the Pareto Front, the others are grouped as "Not on the Pareto Front", and one red frame surrounds the top three rows of the current order.
+**Table:** rank, pipeline, score (median R² & AUC), time (total run time per 1K samples), at a fixed height with its own scrollbar, so every pipeline is always in it. Tags for end-to-end, tuned, anonymous, closed, paper and incomplete rows; the incomplete tag carries no counts, and the paper tag's tooltip says that paper rows were timed by the paper's code on mixed hardware, so time comparisons with runner rows are approximate. A star marks the rows on the Pareto Front, the others are grouped as "Not on the Pareto Front", and one red frame surrounds the top three rows of the current order.
 
 **Plot:** as in the paper's Figure 4a, y "Median score (R² & AUC)" (or "Median R²", "Median AUC"), x "Total run time per 1K samples (s), log scale", a "Better" arrow towards the top-left corner, the front as a staircase from the x axis to the right edge, labels on the front, a ring around the top three.
 
 **Using the leaderboard in your paper:** downloads of the current view (Task and Sort), named `strable-leaderboard_<version>_<date>_<view>.<ext>`. The plot as SVG, PNG, JPEG (from the SVG on a canvas) or PDF (jsPDF with svg2pdf.js), in the light palette on white with a line giving the version and date. The ranking as CSV, JSON or XLSX (SheetJS): rank, pipeline, variant, tags, median score, median time, on the Pareto Front, with the version, date, view, column definitions and the citation. `results.parquet` holds all three views at once. The three libraries load from cdnjs or jsdelivr, pinned with SRI hashes, only when their button is clicked.
 
-**Version history**, then a low **suggestion panel** on Pine Grove: a free-text box and an optional email, posted to a Tally form, with a link to open a GitHub issue instead. No footer.
+**Version history**, then a low **suggestion panel** on Pine Grove: one line and a button that opens the repository's new-issue chooser on GitHub. No footer.
 
 **Demo:** a button in the navigation, nine steps that show where things are: the two controls, the table, the plot, Refresh, the version history, the downloads, Cite, and how to add a model. The theme follows the system (or `#dark` / `#light` in the address).
 
-**Data:** the page reads `results.json` next to it when it opens and when Refresh is clicked; `scripts/build_site_data.py` writes it together with `results.parquet`. Until that file exists it shows placeholder rows and says so under the table.
+**Data:** the page reads `results.json` next to it when it opens and when Refresh is clicked; `scripts/build_site_data.py` writes it together with `results.parquet`. Until it has loaded, the board and the version chip are empty; if it cannot be read, a short message under the table says so and the downloads stay off.

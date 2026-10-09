@@ -6,7 +6,7 @@
 <!-- Visit counter: create a free account at https://www.goatcounter.com with the code "strable",
      then remove the comment marks around the next line. No cookies, no banner needed. -->
 <!-- <script data-goatcounter="https://strable.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script> -->
-<title>STRABLE Leaderboard Preview</title>
+<title>STRABLE Leaderboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300..800&display=swap">
@@ -35,7 +35,7 @@
   --mark: #8E2A33; --mark-muted: #AC9C90;
   --hdr: #223631; --hdr-ink: #F3E6DA;
   /* Pine Grove panel: the same in both themes */
-  --pine: #223631; --pine-line: #4F6B63; --pine-edge: #6F8A82; --pine-ink: #F3E6DA; --pine-ink-2: #C3CDC7; --pine-field: #1A2A26; --pine-hint: #9FB0A8;
+  --pine: #223631; --pine-line: #4F6B63; --pine-ink: #F3E6DA; --pine-ink-2: #C3CDC7;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -116,6 +116,7 @@ section { scroll-margin-top: 76px; }
 .eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0; color: var(--accent-2); }
 .updated { font: 500 13px/1 var(--f-mono); color: var(--ink-3); }
 .ver { font: 600 12.5px/1 var(--f-mono); color: var(--accent-ink); background: var(--accent); padding: 6px 9px; border-radius: 999px; }
+.ver:empty { display: none; }
 .ver-link { font-size: 14px; color: var(--ink-2); text-underline-offset: 3px; }
 .ver-link:hover { color: var(--ink); }
 .hero h1 {
@@ -268,21 +269,11 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 .ask .label { color: var(--pine-ink-2); margin: 0; }
 .ask h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(24px, 2.6vw, 32px); letter-spacing: -0.02em; line-height: 1.1; margin: 10px 0 0; text-wrap: balance; }
 .ask > div > p { margin: 0; color: var(--pine-ink-2); max-width: 30em; }
-.ask .cap { color: var(--pine-ink-2); }
 .ask :focus-visible { outline-color: var(--pine-ink); }
-.ask .input { background: var(--pine-field); color: var(--pine-ink); border-color: var(--pine-edge); }
-.ask .input::placeholder { color: var(--pine-hint); opacity: 1; }
 .ask .btn { background: var(--pine-ink); color: var(--pine); border-color: var(--pine-ink); }
-.ask .form-msg { color: var(--pine-ink); }
-.ask .fine { color: var(--pine-ink-2); }
-.ask .fine a { color: var(--pine-ink); text-underline-offset: 3px; }
-.form { display: grid; gap: 10px; align-content: start; min-width: 0; }
-.field { display: grid; gap: 6px; min-width: 0; }
-.input { font: 15px var(--f-mono); padding: 12px 14px; border: 1.5px solid var(--ink-3); background: var(--bg); color: var(--ink); border-radius: 12px; width: 100%; min-height: 46px; }
-textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-family: var(--f-body); font-size: 16px; }
+.ask-go { display: grid; gap: 14px; align-content: center; justify-items: start; min-width: 0; }
 .form-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
 .form-msg { font: 500 13px/1.4 var(--f-mono); margin: 0; min-height: 1.4em; }
-.fine { font-size: 13px; margin: 0; }
 
 /* ---------- cite dialog ---------- */
 .modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--ink) 45%, transparent); }
@@ -339,7 +330,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 
   <section class="hero" aria-labelledby="hero-title">
     <div>
-      <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip">v0.1.1</span><a class="ver-link" href="#history">Version history</a><span class="updated" id="updated"></span><button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button></p>
+      <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip"></span><a class="ver-link" href="#history">Version history</a><span class="updated" id="updated"></span><button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button></p>
       <h1 id="hero-title">STRABLE</h1>
       <p class="expand"><span class="xp"><b>STR</b>ing-t<b>ABLE</b></span><span class="ipa">/ˈstreɪ.bəl/</span><span class="say">stray-buhl</span></p>
       <p class="lede">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. New models come out all the time, so the board does not list all ~445 pipelines from <a href="https://arxiv.org/abs/2605.12292">the paper</a>.</p>
@@ -347,7 +338,7 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
         <li><b>108</b> tables</li>
         <li><b>76</b> regression</li>
         <li><b>32</b> classification</li>
-        <li><b id="stat-n">0</b> pipelines</li>
+        <li><b id="stat-n">–</b> pipelines</li>
       </ul>
     </div>
     <div class="art-wrap">
@@ -454,8 +445,8 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
             <tbody id="rows"></tbody>
           </table>
         </div>
-        <div class="tbl-foot" id="tbl-foot">
-          <p class="note">Placeholder numbers: the pipeline names come from the paper, the scores and times do not.</p>
+        <div class="tbl-foot" id="tbl-foot" hidden>
+          <p class="note" role="status">Could not load the results. Try ↻ Refresh, or reload the page later.</p>
         </div>
       </div>
 
@@ -515,21 +506,10 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
       <p class="label">Help us improve STRABLE</p>
       <h2 id="ideas-title">Which feature would you like to see on STRABLE?</h2>
     </div>
-    <form class="form" id="ideas-form" novalidate>
-      <div class="field">
-        <label class="cap" for="ideas-text">Your suggestion</label>
-        <textarea class="input" id="ideas-text" name="text" rows="2" placeholder="For example: show results for tables that are mostly free text"></textarea>
-      </div>
-      <div class="field">
-        <label class="cap" for="ideas-email">Your email, optional</label>
-        <input class="input" id="ideas-email" name="email" type="email" autocomplete="off" placeholder="Only if you would like a reply">
-      </div>
-      <div class="form-row">
-        <button class="btn" type="submit">Send suggestion</button>
-        <p class="form-msg" id="ideas-msg" role="status"></p>
-      </div>
-      <p class="fine">Suggestions go to gioia.blayer@inria.fr. Prefer GitHub? <a href="https://github.com/gblayer/strable-leaderboard/issues/new/choose">Open an issue</a>.</p>
-    </form>
+    <div class="ask-go">
+      <p>Tell us in a GitHub issue: a feature, a bug, or a question about the board.</p>
+      <a class="btn" href="https://github.com/gblayer/strable-leaderboard/issues/new/choose">Open an issue</a>
+    </div>
   </section>
 
 </div>
@@ -572,29 +552,12 @@ textarea.input { resize: vertical; min-height: 72px; line-height: 1.45; font-fam
 </div>
 
 <script>
-/* Placeholder pipelines. Per task: [score, total run time in seconds per 1K samples].
-   kind: "modular" or "e2e" (reads raw strings itself). hw: "GPU" or "CPU", shown in the tooltip.
-   Optional flags: anon (codename, name never revealed), closed (named, weights not public).
-   The real site loads records from results.json, see refresh(): per task (both, reg, clf)
-   [median score, median total s per 1K samples, fold rows, fold rows expected], plus variant
-   ("default" or "tuned") and paper (imported from the paper). */
-let DATA = [
-  { id: 'te-ridge', enc: 'TargetEncoder', lrn: 'Ridge', kind: 'modular', hw: 'CPU', reg: [0.612, 0.07], clf: [0.842, 0.06] },
-  { id: 'te-et', enc: 'TargetEncoder', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.684, 0.19], clf: [0.871, 0.17] },
-  { id: 'tfidf-et', enc: 'Tf-Idf', lrn: 'ExtraTrees', kind: 'modular', hw: 'CPU', reg: [0.697, 1.05], clf: [0.879, 0.93] },
-  { id: 'tfidf-xgb', enc: 'Tf-Idf', lrn: 'XGBoost', kind: 'modular', hw: 'CPU', reg: [0.689, 3.75], clf: [0.883, 3.34] },
-  { id: 'tfidf-tabicl', enc: 'Tf-Idf', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.733, 4.6], clf: [0.902, 4.16] },
-  { id: 'tfidf+tabpfn-2.5', enc: 'Tf-Idf', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.744, 9.95], clf: [0.906, 8.8] },
-  { id: 'minilm-tabicl', enc: 'MiniLM-L6-v2', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.722, 7.3], clf: [0.893, 6.6] },
-  { id: 'minilm-tabpfn', enc: 'MiniLM-L6-v2', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.733, 12.7], clf: [0.897, 11.3] },
-  { id: 'llama-tabicl', enc: 'LLaMA-3.1-8B', lrn: 'TabICLv2', kind: 'modular', hw: 'GPU', reg: [0.736, 295], clf: [0.892, 264] },
-  { id: 'llama-tabpfn', enc: 'LLaMA-3.1-8B', lrn: 'TabPFN-2.5', kind: 'modular', hw: 'GPU', reg: [0.741, 301], clf: [0.895, 269] },
-  { id: 'contexttab', enc: '', lrn: 'ConTextTab', kind: 'e2e', hw: 'GPU', reg: [0.722, 24.6], clf: [0.884, 21.6] },
-  { id: 'tabstar', enc: '', lrn: 'TabSTAR', kind: 'e2e', hw: 'GPU', reg: [0.668, 48.8], clf: [0.873, 44.5] },
-  { id: 'catboost', enc: '', lrn: 'CatBoost', kind: 'e2e', hw: 'CPU', reg: [0.671, 9.75], clf: [0.868, 8.82] }
-];
-let VERSION = 'v0.1.1', BUILT = '2026-10-01', PLACEHOLDER = true;
-let HISTORY = [];  // only real entries, from results.json (results/versions.yaml)
+/* Pipelines from results.json, see loadResults(). Per task (both, reg, clf): [median score, median
+   total s per 1K samples, fold rows, fold rows expected] or null. kind: "modular" or "e2e" (reads raw
+   strings itself), variant: "default" or "tuned", hw: what it ran on, shown in the tooltip.
+   Optional flags: paper (imported from the paper), anon (codename, name never revealed), closed
+   (named, weights not public). Empty until the file has loaded. */
+let DATA = [], HISTORY = [], VERSION = '', BUILT = '', LOADED = false;  // HISTORY: results/versions.yaml
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model';  // the README heading "Submit a model"
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
@@ -619,9 +582,7 @@ const num = (v) => (v == null || Number.isNaN(v) ? NaN : v);
 function items(task) {
   const rows = [];
   for (const d of DATA) {
-    let v = d[task];
-    // placeholders only: results.json always has its own "both" medians
-    if (PLACEHOLDER && task === 'both' && !v && d.reg && d.clf) v = [(N_REG * d.reg[0] + N_CLF * d.clf[0]) / N_ALL, (N_REG * d.reg[1] + N_CLF * d.clf[1]) / N_ALL];
+    const v = d[task];
     if (!v) continue;
     rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, anon: !!d.anon, closed: !!d.closed, hw: d.hw,
       tuned: d.variant === 'tuned', paper: !!d.paper, incomplete: v.length > 3 && v[2] < v[3],
@@ -642,12 +603,15 @@ function ordered(list, sort, front) {
   if (sort === 'time') return [...list].sort((a, b) => nan(a.t) - nan(b.t) || b.s - a.s);
   return list.filter((d) => front.has(d.id)).sort(byScore).concat(list.filter((d) => !front.has(d.id)).sort(byScore));
 }
+const topSet = (rows, front) => new Set(rows.slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id));
 function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 const fmtS = (v) => v.toFixed(3);
 function fmtN(t) { if (Number.isNaN(t)) return '—'; if (t < 1) return t.toFixed(2); if (t < 10) return t.toFixed(1); return Math.round(t).toLocaleString('en-US'); }
 const fmtT = (t) => fmtN(t) + ' s';
+const PAPER_TIP = 'From the paper: timed by the paper\'s code on mixed hardware, including the hyperparameter search for tuned rows. '
+  + 'Other rows are timed by the runner on the reference node, so time comparisons between the two are approximate.';
 const TAGS = [['e2e', 'end-to-end', (d) => d.kind === 'e2e'], ['tuned', 'tuned', (d) => d.tuned], ['anon', 'anonymous', (d) => d.anon],
-  ['closed', 'closed', (d) => d.closed && !d.anon], ['paper', 'paper', (d) => d.paper], ['incomplete', 'incomplete', (d) => d.incomplete]];
+  ['closed', 'closed', (d) => d.closed && !d.anon], ['paper', 'paper', (d) => d.paper, PAPER_TIP], ['incomplete', 'incomplete', (d) => d.incomplete]];
 const tagsOf = (d) => TAGS.filter((t) => t[2](d));
 function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
 function timeText(d) { return 'total run time ' + fmtT(d.t) + ' per 1K samples'; }
@@ -663,7 +627,7 @@ function renderTable(list, front, rows) {
   const T = TASKS[state.task];
   $('th-metric').textContent = T.metric; $('th-metric-sub').textContent = T.colSub;
   const nOn = rows.filter((d) => front.has(d.id)).length;
-  const nTop = state.sort === 'pareto' ? Math.min(3, nOn) : 3;  // one red frame around the first rows
+  const nTop = topSet(rows, front).size;  // one red frame around the first rows
   let group = null;
   rows.forEach((d, i) => {
     if (state.sort === 'pareto') {
@@ -682,7 +646,7 @@ function renderTable(list, front, rows) {
     const td = el('td'); const p = el('div', 'pipe');
     if (d.kind !== 'e2e') { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); }
     p.appendChild(el('span', 'lrn', d.lrn));
-    for (const [cls, name] of tagsOf(d)) p.appendChild(el('span', 'tag ' + cls, name.toUpperCase()));
+    for (const [cls, name, , tip] of tagsOf(d)) { const t = el('span', 'tag ' + cls, name.toUpperCase()); if (tip) t.title = tip; p.appendChild(t); }
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
     td.appendChild(p); tr.appendChild(td);
@@ -849,7 +813,7 @@ function render() {
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
-  renderPlot(list, front, new Set(rows.slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id)));
+  renderPlot(list, front, topSet(rows, front));
   renderTicker(list, front);
   $('stat-n').textContent = String(list.length);
   $('ver-chip').textContent = VERSION;
@@ -862,36 +826,36 @@ document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('clic
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
 
 /* results.json, built from results/ after each merge, sits next to this page. It is read at start
-   and whenever Refresh is clicked, so the board updates without a page reload. Without it, the
-   placeholder rows above stay. */
+   and whenever Refresh is clicked, so the board updates without a page reload. If it cannot be read
+   before any data has loaded, a message under the table says so. */
 function setUpdated(text) { $('updated').textContent = text; }
 async function loadResults() {
   try {
     const r = await fetch('results.json', { cache: 'no-store' });
     if (!r.ok) return false;
     const j = await r.json();
-    DATA = j.pipelines; VERSION = j.version; BUILT = j.built; HISTORY = j.history || []; PLACEHOLDER = false;
-    return true;
+    DATA = j.pipelines; VERSION = j.version; BUILT = j.built; HISTORY = j.history || [];
+    return (LOADED = true);
   } catch (e) { return false; }
 }
 function renderHistory() {
+  $('tbl-foot').hidden = LOADED;
+  document.querySelectorAll('[data-dl]').forEach((b) => { b.disabled = !LOADED; });
+  $('dl-parquet').hidden = !LOADED;
+  if (!LOADED) return;
   $('cite').textContent = 'STRABLE leaderboard ' + VERSION + ', ' + BUILT + ', ' + SITE;
   const ol = $('history-list'); ol.textContent = '';
   for (const h of HISTORY) { const li = el('li'); li.appendChild(el('b', null, h.version)); li.appendChild(el('span', null, h.note)); ol.appendChild(li); }
-  if (!HISTORY.length) { const li = el('li'); li.appendChild(el('b', null, '')); li.appendChild(el('span', null, 'No version published yet.')); ol.appendChild(li); }
-  $('tbl-foot').hidden = !PLACEHOLDER;
-  document.querySelectorAll('[data-dl]').forEach((b) => { b.disabled = PLACEHOLDER; });  // placeholders are not for papers
-  $('dl-parquet').hidden = PLACEHOLDER;
   $('dl-parquet').download = 'strable-leaderboard_' + VERSION + '_' + BUILT + '_all-views.parquet';
 }
-async function refresh() {
+async function refresh(checked) {
   const btn = $('refresh'); btn.disabled = true; btn.textContent = 'Refreshing…';
-  await loadResults();
+  const ok = await loadResults(), at = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   render(); renderHistory();
-  setUpdated('Updated ' + BUILT + ', checked ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+  setUpdated(!LOADED ? '' : 'Updated ' + BUILT + (!checked ? '' : (ok ? ', checked ' : ', could not check at ') + at));
   btn.disabled = false; btn.textContent = '↻ Refresh';
 }
-$('refresh').addEventListener('click', refresh);
+$('refresh').addEventListener('click', () => refresh(true));
 
 /* Cite: a dialog with the paper's BibTeX. Esc, × or a click outside closes it; Tab stays inside. */
 const BIB = $('bib').textContent;
@@ -1078,11 +1042,6 @@ function placeCaret() {
 placeCaret();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeCaret);
 
-$('ideas-form').addEventListener('submit', (ev) => {
-  ev.preventDefault();
-  $('ideas-msg').textContent = $('ideas-text').value.trim() ? 'Preview only. Nothing was sent.' : 'Write your suggestion first.';
-});
-
 /* ---------- demo tour: task, sort, table, plot, refresh, history, downloads, cite, adding a model ---------- */
 const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
@@ -1175,13 +1134,11 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('clf') >= 0) state.task = 'clf';
   if (toks.indexOf('score') >= 0) state.sort = 'score';
   if (toks.indexOf('time') >= 0) state.sort = 'time';
-  render(); renderHistory();
-  setUpdated('Updated ' + BUILT);
-  loadResults().then((ok) => { if (ok) { render(); renderHistory(); setUpdated('Updated ' + BUILT); } });
+  refresh(false);
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();
 let rz = null;
-new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task); if (list.length) { const front = paretoSet(list); renderPlot(list, front, new Set(ordered(list, state.sort, front).slice(0, state.sort === 'pareto' ? Math.min(3, front.size) : 3).map((d) => d.id))); } }); }).observe($('plot'));
+new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task); if (list.length) { const front = paretoSet(list); renderPlot(list, front, topSet(ordered(list, state.sort, front), front)); } }); }).observe($('plot'));
 </script>
 
 </body>
