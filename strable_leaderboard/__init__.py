@@ -12,9 +12,13 @@ HF_REVISION = "335c0a77595d4a9ddd86f46dc9c3b414f63a09a8"  # 2026-06-11
 REPO = "gblayer/strable-leaderboard"
 MAINTAINER = "gblayer"
 APPROVED, NEEDS = "claude-approved", "needs-maintainer"
-# What a results pull request commits, all built by scripts/build_site_data.py.
+OVERLAP = "pretraining-overlap"  # the leakage pass found that pre-training may include STRABLE tables; never blocks
+# Per model folder, {"leakage": "possible", "pr": <model pull request>}: written by the dispatcher
+# from the model pull request's OVERLAP label, read by scripts/build_site_data.py for the page's tag.
+FLAGS = "site/flags.json"
+# What a results pull request commits: the files scripts/build_site_data.py builds, and FLAGS.
 RESULTS_FILES = ("site/results.json", "site/results.parquet", "site/results_per_fold.parquet",
-                 "site/results_per_fold.csv")
+                 "site/results_per_fold.csv", FLAGS)
 SLUG = re.compile(r"^[a-z0-9][a-z0-9.-]*$")  # a model folder name
 # Folder names of the paper's learners: only the maintainer adds them.
 RESERVED = {"ridge", "xgboost", "extratrees", "catboost", "tabpfn-2.5", "tabicl-v2", "realmlp", "tabm", "mambular",

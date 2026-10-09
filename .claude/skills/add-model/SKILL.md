@@ -28,7 +28,7 @@ Fill the card without asking the user, from the model's sources, in this order: 
 | `checkpoint` | Hugging Face `repo` and the full 40-character commit hash of the weights (`huggingface_hub.HfApi().model_info(repo).sha`, or the repository's commit list), never `main`. `null` if there are no weights |
 | `licence` | Code and weights licences, from the repository and the model card |
 | `trained_on_strable` | STRABLE tables in its pre-training or tuning data, from the paper's data section; `[]` if none. Names from `splits/manifest.json` |
-| `code`, `paper` | Repository and paper URLs (optional, but fill them when they exist) |
+| `code`, `paper` | Repository and paper URLs (optional, but fill them when they exist: the review's leakage pass reads them, with the Hugging Face card, to judge the pre-training data) |
 
 Never leave a template value (`My Model`, `my-model==1.0.0`, `0123456789abcdef`, ...): the smoke test fails on it.
 

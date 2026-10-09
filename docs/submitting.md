@@ -49,7 +49,7 @@ You need a GitHub account. You cannot push to this repository, so you work on yo
    Python 3.12 or later.
 5. **Push and open the pull request.** `git push -u origin add-<name>`, then on GitHub open a pull request from your fork's branch to `gblayer/strable-leaderboard`, `main`, titled `Add <Name> <version>`, with the template filled and the smoke test output pasted. Only `models/<name>/` may change, plus added lines in `env/requirements.in`.
 
-What happens next is automatic. GitHub runs the Checks; Claude reviews the pull request twice. If both reviews say MERGE, the Checks pass and the diff is exactly your new folder, the pull request merges by itself; otherwise, for example when it adds a package, the maintainer is asked to look. After the merge our runner smoke-tests the model on the reference hardware and starts the 108 tables; it then comments on your pull request with the number of tasks and a rough automatic estimate of when results will be ready. It opens the results pull request when they are, and the board updates. If anything fails, the maintainer is told on your pull request. See [automation.md](automation.md).
+What happens next is automatic. GitHub runs the Checks; Claude reviews the pull request twice, and a third pass reads the model's paper, Hugging Face card and README to see whether its pre-training data may include STRABLE's tables (real tables from the web, Kaggle, OpenML, open-data portals or STRABLE's sources; synthetic pre-training is no risk). That pass never blocks the merge: when the overlap is possible, the pull request gets the label `pretraining-overlap` with the quoted evidence, and the board tags the model's rows. If both reviews say MERGE, the Checks pass and the diff is exactly your new folder, the pull request merges by itself; otherwise, for example when it adds a package, the maintainer is asked to look. After the merge our runner smoke-tests the model on the reference hardware and starts the 108 tables; it then comments on your pull request with the number of tasks and a rough automatic estimate of when results will be ready. It opens the results pull request when they are, and the board updates. If anything fails, the maintainer is told on your pull request. See [automation.md](automation.md).
 
 ## The model contract
 
@@ -93,7 +93,7 @@ What the board derives from it:
 | `handles_strings` | The end-to-end tag, or one row per encoder |
 | `hardware` | Whether the row used the GPU, shown when hovering the row |
 | `variant` | Nothing yet: only `default` is accepted |
-| `trained_on_strable` | A contamination note on the row |
+| `trained_on_strable` | A contamination note on the row. The leakage pass also reads your paper and card for pre-training data from STRABLE's sources: link them in `paper` and `code` |
 
 **Variants.** Only `variant: default`, the package's default configuration, is accepted for now. Tuned and tuned-plus-ensembled variants will come later with a fixed protocol (search space, budget, ensembling) that every model follows; each will then be a separate folder. Do not submit them yet.
 

@@ -4,7 +4,7 @@
     python scripts/automerge_gate.py verdict --pr N --sha S   # it ends: comment, label, status, then the gate
     python scripts/automerge_gate.py gate --sha S             # Checks completed: the gate
     python scripts/automerge_gate.py triage --pr N            # every pull request event: scope only
-    python scripts/automerge_gate.py inputs --pr N            # what the review round needs, as job outputs
+    python scripts/automerge_gate.py inputs --pr N --sha S   # what the review round needs, as job outputs
 
 The conditions are written once, in docs/automation.md, section 3. Run by claude-review.yml and
 automerge.yml with the built-in GITHUB_TOKEN, on the base branch: the pull request's code is never
@@ -20,18 +20,24 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from strable_leaderboard import APPROVED, MAINTAINER, NEEDS, RESERVED, RESULTS_FILES, SLUG  # noqa: E402
+from strable_leaderboard import APPROVED, MAINTAINER, NEEDS, OVERLAP, RESERVED, RESULTS_FILES, SLUG  # noqa: E402
 from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 
 BOTS = {"github-actions[bot]", "claude[bot]"}
 CHECKS_WORKFLOW = "checks.yml"
 REVIEW_CONTEXT = "Claude review"
 ENV_INPUT = "env/requirements.in"  # a contributor may add packages here; the maintainer reviews every change
+# The sites the leakage pass may fetch, plus the hosts of the card's code and paper links.
+WEB = ("arxiv.org", "huggingface.co", "github.com", "raw.githubusercontent.com")
+HOST = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$")
+CARD_LINK = re.compile(r"^(?:code|paper):\s*[\"']?(https?://[^\s\"'#]+)", re.M)
 REPO = os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO)
 
 
@@ -56,6 +62,30 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
         elif name in RESERVED:
             out.append(f"`models/{name}/` is reserved for a learner of the paper")
     return out
+
+
+def web_tools(card_text: str) -> str:
+    """The leakage pass's WebFetch permissions: the fixed sites and the hosts of the card's code and paper."""
+    hosts = set(WEB) | {urlsplit(url).hostname or "" for url in CARD_LINK.findall(card_text)}
+    return ",".join(f"WebFetch(domain:{h})" for h in sorted(hosts) if HOST.match(h))
+
+
+def leakage_verdict(raw: str | None) -> tuple[str | None, str]:
+    """(risk, comment section) from the leakage pass's structured output; risk None when it gave none."""
+    try:
+        out = json.loads(raw or "")
+    except ValueError:
+        out = None
+    if not isinstance(out, dict) or out.get("risk") not in ("none", "possible", "unknown"):
+        return None, "**Pre-training overlap** (never blocks the merge): no verdict (the pass failed)"
+    lines = [f"**Pre-training overlap** (never blocks the merge): **{out['risk']}**"]
+    for item in list(out.get("evidence") or [])[:5]:
+        if isinstance(item, dict):
+            url = str(item.get("url", ""))[:300]
+            url = url if re.match(r"^https?://[^\s<>()]+$", url) else "no valid URL"
+            quote = " ".join(str(item.get("quote", "")).split())[:400]
+            lines.append(f"- \"{quote}\" ({url})".replace("@", "@\u200b"))
+    return out["risk"], "\n".join(lines)
 
 
 def parse_review(raw: str | None) -> dict | None:
@@ -188,8 +218,9 @@ def gate(pr: dict, details: str = "") -> str:
 
 
 def reset(number: int, sha: str) -> None:
-    """A review round starts on ``sha``: status pending, and claude-approved and needs-maintainer
-    removed when a bot set them for an older commit. A label the maintainer set by hand stays."""
+    """A review round starts on ``sha``: status pending, and claude-approved, needs-maintainer and
+    pretraining-overlap removed when a bot set them for an older commit. A label the maintainer set
+    by hand stays."""
     set_status(sha, "pending", "the two Claude reviews are running")
     events = api(f"issues/{number}/events?per_page=100", paginate=True)
     last = {}
@@ -197,18 +228,23 @@ def reset(number: int, sha: str) -> None:
         if e["event"] == "labeled":
             last[e["label"]["name"]] = e["actor"]["login"]
     labels = {label["name"] for label in api(f"issues/{number}")["labels"]}
-    for name in (APPROVED, NEEDS):
+    for name in (APPROVED, NEEDS, OVERLAP):
         if name in labels and last.get(name) in BOTS:
             gh("pr", "edit", str(number), "--repo", REPO, "--remove-label", name)
             print(f"#{number}: removed {name}")
 
 
 def verdict(number: int, sha: str) -> None:
-    """The review round of ``sha`` ended: one comment, the label, the commit status, then the gate."""
+    """The review round of ``sha`` ended: one comment, the labels, the commit status, then the gate.
+    The leakage pass ($LEAKAGE, model pull requests only) adds a section and maybe its label, never a block."""
     state, description, lines = review_verdict([os.environ.get("REVIEW_ONE"), os.environ.get("REVIEW_TWO")])
-    comment_once(number, f"**Claude review of {sha[:7]}**\n{lines}"[:4000], f"<!-- claude-review {sha} -->")
+    risk, leakage = leakage_verdict(os.environ.get("LEAKAGE")) if os.environ.get("MODEL") else (None, "")
+    body = f"**Claude review of {sha[:7]}**\n{lines}"[:4000] + (f"\n\n{leakage}" if leakage else "")
+    comment_once(number, body, f"<!-- claude-review {sha} -->")
     if state == "success":
         gh("pr", "edit", str(number), "--repo", REPO, "--add-label", APPROVED)
+    if risk == "possible":
+        gh("pr", "edit", str(number), "--repo", REPO, "--add-label", OVERLAP)
     set_status(sha, state, description)
     print(f"#{number} {sha[:7]}: review {state} ({description})")
     pr = api(f"pulls/{number}")
@@ -216,9 +252,20 @@ def verdict(number: int, sha: str) -> None:
         gate(pr, env_details(changed_paths(number), os.environ.get("ENV_REPORT")))
 
 
-def inputs(number: int) -> dict[str, str]:
-    """What the review round's jobs need to know, written to $GITHUB_OUTPUT by the reset job."""
-    return {"env": str(ENV_INPUT in changed_paths(number)).lower()}
+def inputs(number: int, sha: str) -> dict[str, str]:
+    """What the review round's jobs need, written to $GITHUB_OUTPUT by the reset job: whether
+    env/requirements.in changes; the one model folder whose model.yaml the pull request adds, if
+    any; the web sites its leakage pass may fetch."""
+    files = api(f"pulls/{number}/files?per_page=100", paginate=True)
+    paths = [f["filename"] for f in files]
+    cards = [p for p in paths if p in {f["filename"] for f in files if f["status"] != "removed"} and re.fullmatch(r"models/[^/]+/model\.yaml", p) and SLUG.match(p.split("/")[1])
+             and p.split("/")[1] != "_template"]
+    out = {"env": str(ENV_INPUT in paths).lower(), "model": "", "web": ""}
+    if len(cards) == 1:
+        text = gh("api", "-H", "Accept: application/vnd.github.raw", f"repos/{REPO}/contents/{cards[0]}?ref={sha}",
+                  check=False)  # unreadable: the fixed sites only
+        out.update(model=cards[0].split("/")[1], web=web_tools(text))
+    return out
 
 
 def main(argv=None) -> int:
@@ -230,7 +277,7 @@ def main(argv=None) -> int:
     if args.mode == "reset":
         reset(args.pr, args.sha)
     elif args.mode == "inputs":
-        print("\n".join(f"{k}={v}" for k, v in inputs(args.pr).items()))
+        print("\n".join(f"{k}={v}" for k, v in inputs(args.pr, args.sha).items()))
     elif args.mode == "verdict":
         verdict(args.pr, args.sha)
     elif args.mode == "triage":

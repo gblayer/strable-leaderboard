@@ -113,7 +113,7 @@ def test_full_path_with_one_comment_on_success(clone):
 
     d.todo = []
     d.run(fetch=False)
-    assert state(d)["step"] == "published" and state(d)["version"] == "v0.1.0"
+    assert state(d)["step"] == "published" and state(d)["version"] == "v0.1.0" and state(d)["leakage"] is None
     assert yaml.safe_load((d.root / "results" / "versions.yaml").read_text())[0]["note"] == "Added ExtraTrees sklearn-1.7"
 
     d.gh.results_pr = {"number": 9, "state": "closed", "merged_at": "x", "merge_commit_sha": "abc"}
@@ -184,6 +184,26 @@ def test_estimate_from_the_queue_and_the_observed_task_times(clone):
     assert "rough automatic estimate: 2 tasks queued ahead, 16 at a time, 20 minutes per task" in text
     assert "in about 40 minutes" in text
     assert dispatch.duration(3 * 3600) == "3 hours" and dispatch.duration(72 * 3600) == "3 days"
+
+
+def test_the_overlap_label_flags_the_model_when_publishing(clone):
+    d = clone
+    d.gh.labels = ["claude-approved", "pretraining-overlap"]
+    d.run(fetch=False)
+    finish_smoke(d)
+    d.run(fetch=False)
+    d.todo = []
+    d.run(fetch=False)
+    assert state(d)["step"] == "published" and state(d)["leakage"] == "possible"
+
+
+def test_flags_keep_other_models(tmp_path):
+    path = tmp_path / "flags.json"
+    dispatch.write_flags(path, "a", {"leakage": "possible", "pr": 4})
+    dispatch.write_flags(path, "b", {"leakage": None, "pr": 5})
+    assert json.loads(path.read_text()) == {"a": {"leakage": "possible", "pr": 4}}
+    dispatch.write_flags(path, "a", {"leakage": None})
+    assert json.loads(path.read_text()) == {}
 
 
 def test_unapproved_merge_never_runs(clone):

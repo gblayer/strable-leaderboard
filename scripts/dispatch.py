@@ -19,7 +19,8 @@ code of a model in flight. A model is a folder of models/ on main. Its steps:
   run       make_tasks + the job array, submitted at most twice.
   publish   gather_results for this model only, check_results, a line in results/versions.yaml,
             build_site_data from the models already on the board, the paper's files and this one
-            into the RESULTS_FILES on a branch results/<model>, push, open the results pull request (which goes through
+            into the RESULTS_FILES on a branch results/<model>, with site/flags.json marking the
+            model "leakage: possible" when its pull request has the label pretraining-overlap, push, open the results pull request (which goes through
             Checks, the Claude review and the gate like any other).
   published waits for that pull request; merged -> done, and the version is tagged.
 
@@ -57,7 +58,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from strable_leaderboard import APPROVED, MAINTAINER, RESULTS_FILES, SLUG  # noqa: E402
+from strable_leaderboard import APPROVED, FLAGS, MAINTAINER, OVERLAP, RESULTS_FILES, SLUG  # noqa: E402
 from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 
 REPO = os.environ.get("STRABLE_REPO", DEFAULT_REPO)
@@ -107,6 +108,15 @@ def token_file(path: Path = TOKEN_FILE) -> Path:
 def duration(seconds: float) -> str:
     hours = seconds / 3600
     return f"{seconds / 60:.0f} minutes" if hours < 2 else f"{hours:.0f} hours" if hours < 48 else f"{hours / 24:.0f} days"
+
+
+def write_flags(path: Path, name: str, st: dict) -> None:
+    """site/flags.json with this model's entry set from its state, the other models' kept."""
+    flags = json.loads(path.read_text()) if path.exists() else {}
+    flags.pop(name, None)
+    if st.get("leakage"):
+        flags[name] = {"leakage": st["leakage"], "pr": st.get("pr")}
+    path.write_text(json.dumps(flags, indent=1, sort_keys=True) + "\n")
 
 
 def board_models(results: Path, site_json: Path, name: str) -> list[str]:
@@ -428,6 +438,8 @@ class Dispatcher:
             undo()
             return self.fail(name, st, "results-failed", "check_results:\n" + check_output[-1200:])
         card = self.card(folder, code)
+        labels = {label["name"] for label in self.gh.get(f"/pulls/{st['pr']}").get("labels", [])} if st.get("pr") else set()
+        st["leakage"] = "possible" if OVERLAP in labels else None
         versions = yaml.safe_load(before[versions_file] or b"") or []
         version = self.next_version(versions)
         note = f"Added {card['name']} {card['version']}"
@@ -450,6 +462,7 @@ class Dispatcher:
         self.git("worktree", "remove", "--force", wt, check=False)
         self.git("worktree", "add", "--force", "-B", branch, wt, "origin/main")
         try:
+            write_flags(wt / FLAGS, name, st)
             models = board_models(self.root / "results", wt / "site" / "results.json", name)
             # Built with the scripts of origin/main, so the file matches what Checks will validate.
             self.sh(self.python, "scripts/build_site_data.py", "--results", self.root / "results", "--models", *models,
@@ -461,6 +474,8 @@ class Dispatcher:
         finally:
             self.git("worktree", "remove", "--force", wt, check=False)
         model_pr = f"Model pull request: #{st['pr']}.\n" if st.get("pr") else ""
+        if st.get("leakage"):
+            model_pr += f"Pre-training overlap: {st['leakage']} (label {OVERLAP} on #{st['pr']}); the board tags its rows.\n"
         body = (f"{note}: {st.get('n_tasks', '?')} tasks run on the reference hardware by the dispatcher.\n"
                 f"{model_pr}\n```\n{public(check_output.strip(), 3000)}\n```\n")
         pr = self.gh.post("/pulls", {"title": f"Results: {note} ({version})", "head": branch, "base": "main",

@@ -4,7 +4,9 @@
 flowchart TD
   A[Pull request from a fork: models/name/] --> B[Checks: card, pins, code, CPU smoke test. No secrets]
   A --> C[Claude review: two independent passes, structured verdicts]
+  A --> L[Leakage pass: pre-training data vs STRABLE's sources, never blocks]
   C --> D[Verdict job: one comment, claude-approved if both say MERGE, commit status]
+  L --> D
   B --> G{Auto-merge gate, in code}
   D --> G
   G -- every condition holds --> M[Merged by github-actions]
@@ -28,16 +30,17 @@ Pull requests merge by themselves only when the gate's conditions all hold; ever
 
 - `pytest` on the pull request's code.
 - For each changed model folder: `python -m strable_leaderboard.check_requirements models/<name>`: every line of `requirements.txt` is `name==version`, and every version equals the shared environment's (`env/requirements.txt`). The model is installed with `env/requirements.txt` as pip constraints, so its dependencies also get the shared environment's versions. Then `python -m strable_leaderboard.smoke models/<name> --device cpu`: fails on any missing or invalid card field, on an unshared pin and on code that a regular-expression hint flags as making its own split, searching hyperparameters or fixing its own seed (a hint only: the review is the real check), then runs outer fold 0 of three small tables. `hardware: gpu` models run it on CPU too; if that fails, the package may need a GPU, so the step falls back to the static checks (`--static`) and reports a warning, and the full smoke test runs on the reference GPU on the cluster as the dispatcher's first step after the merge.
-- A pull request changing a results file (`RESULTS_FILES` in `strable_leaderboard/__init__.py`: `site/results.json`, `site/results.parquet`, `site/results_per_fold.parquet`, `site/results_per_fold.csv`): `python scripts/build_site_data.py --check site/results.json`, which validates the file's shape, unique ids, score and time ranges, and that the Parquet next to it holds the same numbers.
+- A pull request changing a results file (`RESULTS_FILES` in `strable_leaderboard/__init__.py`: `site/results.json`, `site/results.parquet`, `site/results_per_fold.parquet`, `site/results_per_fold.csv`, `site/flags.json`): `python scripts/build_site_data.py --check site/results.json`, which validates the file's shape, unique ids, score and time ranges, and that the Parquet next to it holds the same numbers.
 
 ## 2. Claude review
 
-`.github/workflows/claude-review.yml` runs on pull requests that touch `models/`, `site/results.json` or `env/requirements.in`. It runs [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action) with the checklist in `.claude/skills/review-submission/SKILL.md`, in four jobs:
+`.github/workflows/claude-review.yml` runs on pull requests that touch `models/`, `site/results.json` or `env/requirements.in`. It runs [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action) with the checklist in `.claude/skills/review-submission/SKILL.md`, in five jobs:
 
-1. **reset** sets the commit status "Claude review" of the reviewed commit to pending and removes `claude-approved` and `needs-maintainer` if a bot set them on an earlier commit, so each commit gets a fresh verdict; a label set by the maintainer stays. Its outputs tell the jobs below whether they have something to do.
+1. **reset** sets the commit status "Claude review" of the reviewed commit to pending and removes `claude-approved`, `needs-maintainer` and `pretraining-overlap` if a bot set them on an earlier commit, so each commit gets a fresh verdict; a label set by the maintainer stays. Its outputs tell the jobs below whether they have something to do.
 2. **review** runs two passes, two fresh sessions that never see each other's verdict. Each returns a structured verdict, `{recommendation: MERGE | FIX | REJECT, problems: [one line each, with its fix]}`, as a job output. The passes can only read the pull request with `gh pr view`, `gh pr diff` and `gh pr checks`, and, on disk, the review skill, `models/_template/` and `env/requirements.*`: the job checks out only those files of the base branch, without credentials. They cannot comment, label or merge: the job's token is read-only.
 3. **env**, when `env/requirements.in` changes: it fetches the pull request's file through the API, keeps only its `name==version` lines and resolves them as `scripts/lock_env.sh` does (`python -m strable_leaderboard.check_requirements --report`, uv with the paper's freeze as constraints, never building a package, so nothing from the pull request runs). The report lists the packages the lock would add and every existing package whose version would change, old → new, with downgrades marked. When the freeze cannot hold, it shows uv's conflict and resolves again without the freeze, the current pins of `env/requirements.in` loosened and the current versions kept where possible, to show what would have to move. The report goes to the job summary and, as a job output, to the verdict job.
-4. **verdict**, the only job that writes, runs unless the workflow was cancelled: it posts one comment with both verdicts, adds `claude-approved` when both say MERGE, records the commit status (success when both say MERGE, failure otherwise, including a pass that returned nothing), then runs the gate. A status belongs to one commit, so a review of an older commit never counts for a newer one.
+4. **leakage**, when the pull request adds one `models/<name>/model.yaml`: a third pass, `.claude/skills/review-leakage/SKILL.md`, decides whether the model's pre-training or tuning data may include STRABLE's tables: real tables scraped from the web or taken from public corpora (T4, TabLib, OpenML, Kaggle, open-data portals) or from STRABLE's 33 sources. Synthetic-only pre-training is no risk; missing information is `unknown`. It reads the pull request with `gh pr view` and `gh pr diff` and fetches only arxiv.org, huggingface.co, github.com, raw.githubusercontent.com and the hosts of the card's `code` and `paper` links (the reset job derives that list from the card, keeping only valid host names); it has no write tool and no search. It returns `{risk: none | possible | unknown, evidence: [{quote, url}]}` as a job output. It never blocks: the job may fail without effect on the gate.
+5. **verdict**, the only job that writes, runs unless the workflow was cancelled: it posts one comment with both verdicts and the leakage section (risk and quoted evidence), adds `claude-approved` when both say MERGE and `pretraining-overlap` when the leakage risk is possible, records the commit status (success when both say MERGE, failure otherwise, including a pass that returned nothing), then runs the gate. A status belongs to one commit, so a review of an older commit never counts for a newer one.
 
 What they check, in short: one `models/<name>/` folder or `site/results.json`; the card complete and matching the code; every pin equal to the shared environment's; default configuration; no own split or cross-validation, only `self.validation_split(y)`; no seed but `self.seed`; no network, subprocess, eval or obfuscated code; the Checks workflow passed.
 
@@ -50,7 +53,7 @@ This section is the one place where the gate's conditions are written; the scrip
 1. the commit status "Claude review" of the current head is success: both review passes of that commit's round said MERGE;
 2. the Checks workflow succeeded on the current head commit;
 3. the diff touches exactly one new `models/<name>/` folder, whose name is valid and not reserved for a learner of the paper, or only `site/results.json` with the other results files (`RESULTS_FILES` in `strable_leaderboard/__init__.py`) in a pull request opened by `gblayer`; nothing else changes, so `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/`, `splits/`, `env/` and existing model folders never merge automatically;
-4. the label `needs-maintainer` is not set;
+4. the label `needs-maintainer` is not set (`pretraining-overlap` never blocks);
 5. the head commit did not change since the reviews: the status and the Checks run must belong to the current head, and the merge itself, `gh pr merge --merge --match-head-commit <sha>`, fails if it moved.
 
 The merge uses the built-in `GITHUB_TOKEN`. A merge made with that token starts no push workflow, so when `site/` changed the gate starts the Pages workflow itself with `gh workflow run pages.yml`. If the merge fails because the pull request is already merged, the gate stops quietly.
@@ -93,7 +96,7 @@ python scripts/make_tasks.py models/<name> > tasks.txt && bash scripts/run_array
 python scripts/gather_results.py runs results <name> && python -m strable_leaderboard.check_results results/<name>.csv
 ```
 
-**Where results live.** In `results/` of the clone. That folder is gitignored; the public repository gets only what `build_site_data.py` writes into `site/` (`RESULTS_FILES`): `site/results.json` and `site/results.parquet`, the aggregates the page shows, and `site/results_per_fold.parquet` and `.csv`, the fold rows of the board's pipelines, for download. Only open models are run: every model is a public `models/<name>/` folder.
+**Where results live.** In `results/` of the clone. That folder is gitignored; the public repository gets only the results files (`RESULTS_FILES`): `site/results.json` and `site/results.parquet`, the aggregates the page shows, and `site/results_per_fold.parquet` and `.csv`, the fold rows of the board's pipelines, for download, all written by `build_site_data.py`, and `site/flags.json`, the leakage flags (section 6). Only open models are run: every model is a public `models/<name>/` folder.
 
 **Cost.** A numeric-only model is 3 encoders × 108 tables × 3 folds = 972 tasks. Embeddings are computed once per encoder and table and kept in `cache/embeddings/`, so a new model adds only its own run time.
 
@@ -111,7 +114,8 @@ There is no bot account. The dispatcher uses a fine-grained token limited to thi
 ## 6. How the board updates
 
 1. The runner writes the new rows into the private results folder.
-2. One line goes to the top of `results/versions.yaml` (`v0.1.3`, the date, "Added TabPFN 2.5"), and `build_site_data.py` writes the results files on the branch `results/<model>`.
+2. One line goes to the top of `results/versions.yaml` (`v0.1.3`, the date, "Added TabPFN 2.5"), and `build_site_data.py` writes the results files on the branch `results/<model>`. Before that, the dispatcher reads the labels of the model's pull request and writes `site/flags.json` (`FLAGS` in `strable_leaderboard/__init__.py`), one entry per flagged model folder, the others kept: `{"<model>": {"leakage": "possible", "pr": <model pull request>}}` when the label `pretraining-overlap` is set, no entry otherwise. The maintainer removes the label before the results are published to clear a false alarm.
+   **Page side** (`build_site_data.py` and `site/index.html`, to be wired): `build_site_data.py` reads `site/flags.json` from its own checkout when it exists; each pipeline whose model (the results file's stem) has `leakage: possible` gets `"leakage": "possible"` and `"leakage_pr": <pr>` in `results.json`, and a `leakage` column in the Parquet files; the page shows a "possible pre-training overlap" tag on those rows, linking to the model pull request whose comment quotes the evidence.
 3. The results pull request is opened; Checks validates the file, Claude reviews it, the gate merges it (opened by `gblayer`, only the results files) and starts the Pages workflow.
 4. The dispatcher tags the merge commit with the version, so a ranking claimed in a paper ("first on STRABLE v0.1.3, 2026-11-20") can be checked later.
 5. A visitor who opens the page gets the new file; one who already has it open clicks Refresh.
@@ -136,7 +140,7 @@ Merged contributor code runs on the cluster under the maintainer's account, and 
 ## 9. Setup, once
 
 1. Secret `CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token` (uses your Claude subscription), or `ANTHROPIC_API_KEY`.
-2. Labels `claude`, `claude-approved`, `needs-maintainer`.
+2. Labels `claude`, `claude-approved`, `needs-maintainer`, `pretraining-overlap`.
 3. Each workflow sets its own token permissions in its `permissions` block; nothing to change in the settings.
 4. On the cluster, in the clone: `python scripts/prepare.py` (shared env, data, encoders, sandbox image), `private/runner.env` with the partition flags, the cron line above.
 5. The dispatcher's token, on the cluster. On github.com: Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Resource owner `gblayer`; Repository access: *Only select repositories*, `gblayer/strable-leaderboard` only; Repository permissions: Contents read and write, Pull requests read and write, Issues read and write, Metadata read-only (set by default); nothing else, in particular not Workflows; expiration at most one year (put a reminder in the calendar). Store it, readable by you only, without leaving it in the shell history:
