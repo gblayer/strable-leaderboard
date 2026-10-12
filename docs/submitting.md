@@ -6,9 +6,9 @@ You submit code, we run it. One pull request adds one folder, `models/<name>/`:
 |---|---|
 | `model.py` | `class Model(StrableModel)` with `fit`, `predict` and `predict_proba` |
 | `model.yaml` | The model card, below. Every field filled |
-| `requirements.txt` | The packages the model imports, at exact versions: `tabpfn==6.0.6` |
+| `requirements.txt` | The packages the model imports, at exact versions: `tabpfn==9.0.0` |
 
-No container and no environment of your own: every model runs in **one shared Python environment**, the paper's, pinned in [`env/requirements.txt`](../env/requirements.txt) (torch 2.9.1, scikit-learn 1.7.2, skrub 0.6.2, tabpfn 6.0.6, tabicl 2.0.3, sentence-transformers 5.2.3, xgboost 3.1.1, catboost 1.2.8, ...). Each pin in your `requirements.txt` must equal the shared environment's version. If your model needs a package that is not there, ADD one line `name==version` to [`env/requirements.in`](../env/requirements.in) in the same pull request and say why; edit nothing else in `env/`. Never change an existing pin: Checks fails on it. The pull request then waits for the maintainer: the review workflow reports to her which packages the lock would add and whether any existing version would change, and she relocks the environment with `scripts/lock_env.sh` (the paper's full environment, `env/paper-freeze.txt`, as constraints). A model that needs another version of a package already there cannot come through a pull request: open an issue.
+No container and no environment of your own: every model runs in **one shared Python environment**, the paper's, pinned in [`env/requirements.txt`](../env/requirements.txt) (torch 2.9.1, scikit-learn 1.7.2, skrub 0.7.0, tabpfn 9.0.0, tabicl 2.0.3, sentence-transformers 5.2.3, xgboost 3.1.1, catboost 1.2.8, ...). Each pin in your `requirements.txt` must equal the shared environment's version. If your model needs a package that is not there, ADD one line `name==version` to [`env/requirements.in`](../env/requirements.in) in the same pull request and say why; edit nothing else in `env/`. Never change an existing pin: Checks fails on it. The pull request then waits for the maintainer: the review workflow reports to her which packages the lock would add and whether any existing version would change, and she relocks the environment with `scripts/lock_env.sh` (the paper's full environment, `env/paper-freeze.txt`, as constraints). A model that needs another version of a package already there cannot come through a pull request: open an issue.
 
 `models/_template/` is the starting point, `models/ridge/` a complete example.
 
@@ -75,7 +75,7 @@ tasks: [regression, binary, multiclass]
 variant: default                # the only value accepted for now
 hardware: gpu                   # gpu | cpu
 
-package: tabpfn==6.0.6          # the code, same pin as requirements.txt
+package: tabpfn==9.0.0          # the code, same pin as requirements.txt
 checkpoint:                     # the weights, or null
   repo: Prior-Labs/TabPFN-2.5
   revision: <40-character commit hash>
@@ -113,7 +113,7 @@ There is no family field. Whether a model is a tree ensemble or a foundation mod
 
 Each model version is its own folder and its own row, forever: `models/tabpfn-3/` and `models/tabpfn-3.5/`, each with its `version` in `model.yaml`. Each pins its own checkpoint hash, so a new release never changes an older row. If a new checkpoint loads with the same package, the new folder can copy `model.py` and change only `model.yaml`. The runner computes only what is missing. A change to a folder that is already on `main` is never merged automatically.
 
-A version whose package is incompatible with the shared environment (TabPFN-3.5 needs tabpfn 9, the environment has tabpfn 6.0.6) cannot enter through a normal pull request: it needs an environment change, which the maintainer decides.
+A version whose package is incompatible with the shared environment (one that needs another version of a package the environment already pins) cannot enter through a normal pull request: it needs an environment change, which the maintainer decides.
 
 ## Examples
 

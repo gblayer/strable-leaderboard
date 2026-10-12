@@ -12,7 +12,8 @@ maintainer then relocks. ``--base-env`` gives the base branch's env/ folder: eve
 be unchanged, since a pull request may only add packages.
 
 ``--lock`` regenerates env/requirements.txt with uv, the paper's full freeze (env/paper-freeze.txt)
-as constraints. ``--report`` resolves another requirements.in the same way, never building a
+as constraints, except for a package env/requirements.in pins to another version (the maintainer's
+decision). ``--report`` resolves another requirements.in the same way, never building a
 package, and prints for the maintainer the packages it adds and every existing version it changes;
 when that fails, it resolves again without the freeze and with the current pins of
 env/requirements.in loosened to bare names, keeping the current versions where uv can, to show
@@ -103,9 +104,19 @@ def pin_changes(base: Path, head: Path = ENV) -> list[str]:
     return out + [f"env/requirements.in: {p}" for p in found]
 
 
+def freeze_constraints(requirements_in: Path, out: Path) -> Path:
+    """The paper's freeze without the packages ``requirements_in`` pins to another version: such a
+    pin is the maintainer's decision and overrides the freeze."""
+    pins, _ = read_pins(requirements_in)
+    keep = [line for line in FREEZE.read_text().splitlines()
+            if not (m := re.match(r"([A-Za-z0-9_.\-]+)==(\S+)", line)) or pins.get(normalize(m[1]), m[2]) == m[2]]
+    out.write_text("\n".join(keep) + "\n")
+    return out
+
+
 def compile_lock(requirements_in: Path, out: Path, freeze: bool = True, *extra: str) -> subprocess.CompletedProcess:
     """uv's resolution of ``requirements_in`` into ``out``; uv keeps the versions ``out`` already pins where it can."""
-    constraints = ["-c", str(FREEZE)] if freeze else []
+    constraints = ["-c", str(freeze_constraints(requirements_in, out.with_name("freeze.txt")))] if freeze else []
     return subprocess.run(UV_COMPILE + [str(requirements_in), *constraints, *extra, "-o", str(out)],
                           capture_output=True, text=True)
 
