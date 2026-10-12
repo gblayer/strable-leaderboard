@@ -1,7 +1,8 @@
 name: Claude review
 
 # Two independent Claude passes on every pull request that touches models/, site/results.json or
-# env/requirements.in, then one verdict job. A pull request adding a model also gets the leakage
+# env/requirements.in, then one verdict job. The maintainer's own pull requests are not reviewed,
+# except results updates: the verdict job only sets the status. A pull request adding a model also gets the leakage
 # pass (does its pre-training data overlap STRABLE's tables?), which never blocks; one changing
 # env/requirements.in gets the env job (what locking it would add and change). Needs the secret
 # CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`) and the labels claude-approved,
@@ -52,6 +53,7 @@ jobs:
       issues: write
       statuses: write
     outputs:
+      review: ${{ steps.inputs.outputs.review }}
       env: ${{ steps.inputs.outputs.env }}
       model: ${{ steps.inputs.outputs.model }}
       web: ${{ steps.inputs.outputs.web }}
@@ -74,6 +76,7 @@ jobs:
   review:
     # Two passes in one job, each a fresh session that never sees the other's verdict.
     needs: reset
+    if: needs.reset.outputs.review == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
@@ -118,7 +121,7 @@ jobs:
     # the card's code and paper links, and returns {risk, evidence}. No write tool; its failure or
     # verdict never blocks the merge.
     needs: reset
-    if: needs.reset.outputs.model != ''
+    if: needs.reset.outputs.review == 'true' && needs.reset.outputs.model != ''
     continue-on-error: true
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -155,7 +158,7 @@ jobs:
     # an output for the verdict job's "your review is needed" comment. Only name==version lines
     # are read, and uv builds nothing (--no-build), so no code from the pull request runs.
     needs: reset
-    if: needs.reset.outputs.env == 'true'
+    if: needs.reset.outputs.review == 'true' && needs.reset.outputs.env == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -216,4 +219,9 @@ jobs:
           ENV_REPORT: ${{ needs.env.outputs.report }}
           MODEL: ${{ needs.reset.outputs.model }}
           LEAKAGE: ${{ needs.leakage.outputs.verdict }}
-        run: python3 scripts/automerge_gate.py verdict --pr "$PR" --sha "$SHA"
+        run: |
+          if [ "${{ needs.reset.outputs.review }}" = true ]; then
+            python3 scripts/automerge_gate.py verdict --pr "$PR" --sha "$SHA"
+          else
+            python3 scripts/automerge_gate.py maintainer --pr "$PR" --sha "$SHA"
+          fi

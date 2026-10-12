@@ -6,7 +6,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import json
 
-from automerge_gate import decide, env_details, leakage_verdict, review_verdict, scope_problems, web_tools  # noqa: E402
+from automerge_gate import decide, env_details, leakage_verdict, needs_review, review_verdict, scope_problems, web_tools  # noqa: E402
+from strable_leaderboard import MAINTAINER  # noqa: E402
 
 SHA = "a" * 40
 MODEL_FILES = ["models/kumo-tabular-1.0/model.py", "models/kumo-tabular-1.0/model.yaml",
@@ -134,3 +135,11 @@ def test_leakage_verdict_never_blocks_and_quotes_safely():
     assert "@\u200bgblayer" in text and "javascript" not in text
     assert leakage_verdict(json.dumps({"risk": "none", "evidence": []}))[0] == "none"
     assert leakage_verdict(None)[0] is None and leakage_verdict('{"risk": "high"}')[0] is None
+
+
+def test_needs_review_skips_the_maintainers_own_pull_requests_but_not_results():
+    assert needs_review(["site/index.html", "README.md"], "someone")
+    assert needs_review(["models/m/model.py"], "someone")
+    assert not needs_review(["site/index.html", "scripts/x.py"], MAINTAINER)
+    assert needs_review(["site/results.json", "site/results.parquet"], MAINTAINER)
+    assert not needs_review(["site/results.json", "site/index.html"], MAINTAINER)
