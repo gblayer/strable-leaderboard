@@ -1,10 +1,10 @@
 {
- "version": "v0.1.0-pre",
- "built": "2026-10-09",
+ "version": "v0.1.0",
+ "built": "2026-10-10",
  "history": [
   {
-   "version": "v0.1.0-pre",
-   "note": "The paper's 75 Figure 4a pipelines, every table and fold; 17 fold rows were completed after publication (12 re-run on 2026-10-08, 5 finished in April but never compiled)"
+   "version": "v0.1.0",
+   "note": "The paper's 75 Figure 4a pipelines, every table and fold"
   }
  ],
  "pipelines": [

@@ -6,9 +6,7 @@ Run it where the paper's CSVs are, on the cluster. Exactly the pipelines listed 
 ``scripts/paper_selection.yaml`` are imported, by source CSV and method token, nothing else; a
 listed pipeline missing from its CSV is an error. The paper timed fit and predict together, so
 imported rows carry ``total_s`` only (the paper's ``run_time``), with ``hardware`` and
-``package`` set to ``paper``. Scores are the raw per-fold R² or ROC-AUC. The selection's
-``filled`` section names, for some source CSVs, the file read instead: the original plus the fold
-rows completed after publication.
+``package`` set to ``paper``. Scores are the raw per-fold R² or ROC-AUC.
 """
 
 import argparse
@@ -69,8 +67,8 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     tables = json.loads(MANIFEST.read_text())["tables"]
     selection = yaml.safe_load(SELECTION.read_text())
-    pipelines, filled = selection["pipelines"], selection.get("filled", {})
-    frames = {csv: pd.read_csv(args.compiled / filled.get(csv, csv)) for csv in pipelines}
+    pipelines = selection["pipelines"]
+    frames = {csv: pd.read_csv(args.compiled / csv) for csv in pipelines}
     df, problems = convert(frames, tables, pipelines)
     if problems:
         print("\n".join(problems))
