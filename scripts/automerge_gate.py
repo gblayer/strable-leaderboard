@@ -64,6 +64,12 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
     return out
 
 
+def needs_review(paths: list[str], author: str) -> bool:
+    """The maintainer's own pull requests merge by hand and get no Claude review, except a results
+    update, which the gate may merge."""
+    return author != MAINTAINER or ("site/results.json" in paths and set(paths) <= set(RESULTS_FILES))
+
+
 def web_tools(card_text: str) -> str:
     """The leakage pass's WebFetch permissions: the fixed sites and the hosts of the card's code and paper."""
     hosts = set(WEB) | {urlsplit(url).hostname or "" for url in CARD_LINK.findall(card_text)}
@@ -198,6 +204,9 @@ def env_details(paths: list[str], raw: str | None) -> str:
 
 def gate(pr: dict, details: str = "") -> str:
     sha = pr["head"]["sha"]
+    if not needs_review(changed_paths(pr["number"]), pr["user"]["login"]):
+        print(f"#{pr['number']} {sha[:7]}: opened by the maintainer, merged by hand")
+        return "skip"
     verdict, reason = decide(pr, changed_paths(pr["number"]), commit_status(sha), latest_run(CHECKS_WORKFLOW, sha),
                              existing_models())
     print(f"#{pr['number']} {sha[:7]}: {verdict} ({reason})")
@@ -253,14 +262,16 @@ def verdict(number: int, sha: str) -> None:
 
 
 def inputs(number: int, sha: str) -> dict[str, str]:
-    """What the review round's jobs need, written to $GITHUB_OUTPUT by the reset job: whether
-    env/requirements.in changes; the one model folder whose model.yaml the pull request adds, if
+    """What the review round's jobs need, written to $GITHUB_OUTPUT by the reset job: whether there
+    is a review at all (needs_review); whether env/requirements.in changes; the one model folder whose model.yaml the pull request adds, if
     any; the web sites its leakage pass may fetch."""
     files = api(f"pulls/{number}/files?per_page=100", paginate=True)
     paths = [f["filename"] for f in files]
+    if not needs_review(paths, api(f"pulls/{number}")["user"]["login"]):
+        return {"review": "false", "env": "false", "model": "", "web": ""}
     cards = [p for p in paths if p in {f["filename"] for f in files if f["status"] != "removed"} and re.fullmatch(r"models/[^/]+/model\.yaml", p) and SLUG.match(p.split("/")[1])
              and p.split("/")[1] != "_template"]
-    out = {"env": str(ENV_INPUT in paths).lower(), "model": "", "web": ""}
+    out = {"review": "true", "env": str(ENV_INPUT in paths).lower(), "model": "", "web": ""}
     if len(cards) == 1:
         text = gh("api", "-H", "Accept: application/vnd.github.raw", f"repos/{REPO}/contents/{cards[0]}?ref={sha}",
                   check=False)  # unreadable: the fixed sites only
@@ -268,9 +279,15 @@ def inputs(number: int, sha: str) -> dict[str, str]:
     return out
 
 
+def maintainer(number: int, sha: str) -> None:
+    """The maintainer's own pull request: no review, no comment; the status says why."""
+    set_status(sha, "success", f"opened by {MAINTAINER}, who merges it by hand: no Claude review")
+    print(f"#{number} {sha[:7]}: maintainer pull request, not reviewed")
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("mode", choices=["gate", "triage", "reset", "verdict", "inputs"])
+    parser.add_argument("mode", choices=["gate", "triage", "reset", "verdict", "inputs", "maintainer"])
     parser.add_argument("--pr", type=int)
     parser.add_argument("--sha")
     args = parser.parse_args(argv)
@@ -280,6 +297,8 @@ def main(argv=None) -> int:
         print("\n".join(f"{k}={v}" for k, v in inputs(args.pr, args.sha).items()))
     elif args.mode == "verdict":
         verdict(args.pr, args.sha)
+    elif args.mode == "maintainer":
+        maintainer(args.pr, args.sha)
     elif args.mode == "triage":
         pr = api(f"pulls/{args.pr}")
         if pr["user"]["login"] == MAINTAINER:
