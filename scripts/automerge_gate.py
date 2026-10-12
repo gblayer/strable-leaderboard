@@ -66,8 +66,11 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
 
 def needs_review(paths: list[str], author: str) -> bool:
     """The maintainer's own pull requests merge by hand and get no Claude review, except a results
-    update, which the gate may merge."""
-    return author != MAINTAINER or ("site/results.json" in paths and set(paths) <= set(RESULTS_FILES))
+    update and a model submission (only models/), which go through the review and the gate like
+    anyone's."""
+    results = "site/results.json" in paths and set(paths) <= set(RESULTS_FILES)
+    model = bool(paths) and all(p.startswith("models/") for p in paths)
+    return author != MAINTAINER or results or model
 
 
 def web_tools(card_text: str) -> str:

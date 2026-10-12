@@ -137,9 +137,11 @@ def test_leakage_verdict_never_blocks_and_quotes_safely():
     assert leakage_verdict(None)[0] is None and leakage_verdict('{"risk": "high"}')[0] is None
 
 
-def test_needs_review_skips_the_maintainers_own_pull_requests_but_not_results():
+def test_needs_review_skips_the_maintainers_own_pull_requests_but_not_results_or_models():
     assert needs_review(["site/index.html", "README.md"], "someone")
     assert needs_review(["models/m/model.py"], "someone")
     assert not needs_review(["site/index.html", "scripts/x.py"], MAINTAINER)
     assert needs_review(["site/results.json", "site/results.parquet"], MAINTAINER)
     assert not needs_review(["site/results.json", "site/index.html"], MAINTAINER)
+    assert needs_review(["models/m/model.py", "models/m/model.yaml"], MAINTAINER)  # her own model submission
+    assert not needs_review(["models/m/model.py", ".github/workflows/pages.yml"], MAINTAINER)
