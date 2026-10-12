@@ -4,19 +4,19 @@ from pathlib import Path
 import yaml
 
 from strable_leaderboard.card import card_problems
-from strable_leaderboard.check_requirements import pin_changes, problems as pin_problems
+from strable_leaderboard.check_requirements import freeze_constraints, pin_changes, problems as pin_problems
 from strable_leaderboard.smoke import code_problems, static_problems
 
 ROOT = Path(__file__).resolve().parent.parent
 GOOD = {
     "name": "TabPFN", "version": "2.5", "handles_strings": False, "tasks": ["regression", "binary"],
-    "variant": "default", "hardware": "gpu", "package": "tabpfn==6.0.6",
+    "variant": "default", "hardware": "gpu", "package": "tabpfn==9.0.0",
     "checkpoint": {"repo": "Prior-Labs/TabPFN-v2.5", "revision": "a" * 40}, "licence": "Prior Labs licence",
     "trained_on_strable": [], "code": "https://github.com/PriorLabs/TabPFN",
 }
 
 
-def _folder(tmp_path, card=GOOD, requirements="tabpfn==6.0.6\n", code="class Model: pass\n"):
+def _folder(tmp_path, card=GOOD, requirements="tabpfn==9.0.0\n", code="class Model: pass\n"):
     folder = tmp_path / "tabpfn-2.5"
     folder.mkdir(parents=True)
     (folder / "model.yaml").write_text(yaml.safe_dump(card))
@@ -48,15 +48,15 @@ def test_template_placeholders_fail():
 
 def test_pins_must_equal_the_shared_env(tmp_path):
     assert pin_problems(_folder(tmp_path)) == []
-    found = pin_problems(_folder(tmp_path / "b", requirements="tabpfn==9.0.0\nrequests\nnot-in-env==1.0\n"))
-    assert any("the shared environment has tabpfn==6.0.6" in p for p in found)
+    found = pin_problems(_folder(tmp_path / "b", requirements="tabpfn==6.0.6\nrequests\nnot-in-env==1.0\n"))
+    assert any("the shared environment has tabpfn==9.0.0" in p for p in found)
     assert any("'requests'" in p for p in found)  # unpinned
     assert any("not-in-env==1.0: not in the shared environment" in p for p in found)
 
 
 def test_card_package_must_match_requirements(tmp_path):
     found = pin_problems(_folder(tmp_path, requirements="scikit-learn==1.7.2\n"))
-    assert any("model.yaml package tabpfn==6.0.6" in p for p in found)
+    assert any("model.yaml package tabpfn==9.0.0" in p for p in found)
 
 
 def test_own_folds_and_seeds_are_flagged(tmp_path):
@@ -108,3 +108,10 @@ def test_lock_changes_list_additions_and_every_moved_version():
     lines = lock_changes(old, {"numpy": "2.4.0", "scikit-learn": "1.5.2", "sktime": "0.30.0"})
     assert lines == ["- Added: `sktime==0.30.0`", "- `joblib` 1.5.2 → removed", "- `numpy` 2.3.4 → 2.4.0",
                      "- `scikit-learn` 1.7.2 → 1.5.2 **downgrade**"]
+
+
+def test_a_requirements_in_pin_overrides_the_freeze(tmp_path):
+    req = tmp_path / "requirements.in"
+    req.write_text("tabpfn==9.0.0\nnumpy==2.3.4\n")
+    kept = freeze_constraints(req, tmp_path / "freeze.txt").read_text().splitlines()
+    assert "tabpfn==6.0.6" not in kept and "numpy==2.3.4" in kept and "skrub==0.6.2" in kept
