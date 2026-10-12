@@ -339,3 +339,10 @@ def test_git_reads_the_token_file_not_the_store(clone, tmp_path):
     used_the_file = "password=github_pat_x\n" in out
     del out  # whatever git returned must never reach a failure message
     assert used_the_file, "git did not read the token file"
+
+
+def test_example_folders_never_run(tmp_path):
+    for name in ("ridge", "_template", "my-model-1.0"):
+        (tmp_path / "models" / name).mkdir(parents=True)
+        (tmp_path / "models" / name / "model.yaml").write_text("name: x\n")
+    assert dispatch.Dispatcher.models(None, tmp_path) == [Path("models/my-model-1.0")]

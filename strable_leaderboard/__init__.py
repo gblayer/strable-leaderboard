@@ -20,6 +20,8 @@ FLAGS = "site/flags.json"
 RESULTS_FILES = ("site/results.json", "site/results.parquet", "site/results_per_fold.parquet",
                  "site/results_per_fold.csv", FLAGS)
 SLUG = re.compile(r"^[a-z0-9][a-z0-9.-]*$")  # a model folder name
+# Example folders for contributors: the dispatcher never runs them.
+EXAMPLES = {"ridge"}
 # Folder names of the paper's learners: only the maintainer adds them.
 RESERVED = {"ridge", "xgboost", "extratrees", "catboost", "tabpfn-2.5", "tabicl-v2", "realmlp", "tabm", "mambular",
             "contexttab", "tabstar", "tarte"}

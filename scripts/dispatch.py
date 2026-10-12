@@ -8,7 +8,7 @@ One pass: take the lock, fetch main, then move every model one step forward. The
 copy is never pulled or changed. Models are read from a checkout of origin/main, and every job of a
 model runs from a checkout of the commit recorded in its state when it started
 (cache/dispatch/checkouts/<sha>), so neither a later push nor an edit in the clone changes the
-code of a model in flight. A model is a folder of models/ on main. Its steps:
+code of a model in flight. A model is a folder of models/ on main, except the examples (EXAMPLES). Its steps:
 
   approve   the pull request that added the folder was merged, by gblayer or by the auto-merge
             gate with the label claude-approved (a folder pushed to main without a pull request was
@@ -58,7 +58,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from strable_leaderboard import APPROVED, FLAGS, MAINTAINER, OVERLAP, RESULTS_FILES, SLUG  # noqa: E402
+from strable_leaderboard import APPROVED, EXAMPLES, FLAGS, MAINTAINER, OVERLAP, RESULTS_FILES, SLUG  # noqa: E402
 from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 
 REPO = os.environ.get("STRABLE_REPO", DEFAULT_REPO)
@@ -206,7 +206,7 @@ class Dispatcher:
 
     def models(self, head: Path) -> list[Path]:
         return sorted(Path("models", p.parent.name) for p in (head / "models").glob("*/model.yaml")
-                      if SLUG.match(p.parent.name) and p.parent.name != "_template")
+                      if SLUG.match(p.parent.name) and p.parent.name not in {"_template", *EXAMPLES})
 
     def card(self, folder: Path, code: Path) -> dict:
         return yaml.safe_load((code / folder / "model.yaml").read_text())
