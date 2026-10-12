@@ -346,7 +346,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
       <p class="eyebrow"><span class="label">Leaderboard</span><span class="ver" id="ver-chip"></span><a class="ver-link" href="#history">Version history</a><span class="updated" id="updated"></span><button type="button" class="linkbtn" id="refresh" title="Fetch the latest results">↻ Refresh</button></p>
       <h1 id="hero-title">STRABLE</h1>
       <p class="expand"><span class="xp"><b>STR</b>ing-t<b>ABLE</b></span><span class="ipa">/ˈstreɪ.bəl/</span><span class="say">stray-buhl</span></p>
-      <p class="lede">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. The board continues <a href="https://arxiv.org/abs/2605.12292">the paper</a> and grows as new models come out.</p>
+      <p class="lede">STRABLE was accepted to the NeurIPS 2026 Evaluation and Datasets track. The board picks up from <a href="https://arxiv.org/abs/2605.12292">the paper</a>'s Pareto plot (75 of 445 pipelines, Figure 4a) and grows as new models come out.</p>
       <ul class="stats">
         <li><b>108</b> tables</li>
         <li><b>76</b> regression</li>
@@ -732,7 +732,7 @@ function renderPlot(list, front) {
     ax.appendChild(sv('line', { class: 'grid-l', x1: x, x2: x, y1: m.t, y2: H - m.b }));
     const v = Math.pow(10, k);
     const tx = sv('text', { x: x, y: H - m.b + 18, 'text-anchor': k === x1 ? 'end' : k === x0 ? 'start' : 'middle' });
-    tx.textContent = (v >= 1 ? v.toLocaleString('en-US') : String(v)) + ' s'; ax.appendChild(tx);
+    tx.textContent = (v >= 1 ? v.toLocaleString('en-US') : String(v)); ax.appendChild(tx);
   }
   const xt = sv('text', { class: 'ttl', x: m.l + iw / 2, y: H - 6, 'text-anchor': 'middle' }); xt.textContent = TIME_AXIS; ax.appendChild(xt);
   const yt = sv('text', { class: 'ttl', x: 12, y: m.t + ih / 2, 'text-anchor': 'middle', transform: 'rotate(-90 12 ' + (m.t + ih / 2) + ')' });

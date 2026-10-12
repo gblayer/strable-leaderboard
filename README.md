@@ -14,7 +14,7 @@ If you benchmark on STRABLE, [star this repository](https://github.com/gblayer/s
 
 **Leaderboard:** https://gblayer.github.io/strable-leaderboard/
 
-The board currently holds the paper's 75 Figure 4a pipelines, version v0.1.0-pre.
+The board currently holds the paper's 75 Figure 4a pipelines, version v0.1.0.
 
 ## Submit a model
 
