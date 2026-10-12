@@ -6,7 +6,7 @@ A numeric-only model gets the three encoders, an end-to-end model one line per t
 Tasks with a row in $STRABLE_RUNS (default runs/) or in $STRABLE_RESULTS/<model>.csv are left
 out, so the list is what the job array still has to do. Rows imported from the paper (hardware
 "paper") do not count: the runner re-runs them on the reference hardware, and the new rows replace
-them.
+them. ``tables`` and ``folds`` narrow the list (the dispatcher's test runs).
 """
 
 import json
@@ -38,18 +38,18 @@ def done(model: str, runs: Path, results: Path) -> set:
 
 
 def tasks(folders, runs=Path(os.environ.get("STRABLE_RUNS", ROOT / "runs")),
-          results=Path(os.environ.get("STRABLE_RESULTS", "results"))):
-    tables = json.loads(MANIFEST.read_text())["tables"]
+          results=Path(os.environ.get("STRABLE_RESULTS", "results")), tables=None, folds=range(FOLDS)):
+    manifest = json.loads(MANIFEST.read_text())["tables"]
     out = []
     for folder in folders:
         card = load_card(Path(folder))
         encoders = ["none"] if card["handles_strings"] else list(ENCODERS)
         have = done(Path(folder).name, runs, results)
         for encoder in encoders:
-            for table, meta in sorted(tables.items()):
-                if meta["task"] not in card["tasks"]:
+            for table, meta in sorted(manifest.items()):
+                if meta["task"] not in card["tasks"] or (tables is not None and table not in tables):
                     continue
-                for fold in range(FOLDS):
+                for fold in folds:
                     if (encoder, table, fold) not in have:
                         out.append(f"{folder} {encoder} {table} {fold}")
     return out
