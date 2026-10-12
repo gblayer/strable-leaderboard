@@ -12,14 +12,6 @@
 # different CSVs (num-str_llm-llama-3.1-8b_tabpfn is SS+PCA-30 in the standscal CSV), so the CSV is
 # part of the key. Variant "tuned" is the paper's random hyperparameter search (src/param_search.py).
 
-# filled: source CSV -> the file actually read. Each filled file is the original plus the fold rows
-# completed after publication (2026-10-09): 17 rows, 12 re-run on 2026-10-08 with the paper's code
-# and 5 finished in April but never compiled. Pipelines below stay keyed by the original name.
-filled:
-  result_comparison_tabicl_all.csv: result_comparison_tabicl_all_filled_2026-10-09.csv
-  result_REBUTTALS_trompt_transtab_mambular.csv: result_REBUTTALS_trompt_transtab_mambular_filled_2026-10-09.csv
-  result_comparison_standscal_pca_30.csv: result_comparison_standscal_pca_30_filled_2026-10-09.csv
-
 learners:  # model folder -> display name
   ridge: Ridge
   xgboost: XGBoost
