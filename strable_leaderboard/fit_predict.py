@@ -7,12 +7,14 @@ sandbox) and writes ``pred.npy`` (regression) or ``proba.npy`` and ``classes.npy
 (classification) to <outputs>. It never sees the test labels, the dataset or the folds, and it
 neither times nor scores itself: the parent does both. ``--warm-up`` fits on a few rows, at least
 one per class, predicts eight, and writes nothing, so that the parent can measure the start-up
-overhead: imports, CUDA start-up, weight loading.
+overhead: imports, CUDA start-up, weight loading. BLAS, OpenMP and torch threads are capped to
+``--n-jobs`` before the model is built (``limit_threads``).
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -21,6 +23,25 @@ import pandas as pd
 
 from .model import load_model_class
 from .splits import SEED
+
+# Libraries size their thread pools from the machine's cores, not the job's CPUs (tabicl 2.x even
+# takes max(cores, n_jobs)), so the runner sets these to n_jobs in the child's environment.
+THREAD_VARS = ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS")
+
+
+def thread_env(n_jobs: int) -> dict[str, str]:
+    return {v: str(n_jobs) for v in THREAD_VARS}
+
+
+def limit_threads(n_jobs: int) -> None:
+    """Cap threads to ``n_jobs``: the variables for libraries loaded from now on, threadpoolctl for
+    those already loaded, and torch's own setting if it is imported."""
+    from threadpoolctl import threadpool_limits
+
+    os.environ.update(thread_env(n_jobs))
+    threadpool_limits(n_jobs)
+    if "torch" in sys.modules:
+        sys.modules["torch"].set_num_threads(n_jobs)
 
 
 def main(argv=None) -> int:
@@ -38,6 +59,7 @@ def main(argv=None) -> int:
     cls = load_model_class(args.folder)
     if cls.handles_strings != args.strings:
         sys.exit("handles_strings differs between model.yaml and model.py")
+    limit_threads(args.n_jobs)
     X_train, X_test = pd.read_parquet(args.inputs / "X_train.parquet"), pd.read_parquet(args.inputs / "X_test.parquet")
     y_train = np.load(args.inputs / "y_train.npy")
     model = cls(task=args.task, seed=SEED, device=args.device, n_jobs=args.n_jobs, weights_dir=args.weights_dir)

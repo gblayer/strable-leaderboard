@@ -17,6 +17,7 @@ first; the wall-clock time of the second is the start-up overhead O. The timed c
 training rows and predicts the test rows; its wall-clock time is T. Then
 ``total_s = encoding + max(T - O, 0.001)``, where encoding is the table's cached language-model
 extraction time plus fitting and applying the encoder. Fit and predict are not timed apart.
+Both processes cap their BLAS, OpenMP and torch threads to ``--n-jobs``, the job's CPUs.
 
 ``--smoke``: the static checks, then outer fold 0 of the three smoke tables through the same
 sandbox; nothing is written. ``--no-sandbox`` runs the child as a plain process, for local
@@ -27,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -42,6 +44,7 @@ from . import __version__
 from .card import load_card
 from .data import load_table
 from .encoders import encode, warm_up
+from .fit_predict import limit_threads, thread_env
 from .metrics import checked_score
 from .smoke import SMOKE_TABLES, static_problems
 from .splits import splits_from_table
@@ -62,9 +65,9 @@ def hardware_name(device: str) -> str:
     return "cpu"
 
 
-def wall_clock(cmd: list) -> float:
+def wall_clock(cmd: list, env: dict) -> float:
     t0 = time.perf_counter()
-    subprocess.run([str(c) for c in cmd], check=True)
+    subprocess.run([str(c) for c in cmd], check=True, env=env)
     return time.perf_counter() - t0
 
 
@@ -84,8 +87,9 @@ def fit_predict(folder: Path, X_train, y_train, X_test, task: str, strings: bool
             cmd += ["--weights-dir", weights_dir]
         if sandbox:
             cmd = ["bash", SANDBOX, folder, inputs, outputs] + cmd
-        overhead = [wall_clock(cmd + ["--warm-up"]) for _ in range(2)][-1]  # the first one warms the caches
-        seconds = max(wall_clock(cmd) - overhead, MIN_SECONDS)
+        env = dict(os.environ, **thread_env(n_jobs))  # scripts/sandbox.sh passes them on
+        overhead = [wall_clock(cmd + ["--warm-up"], env) for _ in range(2)][-1]  # the first one warms the caches
+        seconds = max(wall_clock(cmd, env) - overhead, MIN_SECONDS)
         names = ["pred"] if task == "regression" else ["proba", "classes"]
         return {n: np.load(outputs / f"{n}.npy", allow_pickle=False) for n in names}, seconds
 
@@ -152,6 +156,7 @@ def main(argv=None) -> int:
     parser.add_argument("--n-jobs", type=int, default=1)
     parser.add_argument("--no-sandbox", action="store_true", help="local development only")
     args = parser.parse_args(argv)
+    limit_threads(args.n_jobs)  # the encoders, here; the child gets the same cap
     if args.device == "auto":
         import torch
 
