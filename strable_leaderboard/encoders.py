@@ -24,6 +24,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import make_pipeline
 
 SEED = 1234
 N_DIMS = 30
@@ -42,23 +43,30 @@ NAMES = {"none": "", "tfidf": "Tf-Idf", "qwen-3-8b-first30": "Qwen-3-8B · first
          "llama-3.1-8b-first30": "LLaMA-3.1-8B · first-30", "minilm-l6-v2-pca30": "MiniLM-L6-v2 · PCA-30"}
 
 
-def tfidf_encoder(seed: int = SEED):
-    """The paper's Tf-Idf encoder: skrub's TableVectorizer with a 30-component StringEncoder.
+def cleaner():
+    """The paper's first TableVectorizer: it parses the table (dates become numbers) and
+    leaves the strings as they are, for the encoder that follows to scale every number."""
+    from skrub import TableVectorizer
 
-    Columns with fewer than 40 distinct values are one-hot encoded, dates are expanded,
-    and numbers go through a SquashingScaler.
+    return TableVectorizer(cardinality_threshold=0, high_cardinality="passthrough")
+
+
+def tfidf_encoder(seed: int = SEED):
+    """The paper's Tf-Idf encoder (prepare_tabvec): the cleaner, then skrub's TableVectorizer
+    with a 30-component StringEncoder.
+
+    Columns with fewer than 40 distinct values are one-hot encoded, and numbers, dates included,
+    go through a SquashingScaler.
     """
     from skrub import SquashingScaler, StringEncoder, TableVectorizer
 
-    return TableVectorizer(high_cardinality=StringEncoder(n_components=N_DIMS, random_state=seed), numeric=SquashingScaler())
+    return make_pipeline(cleaner(), TableVectorizer(high_cardinality=StringEncoder(n_components=N_DIMS, random_state=seed),
+                                                    numeric=SquashingScaler()))
 
 
 def string_columns(X: pd.DataFrame) -> list[str]:
     """The string columns as skrub sees them; columns it parses as dates are not strings."""
-    from skrub import TableVectorizer
-
-    tv = TableVectorizer(cardinality_threshold=0, high_cardinality="passthrough").fit(X)
-    return list(tv.kind_to_columns_["high_cardinality"])
+    return list(cleaner().fit(X).kind_to_columns_["high_cardinality"])
 
 
 def embed_table(X: pd.DataFrame, encoder: str, table: str, cache_dir: Path, device: str = "cuda") -> tuple[pd.DataFrame, float]:
@@ -211,22 +219,16 @@ def warm_up(encoder: str) -> None:
 def encode(X_train, X_test, encoder: str, table: str, cache_dir=None, device: str = "cuda"):
     """Numeric train and test frames for one encoder, and the seconds the encoding costs.
 
-    The encoder is fitted on the training rows only. The seconds are the table's language-model
-    extraction time, measured once and cached (0 for Tf-Idf), plus fitting and applying the
-    encoder here; reading the cache is not counted.
+    The encoder, the paper's cleaner first, is fitted on the training rows only. The seconds are
+    the table's language-model extraction time, measured once and cached (0 for Tf-Idf), plus
+    fitting and applying the encoder here; reading the cache is not counted.
     """
-    from skrub import TableVectorizer
-
     if encoder == "tfidf":
         t0, seconds = time.perf_counter(), 0.0
         enc = tfidf_encoder()
     else:
         embeddings, seconds = embed_table(pd.concat([X_train, X_test]), encoder, table, Path(cache_dir), device)
         t0 = time.perf_counter()
-        # As in the paper, a first TableVectorizer parses the table (dates become numbers) and
-        # the second one encodes the strings and scales every number.
-        cleaner = TableVectorizer(cardinality_threshold=0, high_cardinality="passthrough")
-        X_train, X_test = cleaner.fit_transform(X_train), cleaner.transform(X_test)
-        enc = embedding_encoder(embeddings, ENCODERS[encoder]["reduction"])
+        enc = make_pipeline(cleaner(), embedding_encoder(embeddings, ENCODERS[encoder]["reduction"]))
     X_train, X_test = enc.fit_transform(X_train), enc.transform(X_test)
     return X_train, X_test, seconds + time.perf_counter() - t0

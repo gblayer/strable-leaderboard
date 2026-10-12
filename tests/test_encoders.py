@@ -64,9 +64,10 @@ def test_pca30_is_fitted_on_non_missing_training_cells(tmp_path):
     np.testing.assert_array_equal(rare, emb.loc[X_train["rare"][:10]].to_numpy()[:, :N_DIMS])
 
 
-@pytest.mark.parametrize("encoder", ["llama-3.1-8b-first30", "minilm-l6-v2-pca30"])
+@pytest.mark.parametrize("encoder", ["tfidf", "llama-3.1-8b-first30", "minilm-l6-v2-pca30"])
 def test_dates_are_not_strings(tmp_path, encoder):
-    _cache(tmp_path, encoder, 64)
+    if encoder != "tfidf":
+        _cache(tmp_path, encoder, 64)
     X_train, X_test = _frames()
     X_train = X_train.assign(day=pd.date_range("2020-01-01", periods=60).astype(str))
     X_test = X_test.assign(day=pd.date_range("2021-01-01", periods=20).astype(str))
