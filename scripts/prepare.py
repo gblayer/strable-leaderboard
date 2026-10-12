@@ -128,10 +128,11 @@ def main(argv=None) -> int:
     from strable_leaderboard.encoders import ENCODERS
 
     snapshot_download(HF_DATASET, repo_type="dataset", revision=HF_REVISION, local_dir=cache / "data")
-    for encoder, spec in ENCODERS.items():
+    for spec in ENCODERS.values():
         if spec["checkpoint"]:
             # original/ holds a second copy of the weights in Meta's format, which nothing reads
-            snapshot_download(spec["checkpoint"], local_dir=cache / "weights" / encoder, ignore_patterns=["original/*"])
+            snapshot_download(spec["checkpoint"], revision=spec["revision"], local_dir=cache / "weights" / spec["model"],
+                              ignore_patterns=["original/*"])
     for folder in args.folders:
         ckpt = load_card(folder)["checkpoint"]
         if ckpt:

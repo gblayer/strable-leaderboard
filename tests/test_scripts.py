@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from build_site_data import (PER_FOLD, build, flags_problems, leakage_problems, parquet_problems,  # noqa: E402
                              per_fold_problems, problems)
 from import_paper_results import convert  # noqa: E402
+from strable_leaderboard.encoders import NAMES  # noqa: E402
 from strable_leaderboard.metrics import pareto_front  # noqa: E402
 
 TABLES = json.loads((ROOT / "splits" / "manifest.json").read_text())["tables"]
@@ -131,11 +132,16 @@ def test_paper_selection_is_figure_4a():
         assert p["model"] in sel["learners"] and p["encoder"] in sel["encoders"]
         assert p["variant"] == ("tuned" if m.endswith("_tune") else "default")
         assert (p["encoder"] == "tfidf") == ("_tabvec_" in m)  # only the paper's Tf-Idf is the leaderboard's tfidf
-        assert p["encoder"] not in ("minilm-l6-v2", "llama-3.1-8b")  # the paper's PCA rows are not first-30
+        # a paper row shares a leaderboard encoder id only when it is the same pipeline
+        assert (p["encoder"] == "qwen-3-8b-first30") == ("qwen3-8b" in m and "nopca" in m.replace("no_pca", "nopca"))
+        assert (p["encoder"] == "minilm-l6-v2-pca30") == ("MiniLM-L6-v2" in m)
+        assert p["encoder"].endswith("ss-pca30") == ("standscal" in csv + m)
+        assert p["encoder"] != "llama-3.1-8b-first30"  # the paper's LLaMA rows are PCA-30
         if "realmlp" in m:
             assert "jasper" not in m and "e5-base" not in m
     assert ("catboost", "none", "tuned") in keys and ("mambular", "none", "default") in keys
     assert ("tabpfn-2.5", "nemotron-1b-pca30", "default") in keys
+    assert all(NAMES[e] == sel["encoders"][e] for e in NAMES if e in sel["encoders"])  # one display name per id
     assert not any("tabpfn3" in m or "30_thresh" in csv for csv, m, _ in rows)
 
 

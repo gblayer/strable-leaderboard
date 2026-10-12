@@ -3,7 +3,7 @@
 
 name: My Model                  # shown on the board
 version: "1.0"                  # one folder per model version; the version lives here
-handles_strings: false          # false: paired with the three string encoders. true: end-to-end
+handles_strings: false          # false: paired with the four string encoders. true: end-to-end
 tasks: [regression, binary, multiclass]
 variant: default                # default now; tuned and tuned-ensembled later, one folder each
 hardware: gpu                   # gpu | cpu

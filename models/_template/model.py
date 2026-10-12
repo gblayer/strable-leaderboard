@@ -12,7 +12,7 @@ from strable_leaderboard.model import StrableModel
 
 class Model(StrableModel):
     # True if your model reads raw string columns itself (end-to-end).
-    # False if it needs numbers: the leaderboard then pairs it with its three string encoders.
+    # False if it needs numbers: the leaderboard then pairs it with its four string encoders.
     handles_strings = False
 
     def fit(self, X, y):

@@ -27,13 +27,14 @@ learners:  # model folder -> display name
 
 # Encoder id -> display name. What the paper did (salts/src/encoding.py, llm_encoder.py):
 # - tfidf: skrub StringEncoder (character n-gram Tf-Idf, truncated SVD to 30) in a
-#   TableVectorizer, the leaderboard's own Tf-Idf encoder. The only paper encoder with a leaderboard id.
+#   TableVectorizer, the leaderboard's own Tf-Idf encoder.
 # - targetencoder: scikit-learn TargetEncoder. tarte: tarte_ai's TARTE_TablePreprocessor.
 # - *-pca30: the cached embedding of each distinct string, then PCA to 30 components fitted on the
 #   training rows (LLM_Encoder, the paper's default for every language model and FastText).
 # - *-ss-pca30: a StandardScaler before that PCA.
 # - *-first30: the first 30 embedding dimensions, no PCA (prepare_llm_no_pca_mrl).
-# No *-pca30 row is ever labelled minilm-l6-v2 or llama-3.1-8b, the leaderboard's first-30 encoders.
+# The leaderboard's own encoders (strable_leaderboard/encoders.py) reuse these ids for the same pipelines:
+# tfidf, qwen-3-8b-first30, minilm-l6-v2-pca30, and llama-3.1-8b-first30, which no imported row uses.
 encoders:
   none: ""
   tfidf: Tf-Idf
