@@ -81,6 +81,13 @@ def test_scope_one_new_model_folder():
     assert scope_problems([], "x", set()) == ["the diff is empty"]
 
 
+def test_test_folders_are_the_maintainers_only():
+    files = [f.replace("kumo-tabular-1.0", "test-kumo") for f in MODEL_FILES]
+    verdict, reason = gate(files=files)
+    assert verdict == "needs" and "`models/test-kumo/` is reserved for the maintainer's test runs" in reason
+    assert gate(p=pr(author=MAINTAINER), files=files) == ("merge", SHA)
+
+
 def test_reviews_must_both_say_merge():
     assert review_verdict([review(), review()])[0] == "success"
     assert review_verdict([review(), review("FIX", ["pin scikit-learn==1.7.2"])])[0] == "failure"

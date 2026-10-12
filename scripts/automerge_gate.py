@@ -27,7 +27,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from strable_leaderboard import APPROVED, MAINTAINER, NEEDS, OVERLAP, RESERVED, RESULTS_FILES, SLUG  # noqa: E402
+from strable_leaderboard import APPROVED, MAINTAINER, NEEDS, OVERLAP, RESERVED, RESULTS_FILES, SLUG, TEST_PREFIX  # noqa: E402
 from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 
 BOTS = {"github-actions[bot]", "claude[bot]"}
@@ -61,6 +61,8 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
             out.append(f"`models/{name}/` already exists on main: a change to a merged model")
         elif name in RESERVED:
             out.append(f"`models/{name}/` is reserved for a learner of the paper")
+        elif name.startswith(TEST_PREFIX) and author != MAINTAINER:
+            out.append(f"`models/{name}/` is reserved for the maintainer's test runs")
     return out
 
 

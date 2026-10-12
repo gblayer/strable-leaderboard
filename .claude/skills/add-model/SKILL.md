@@ -34,7 +34,7 @@ Never leave a template value (`My Model`, `my-model==1.0.0`, `0123456789abcdef`,
 
 ## 2. Folder
 
-`cp -r models/_template models/<name>`: lowercase letters, digits, dots and hyphens, one folder per model version. Never one of the names reserved for the paper's learners: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`; the gate refuses them.
+`cp -r models/_template models/<name>`: lowercase letters, digits, dots and hyphens, one folder per model version. Never one of the names reserved for the paper's learners: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`; nor a name starting with `test-` (the maintainer's test runs). The gate refuses them.
 
 ## 3. `model.py`
 

@@ -24,6 +24,11 @@ code of a model in flight. A model is a folder of models/ on main, except the ex
             Checks, the Claude review and the gate like any other).
   published waits for that pull request; merged -> done, and the version is tagged.
 
+A folder named test-<name> is a test of these steps, for the maintainer: its tasks are outer fold 0
+of the three smoke tables, its rows and results go to cache/test/runs and cache/test/results, and
+instead of publish it gathers and checks its results there and stops at step "tested". It never
+touches results/, the board or a results pull request.
+
 State lives in cache/dispatch/<model>.json. GitHub and git network calls are tried three times,
 with a growing wait. A failure stops the model (step "failed") and sends ONE repository_dispatch
 event (smoke-failed, run-failed, results-failed or runner-failed) that the Notify workflow turns
@@ -58,14 +63,14 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from strable_leaderboard import APPROVED, EXAMPLES, FLAGS, MAINTAINER, OVERLAP, RESULTS_FILES, SLUG  # noqa: E402
+from strable_leaderboard import APPROVED, EXAMPLES, FLAGS, MAINTAINER, OVERLAP, RESULTS_FILES, SLUG, TEST_PREFIX  # noqa: E402
 from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 
 REPO = os.environ.get("STRABLE_REPO", DEFAULT_REPO)
 REMOTE = f"https://github.com/{REPO}.git"  # explicit, so git always goes through the token's helper
 FETCH_MAIN = (REMOTE, "+refs/heads/main:refs/remotes/origin/main")
 GATE_BOT = "github-actions[bot]"
-STOPPED = ("done", "failed", "unapproved", "closed")
+STOPPED = ("done", "failed", "unapproved", "closed", "tested")
 VERSION = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.-]+)?$")  # v0.1.3, or a pre-release v0.1.0-pre
 ELAPSED = re.compile(rb"^elapsed (\d+)s on (\w+)$", re.M)  # the last line of a run task's log (run_array.sh)
 ABSOLUTE_PATH = re.compile(r"(?<![\w.:/~-])/(?:[\w.@+~-]+/)+([\w.@+~-]*)")
@@ -108,6 +113,13 @@ def token_file(path: Path = TOKEN_FILE) -> Path:
 def duration(seconds: float) -> str:
     hours = seconds / 3600
     return f"{seconds / 60:.0f} minutes" if hours < 2 else f"{hours:.0f} hours" if hours < 48 else f"{hours / 24:.0f} days"
+
+
+def smoke_tables() -> list[str]:
+    """A test runs outer fold 0 of the three smoke tables."""
+    from strable_leaderboard.smoke import SMOKE_TABLES
+
+    return sorted(SMOKE_TABLES.values())
 
 
 def write_flags(path: Path, name: str, st: dict) -> None:
@@ -208,6 +220,12 @@ class Dispatcher:
         return sorted(Path("models", p.parent.name) for p in (head / "models").glob("*/model.yaml")
                       if SLUG.match(p.parent.name) and p.parent.name not in {"_template", *EXAMPLES})
 
+    def outputs(self, name: str) -> tuple[Path, Path]:
+        """(runs, results) of a model: the clone's, or cache/test/ for a test."""
+        if name.startswith(TEST_PREFIX):
+            return self.cache / "test" / "runs", self.cache / "test" / "results"
+        return self.root / "runs", self.root / "results"
+
     def card(self, folder: Path, code: Path) -> dict:
         return yaml.safe_load((code / folder / "model.yaml").read_text())
 
@@ -215,7 +233,7 @@ class Dispatcher:
         tasks = self.state_dir / f"{name}.{kind}.txt"
         tasks.write_text("\n".join(lines) + "\n")
         (self.cache / "logs").mkdir(parents=True, exist_ok=True)
-        env = dict(self.env, STRABLE_ROOT=str(code))
+        env = dict(self.env, STRABLE_ROOT=str(code), STRABLE_RUNS=str(self.outputs(name)[0]))
         job = self.sh("bash", code / "scripts" / "run_array.sh", tasks, env=env).stdout.strip().split(";")[0]
         log(name, kind, f"{len(lines)} tasks, job {job}, code {code.name[:7]}")
         return job
@@ -229,7 +247,9 @@ class Dispatcher:
     def missing_tasks(self, folder: Path, code: Path) -> list[str]:
         from make_tasks import tasks
 
-        lines = tasks([str(code / folder)], runs=self.root / "runs", results=self.root / "results")
+        runs, results = self.outputs(folder.name)
+        narrow = {"tables": smoke_tables(), "folds": [0]} if folder.name.startswith(TEST_PREFIX) else {}
+        lines = tasks([str(code / folder)], runs=runs, results=results, **narrow)
         return [line.replace(f"{code}/", "", 1) for line in lines]  # folders relative to the checkout
 
     def prepare(self, folder: Path, code: Path) -> tuple[bool, str]:
@@ -279,10 +299,10 @@ class Dispatcher:
         except Exception as exc:  # a missed comment never stops the run
             log("announce failed:", type(exc).__name__)
 
-    def missing_embeddings(self) -> list[str]:
+    def missing_embeddings(self, tables=None) -> list[str]:
         from strable_leaderboard.embed import missing
 
-        return missing(self.cache)
+        return missing(self.cache, tables=tables)
 
     def notify(self, kind: str, st: dict, reason: str) -> None:
         """One repository_dispatch event; the Notify workflow comments as github-actions[bot]."""
@@ -355,7 +375,7 @@ class Dispatcher:
             step = "embed"
         if step == "embed":
             if not self.card(folder, code).get("handles_strings"):
-                todo = self.missing_embeddings()
+                todo = self.missing_embeddings(smoke_tables() if name.startswith(TEST_PREFIX) else None)
                 if todo:
                     shared = self.state("_embed")
                     if self.running(shared.get("job")):
@@ -387,7 +407,7 @@ class Dispatcher:
         if step == "publish":
             st["step"] = "publish"
             self.save(name, st)
-            return self.publish(folder, st, code)
+            return self.tested(folder, st, code) if name.startswith(TEST_PREFIX) else self.publish(folder, st, code)
         if step == "published":
             pr = self.gh.get(f"/pulls/{st['results_pr']}")
             if pr.get("merged_at"):
@@ -413,6 +433,21 @@ class Dispatcher:
             raise ValueError(f"results/versions.yaml: unreadable version {versions[0]['version']!r}")
         major, minor, patch = (int(x) for x in m.groups()[:3])
         return f"v{major}.{minor}.{patch if m.group(4) else patch + 1}"
+
+    def tested(self, folder: Path, st: dict, code: Path) -> None:
+        """A test's last step: gather and check its results in cache/test/results; nothing is published."""
+        from gather_results import gather
+
+        name = folder.name
+        runs, results = self.outputs(name)
+        results.mkdir(parents=True, exist_ok=True)
+        gather(runs, results, only=name)
+        ok, check_output = self.check_results(results / f"{name}.csv", code)
+        if not ok:
+            return self.fail(name, st, "results-failed", "check_results:\n" + check_output[-1200:])
+        st["step"] = "tested"
+        self.save(name, st)
+        log(name, f"tested: {len(pd.read_csv(results / f'{name}.csv'))} rows in {results / name}.csv, check_results ok")
 
     def publish(self, folder: Path, st: dict, code: Path) -> None:
         name = folder.name

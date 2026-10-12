@@ -12,7 +12,7 @@ No container and no environment of your own: every model runs in **one shared Py
 
 `models/_template/` is the starting point, `models/ridge/` a complete example.
 
-**Folder names.** One folder per model version, named with lowercase letters, digits, dots and hyphens (`kumo-tabular-1.0`); the version itself lives in `model.yaml`. These names are reserved for the learners of the paper, which the maintainer adds: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`.
+**Folder names.** One folder per model version, named with lowercase letters, digits, dots and hyphens (`kumo-tabular-1.0`); the version itself lives in `model.yaml`. These names are reserved for the learners of the paper, which the maintainer adds: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`. Names starting with `test-` are reserved for the maintainer's test runs.
 
 ## How a submission travels
 

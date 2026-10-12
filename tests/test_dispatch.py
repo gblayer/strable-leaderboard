@@ -54,7 +54,8 @@ def clone(tmp_path, monkeypatch):
     git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "add")
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    (bin_dir / "sbatch").write_text(f'#!/bin/bash\necho "$@" >> {tmp_path}/sbatch.log\necho 4242\n')
+    (bin_dir / "sbatch").write_text(f'#!/bin/bash\necho "$@" >> {tmp_path}/sbatch.log\n'
+                                    f'echo "$STRABLE_RUNS" >> {tmp_path}/runs.log\necho 4242\n')
     (bin_dir / "squeue").write_text(f'#!/bin/bash\ncat {tmp_path}/queue 2>/dev/null\n')
     (bin_dir / "scontrol").write_text('#!/bin/bash\necho "JobId=4242 ArrayJobId=4242 ArrayTaskId=0-1%16 ArrayTaskThrottle=16"\n')
     for f in bin_dir.iterdir():
@@ -64,7 +65,7 @@ def clone(tmp_path, monkeypatch):
     d.todo = ["models/extratrees tfidf t1 0", "models/extratrees tfidf t1 1"]
     d.embeddings = []
     monkeypatch.setattr(d, "missing_tasks", lambda folder, code: list(d.todo))
-    monkeypatch.setattr(d, "missing_embeddings", lambda: list(d.embeddings))
+    monkeypatch.setattr(d, "missing_embeddings", lambda tables=None: list(d.embeddings))
     monkeypatch.setattr(d, "prepare", lambda folder, code: (True, "ok"))
     monkeypatch.setattr(d, "check_results", lambda csv, code: (True, "coverage ok"))
     d.published = []
@@ -81,14 +82,14 @@ def commit(root):
                        capture_output=True)
 
 
-def state(d):
-    return json.loads((d.state_dir / "extratrees.json").read_text())
+def state(d, name="extratrees"):
+    return json.loads((d.state_dir / f"{name}.json").read_text())
 
 
-def finish_smoke(d, rc="0"):
+def finish_smoke(d, rc="0", name="extratrees"):
     (d.state_dir / "smoke").mkdir(parents=True, exist_ok=True)
-    (d.state_dir / "smoke" / "extratrees.rc").write_text(rc)
-    (d.state_dir / "smoke" / "extratrees.log").write_text("FAIL boom\n")
+    (d.state_dir / "smoke" / f"{name}.rc").write_text(rc)
+    (d.state_dir / "smoke" / f"{name}.log").write_text("FAIL boom\n")
 
 
 def test_full_path_with_one_comment_on_success(clone):
@@ -346,3 +347,71 @@ def test_example_folders_never_run(tmp_path):
         (tmp_path / "models" / name).mkdir(parents=True)
         (tmp_path / "models" / name / "model.yaml").write_text("name: x\n")
     assert dispatch.Dispatcher.models(None, tmp_path) == [Path("models/my-model-1.0")]
+
+
+def as_test(d, monkeypatch):
+    """The clone's model renamed models/test-extratrees; gather writes one row where it is told."""
+    (d.root / "models" / "extratrees").rename(d.root / "models" / "test-extratrees")
+    commit(d.root)
+    d.gathered, d.checked, d.embed_tables = [], [], []
+    d.todo = ["models/test-extratrees tfidf china-overseas-finance-inventory 0"]
+
+    def gather(runs, results, only=None):
+        d.gathered.append((runs, results, only))
+        (results / f"{only}.csv").write_text("model,score\ntest-extratrees,0.5\n")
+
+    monkeypatch.setattr("gather_results.gather", gather)
+    monkeypatch.setattr(d, "check_results", lambda csv, code: d.checked.append(csv) or (True, "coverage ok"))
+    monkeypatch.setattr(d, "missing_embeddings", lambda tables=None: d.embed_tables.append(tables) or [])
+
+
+def test_a_test_folder_runs_every_step_and_publishes_nothing(clone, monkeypatch):
+    d, name = clone, "test-extratrees"
+    as_test(d, monkeypatch)
+    d.run(fetch=False)
+    assert state(d, name)["step"] == "smoke" and state(d, name)["pr"] == 3
+    finish_smoke(d, name=name)
+    d.run(fetch=False)
+    assert state(d, name)["step"] == "run" and d.embed_tables == [dispatch.smoke_tables()]
+    (path, _), = d.gh.posts  # the run-started comment is kept
+    assert path == "/issues/3/comments"
+    assert set((d.tmp / "runs.log").read_text().split()) == {str(d.cache / "test" / "runs")}
+
+    d.todo = []
+    d.run(fetch=False)
+    d.run(fetch=False)
+    results = d.cache / "test" / "results"
+    assert state(d, name)["step"] == "tested" and "version" not in state(d, name)
+    assert d.gathered == [(d.cache / "test" / "runs", results, name)] and d.checked == [results / f"{name}.csv"]
+    assert d.published == [] and len(d.gh.posts) == 1  # no results pull request, no other message
+    assert not (d.root / "results").exists() and not (d.root / "runs").exists()
+
+
+def test_a_failed_test_notifies(clone, monkeypatch):
+    d, name = clone, "test-extratrees"
+    as_test(d, monkeypatch)
+    monkeypatch.setattr(d, "check_results", lambda csv, code: (False, "PROBLEM times must be positive"))
+    d.run(fetch=False)
+    finish_smoke(d, name=name)
+    d.run(fetch=False)
+    d.todo = []
+    d.run(fetch=False)
+    assert state(d, name)["step"] == "failed" and d.gh.posts[-1][1]["event_type"] == "results-failed"
+
+
+def test_test_tasks_are_fold_0_of_the_smoke_tables(tmp_path):
+    d = dispatch.Dispatcher(root=tmp_path, cache=tmp_path / "cache", gh=FakeGitHub(), python=sys.executable)
+    card = dict(CARD, tasks=["regression", "binary", "multiclass"])
+    for name, strings in [("test-numeric", False), ("test-strings", True), ("full", False)]:
+        (tmp_path / "models" / name).mkdir(parents=True)
+        (tmp_path / "models" / name / "model.yaml").write_text(yaml.safe_dump(dict(card, handles_strings=strings)))
+    numeric = d.missing_tasks(Path("models/test-numeric"), tmp_path)
+    assert len(numeric) == 9 and {line.split()[2] for line in numeric} == set(dispatch.smoke_tables())
+    assert {line.split()[3] for line in numeric} == {"0"} and {line.split()[1] for line in numeric} == \
+        {"tfidf", "minilm-l6-v2", "llama-3.1-8b"}
+    assert len(d.missing_tasks(Path("models/test-strings"), tmp_path)) == 3
+    assert len(d.missing_tasks(Path("models/full"), tmp_path)) == 3 * 108 * 3
+    row = d.cache / "test" / "runs" / "test-strings" / "none" / dispatch.smoke_tables()[0] / "0.json"
+    row.parent.mkdir(parents=True)
+    row.write_text("{}")  # a row in cache/test/runs counts for the test; one in runs/ would not
+    assert len(d.missing_tasks(Path("models/test-strings"), tmp_path)) == 2

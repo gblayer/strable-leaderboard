@@ -52,7 +52,7 @@ This section is the one place where the gate's conditions are written; the scrip
 
 1. the commit status "Claude review" of the current head is success: both review passes of that commit's round said MERGE;
 2. the Checks workflow succeeded on the current head commit;
-3. the diff touches exactly one new `models/<name>/` folder, whose name is valid and not reserved for a learner of the paper, or only `site/results.json` with the other results files (`RESULTS_FILES` in `strable_leaderboard/__init__.py`) in a pull request opened by `gblayer`; nothing else changes, so `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/`, `splits/`, `env/` and existing model folders never merge automatically;
+3. the diff touches exactly one new `models/<name>/` folder, whose name is valid, not reserved for a learner of the paper and, unless the pull request is opened by `gblayer`, does not start with `test-`, or only `site/results.json` with the other results files (`RESULTS_FILES` in `strable_leaderboard/__init__.py`) in a pull request opened by `gblayer`; nothing else changes, so `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/`, `splits/`, `env/` and existing model folders never merge automatically;
 4. the label `needs-maintainer` is not set (`pretraining-overlap` never blocks);
 5. the head commit did not change since the reviews: the status and the Checks run must belong to the current head, and the merge itself, `gh pr merge --merge --match-head-commit <sha>`, fails if it moved.
 
@@ -85,6 +85,8 @@ Each pass takes a lock, fetches `main` and moves every model one step, keeping i
 | published | merged: the version is tagged; closed: nothing more |
 
 A failure stops the model and sends one notification (section 5). Deleting `cache/dispatch/<model>.json` retries it from the start.
+
+**Test runs.** A folder whose name starts with `test-` (`TEST_PREFIX` in `strable_leaderboard/__init__.py`) is a test of these steps, for the maintainer only (the gate refuses it from anyone else). It goes through approve, prepare, smoke, embed and run as above, with the same run-started comment and failure notifications, but only on the three smoke tables: the embed step fills their embeddings only, the tasks are their outer fold 0 (at most 9 for a numeric-only model, 3 for an end-to-end one), the rows go to `cache/test/runs/` and, instead of publish, `gather_results.py` and `check_results` write and check `cache/test/results/<model>.csv`, one line goes to the log and the model stops at step `tested`. Nothing reaches `results/`, `results/versions.yaml`, `site/` or a results pull request. Deleting its state file and `cache/test/runs/<model>/` starts the test from the beginning.
 
 **Jobs.** `scripts/run_array.sh <tasks file>` submits itself: it creates the log folder first (SLURM fails silently on a missing one), reads the hardware from the card and asks for one GPU of the reference type or a CPU partition, 32 CPU cores and 128 GB either way. The cluster's partition and node flags live in the gitignored `private/runner.env`, since the repository names no cluster. By hand:
 
