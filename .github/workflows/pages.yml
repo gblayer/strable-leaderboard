@@ -1,3 +1,4 @@
+# test PR C: a change under .github/, never merged automatically
 name: Pages
 
 # Deploys site/ to GitHub Pages on every push to main that touches it. Pages is switched on under
