@@ -12,7 +12,7 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 ## A. A model folder, `models/<name>/`
 
 **Scope**
-- Only files under one new `models/<name>/` folder change, plus at most added lines in `env/requirements.in`; nothing in `strable_leaderboard/`, `scripts/`, `splits/`, `.github/`, `.claude/`, other models or other `env/` files. The folder is not named after a learner of the paper (`docs/submitting.md`, "Folder names").
+- Only files under one new `models/<name>/` folder change, plus at most added lines in `env/requirements.in`; nothing in `strable_leaderboard/`, `scripts/`, `splits/`, `.github/`, `.claude/`, other models or other `env/` files. The folder name, as the gate checks it: lowercase letters, digits, dots and hyphens, starting with a letter or digit, not `_template`, and not exactly one of the names reserved for the paper's learners (`RESERVED` in `strable_leaderboard/__init__.py`): `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`. Only an exact match is reserved: `tabicl-v2-20260212` is a valid name, not a reason for FIX. A name starting with `test-` is a test run of the maintainer: valid when the pull request's author (`gh pr view`) is `gblayer`, whatever follows the prefix (`test-extratrees` too); from anyone else it is a scope problem.
 - The folder has `model.py`, `model.yaml` and `requirements.txt`.
 
 **Card: complete**

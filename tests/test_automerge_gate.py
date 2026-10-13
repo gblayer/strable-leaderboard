@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import json
 
 from automerge_gate import decide, env_details, leakage_verdict, needs_review, review_verdict, scope_problems, web_tools  # noqa: E402
-from strable_leaderboard import MAINTAINER  # noqa: E402
+from strable_leaderboard import MAINTAINER, RESERVED  # noqa: E402
 
 SHA = "a" * 40
 MODEL_FILES = ["models/kumo-tabular-1.0/model.py", "models/kumo-tabular-1.0/model.yaml",
@@ -152,3 +152,10 @@ def test_needs_review_skips_the_maintainers_own_pull_requests_but_not_results_or
     assert not needs_review(["site/results.json", "site/index.html"], MAINTAINER)
     assert needs_review(["models/m/model.py", "models/m/model.yaml"], MAINTAINER)  # her own model submission
     assert not needs_review(["models/m/model.py", ".github/workflows/pages.yml"], MAINTAINER)
+
+
+def test_the_review_skill_lists_the_reserved_names():
+    skill = (Path(__file__).resolve().parent.parent / ".claude" / "skills" / "review-submission" / "SKILL.md").read_text()
+    assert all(f"`{name}`" in skill for name in RESERVED)
+    assert "`test-`" in skill and "gblayer" in skill  # the maintainer's test runs
+    assert gate(files=["models/tabicl-v2-20260212/model.py"]) == ("merge", SHA)
