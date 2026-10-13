@@ -12,6 +12,7 @@ package: my-model==1.0.0        # the code, same pin as requirements.txt and env
 checkpoint:                     # the weights, or null if the model has none
   repo: my-org/my-model         # Hugging Face repository
   revision: 0123456789abcdef    # the full 40-character commit hash, never a branch or tag
+  # files: [model.ckpt]         # optional: only these files of the repository are downloaded
 licence: Apache-2.0             # code and weights
 trained_on_strable: []          # STRABLE tables seen in pre-training or tuning, or []
 

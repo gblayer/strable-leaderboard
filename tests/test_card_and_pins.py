@@ -40,6 +40,14 @@ def test_every_missing_or_invalid_field_is_reported():
         assert word in found
 
 
+def test_checkpoint_files_are_optional():
+    ckpt = GOOD["checkpoint"]
+    assert card_problems(dict(GOOD, checkpoint=dict(ckpt, files=["model.ckpt", "*.json"]))) == []
+    for files in [[], "model.ckpt", [""], [1]]:
+        assert "checkpoint.files" in "\n".join(card_problems(dict(GOOD, checkpoint=dict(ckpt, files=files))))
+    assert card_problems(dict(GOOD, checkpoint=dict(ckpt, branch="main")))
+
+
 def test_template_placeholders_fail():
     template = yaml.safe_load((ROOT / "models" / "_template" / "model.yaml").read_text())
     found = "\n".join(card_problems(template))
