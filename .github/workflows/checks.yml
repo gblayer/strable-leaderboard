@@ -89,7 +89,9 @@ jobs:
             py="/tmp/env-$m/bin/python"
             "$py" -m pip install --quiet pyyaml
             if PYTHONPATH=. "$py" -m strable_leaderboard.check_requirements "models/$m"; then
-              "$py" -m pip install --quiet -c env/requirements.txt -e ".[smoke]" -r "models/$m/requirements.txt"
+              # The CPU build of torch (same version, +cpu): the CUDA build does not fit on the runner's disk.
+              "$py" -m pip install --quiet --extra-index-url https://download.pytorch.org/whl/cpu \
+                -c env/requirements.txt -e ".[smoke]" -r "models/$m/requirements.txt"
               hw=$("$py" -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["hardware"])' "models/$m/model.yaml")
               if "$py" -m strable_leaderboard.smoke "models/$m" --device cpu | tee -a "$GITHUB_STEP_SUMMARY"; then
                 :
