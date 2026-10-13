@@ -53,8 +53,25 @@ if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
   esac
   LOGS=${STRABLE_LOGS:-$ROOT/logs}
   mkdir -p "$LOGS"
-  exec sbatch --parsable --array=0-$((n - 1))%"${STRABLE_PARALLEL:-16}" --job-name="strable-$kind" \
-    --time="$time" --output="$LOGS/%A_%a.out" --export=ALL "${where[@]}" "$@" "$0" "$TASKS"
+  # SLURM caps the tasks of one array (MaxArraySize, often 1001): above STRABLE_ARRAY_MAX lines the
+  # tasks file is split into parts of that size, one array each, sharing STRABLE_PARALLEL. The job
+  # ids are printed comma-separated, a list squeue -j accepts.
+  max=${STRABLE_ARRAY_MAX:-1000}
+  parts=$(( (n + max - 1) / max ))
+  parallel=$(( (${STRABLE_PARALLEL:-16} + parts - 1) / parts ))
+  if [ "$parts" -eq 1 ]; then files=("$TASKS"); else
+    rm -f "$TASKS".part*
+    split -l "$max" -d -a 3 "$TASKS" "$TASKS.part"
+    files=("$TASKS".part*)
+  fi
+  jobs=()
+  for f in "${files[@]}"; do
+    m=$(grep -c . "$f")
+    jobs+=("$(sbatch --parsable --array=0-$((m - 1))%"$parallel" --job-name="strable-$kind" --time="$time" \
+      --output="$LOGS/%A_%a.out" --export=ALL "${where[@]}" "$@" "$0" "$f" | cut -d';' -f1)")
+  done
+  (IFS=,; echo "${jobs[*]}")
+  exit 0
 fi
 
 cd "$ROOT"
