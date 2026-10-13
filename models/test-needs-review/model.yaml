@@ -1,0 +1,11 @@
+name: Test Needs Review
+version: "0.0"
+handles_strings: false
+tasks: [regression]
+variant: default
+hardware: cpu
+
+package: scikit-learn==1.7.2
+checkpoint: null
+licence: BSD-3-Clause
+trained_on_strable: []
