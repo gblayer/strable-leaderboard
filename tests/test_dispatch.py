@@ -159,12 +159,12 @@ def test_run_is_resubmitted_once_then_fails(clone):
 
 def test_embeddings_come_first_and_are_shared(clone):
     d = clone
-    d.embeddings = ["embed llama-3.1-8b t1"]
+    d.embeddings = ["embed qwen-3-8b-first30 t1"]
     d.run(fetch=False)
     finish_smoke(d)
     d.run(fetch=False)
     assert state(d)["step"] == "embed"
-    assert (d.state_dir / "_embed.embed.txt").read_text().strip() == "embed llama-3.1-8b t1"
+    assert (d.state_dir / "_embed.embed.txt").read_text().strip() == "embed qwen-3-8b-first30 t1"
     assert "--gres=gpu:1" in (d.tmp / "sbatch.log").read_text().splitlines()[-1]
     d.embeddings = []
     d.run(fetch=False)
@@ -406,11 +406,11 @@ def test_test_tasks_are_fold_0_of_the_smoke_tables(tmp_path):
         (tmp_path / "models" / name).mkdir(parents=True)
         (tmp_path / "models" / name / "model.yaml").write_text(yaml.safe_dump(dict(card, handles_strings=strings)))
     numeric = d.missing_tasks(Path("models/test-numeric"), tmp_path)
-    assert len(numeric) == 9 and {line.split()[2] for line in numeric} == set(dispatch.smoke_tables())
+    assert len(numeric) == 12 and {line.split()[2] for line in numeric} == set(dispatch.smoke_tables())
     assert {line.split()[3] for line in numeric} == {"0"} and {line.split()[1] for line in numeric} == \
-        {"tfidf", "minilm-l6-v2", "llama-3.1-8b"}
+        {"tfidf", "qwen-3-8b-first30", "llama-3.1-8b-first30", "minilm-l6-v2-pca30"}
     assert len(d.missing_tasks(Path("models/test-strings"), tmp_path)) == 3
-    assert len(d.missing_tasks(Path("models/full"), tmp_path)) == 3 * 108 * 3
+    assert len(d.missing_tasks(Path("models/full"), tmp_path)) == 4 * 108 * 3
     row = d.cache / "test" / "runs" / "test-strings" / "none" / dispatch.smoke_tables()[0] / "0.json"
     row.parent.mkdir(parents=True)
     row.write_text("{}")  # a row in cache/test/runs counts for the test; one in runs/ would not

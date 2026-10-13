@@ -145,7 +145,7 @@ def smoke(folder: Path, data_dir, cache_dir, device: str, n_jobs: int, sandbox: 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("folder", type=Path, help="models/<name>")
-    parser.add_argument("--encoder", default="tfidf", help="tfidf, minilm-l6-v2, llama-3.1-8b; ignored for end-to-end models")
+    parser.add_argument("--encoder", default="tfidf", help="tfidf, qwen-3-8b-first30, llama-3.1-8b-first30, minilm-l6-v2-pca30; ignored for end-to-end models")
     parser.add_argument("--table")
     parser.add_argument("--fold", type=int, choices=[0, 1, 2])
     parser.add_argument("--smoke", action="store_true", help="fold 0 of the three smoke tables, nothing written")

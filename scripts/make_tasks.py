@@ -2,7 +2,7 @@
 
     python scripts/make_tasks.py models/tabpfn-2.5 [models/...] > tasks.txt
 
-A numeric-only model gets the three encoders, an end-to-end model one line per table and fold.
+A numeric-only model gets the four encoders, an end-to-end model one line per table and fold.
 Tasks with a row in $STRABLE_RUNS (default runs/) or in $STRABLE_RESULTS/<model>.csv are left
 out, so the list is what the job array still has to do. Rows imported from the paper (hardware
 "paper") do not count: the runner re-runs them on the reference hardware, and the new rows replace

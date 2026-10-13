@@ -42,7 +42,7 @@ if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
   read -r a b _ < "$TASKS"
   hw_of() { "$PY" -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["hardware"])' "$ROOT/$1/model.yaml"; }
   case "$a" in
-    embed) kind=embed; time=04:00:00; hw=gpu ;;
+    embed) kind=embed; time=12:00:00; hw=gpu ;;
     smoke) kind=smoke; time=00:30:00; hw=$(hw_of "$b") ;;
     *)     kind=run;   time=12:00:00; hw=$(hw_of "$a") ;;
   esac
@@ -65,6 +65,8 @@ echo "task $SLURM_ARRAY_TASK_ID on $(hostname): $a $b $c $d (device $DEVICE)"
 
 case "$a" in
   embed)
+    # less fragmentation: the 8B models in float32 leave little room for a batch of long texts
+    PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
     "$PY" -m strable_leaderboard.embed --encoder "$b" --table "$c" --cache-dir "$CACHE" --device "$DEVICE" ;;
   smoke)
     # The verdict is written here, by this trusted script.

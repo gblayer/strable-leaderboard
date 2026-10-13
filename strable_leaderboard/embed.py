@@ -1,7 +1,7 @@
 """Fill the language-model embedding cache, one table at a time, before any model runs.
 
     python -m strable_leaderboard.embed --list --cache-dir cache          # missing "embed <encoder> <table>" lines
-    python -m strable_leaderboard.embed --encoder llama-3.1-8b --table <table> --cache-dir cache --device cuda
+    python -m strable_leaderboard.embed --encoder qwen-3-8b-first30 --table <table> --cache-dir cache --device cuda
 
 Every numeric-only model reads ``<cache>/embeddings/<encoder>/<table>.parquet``. Computing it
 inside the model tasks would make several tasks (3 folds, several models) write the same file at
