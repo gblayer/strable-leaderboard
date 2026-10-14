@@ -1,7 +1,11 @@
 {
- "version": "v0.1.1",
+ "version": "v0.1.2",
  "built": "2026-10-14",
  "history": [
+  {
+   "version": "v0.1.2",
+   "note": "Added TabPFN-3.5 v3.5-20260909"
+  },
   {
    "version": "v0.1.1",
    "note": "Added TabPFN-3 v3_default"
@@ -1512,6 +1516,110 @@
    "clf": [
     0.8753,
     1.4701,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+tabpfn-3.5",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7951,
+    38.0966,
+    324,
+    324
+   ],
+   "reg": [
+    0.6943,
+    31.9467,
+    228,
+    228
+   ],
+   "clf": [
+    0.8839,
+    90.2654,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+tabpfn-3.5",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7939,
+    3.1712,
+    324,
+    324
+   ],
+   "reg": [
+    0.6885,
+    3.0651,
+    228,
+    228
+   ],
+   "clf": [
+    0.8833,
+    3.2865,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+tabpfn-3.5",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7976,
+    45.5355,
+    324,
+    324
+   ],
+   "reg": [
+    0.7052,
+    38.7329,
+    228,
+    228
+   ],
+   "clf": [
+    0.8829,
+    106.0749,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+tabpfn-3.5",
+   "enc": "Tf-Idf",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7904,
+    2.056,
+    324,
+    324
+   ],
+   "reg": [
+    0.7178,
+    1.9674,
+    228,
+    228
+   ],
+   "clf": [
+    0.8913,
+    2.2532,
     96,
     96
    ]
