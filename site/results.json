@@ -1,7 +1,11 @@
 {
- "version": "v0.1.0",
- "built": "2026-10-10",
+ "version": "v0.1.1",
+ "built": "2026-10-14",
  "history": [
+  {
+   "version": "v0.1.1",
+   "note": "Added TabPFN-3 v3_default"
+  },
   {
    "version": "v0.1.0",
    "note": "The paper's 75 Figure 4a pipelines, every table and fold"
@@ -1404,6 +1408,110 @@
    "clf": [
     0.8871,
     11.8997,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+tabpfn-3",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "TabPFN-3",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7796,
+    37.4922,
+    324,
+    324
+   ],
+   "reg": [
+    0.6624,
+    31.1189,
+    228,
+    228
+   ],
+   "clf": [
+    0.8651,
+    89.1935,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+tabpfn-3",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "TabPFN-3",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7644,
+    2.4688,
+    324,
+    324
+   ],
+   "reg": [
+    0.6494,
+    2.4838,
+    228,
+    228
+   ],
+   "clf": [
+    0.8681,
+    2.2208,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+tabpfn-3",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "TabPFN-3",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7795,
+    45.0371,
+    324,
+    324
+   ],
+   "reg": [
+    0.6833,
+    38.0874,
+    228,
+    228
+   ],
+   "clf": [
+    0.8666,
+    105.5285,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+tabpfn-3",
+   "enc": "Tf-Idf",
+   "lrn": "TabPFN-3",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7807,
+    1.5177,
+    324,
+    324
+   ],
+   "reg": [
+    0.6849,
+    1.5617,
+    228,
+    228
+   ],
+   "clf": [
+    0.8753,
+    1.4701,
     96,
     96
    ]
