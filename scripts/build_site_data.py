@@ -11,7 +11,9 @@ being published). Only the files written here are public. ``--check`` validates 
 instead, which the Checks workflow runs on every pull request that changes it.
 
 One record per pipeline (model, encoder, variant), with a list per view (both, reg, clf):
-[score, time, fold rows, fold rows expected], or null when the pipeline has no row in that view.
+[score, time, fold rows, fold rows expected], or null when the pipeline has no row in that view. A
+model whose card lists the tasks of one family only (``tasks: [regression]``, say) gets that view
+alone: no "both" view, no view for the other family.
 As in the paper's Figure 4a, score is the median over the fold rows of the view of R² or AUC, and
 time the median of the total run time per 1,000 samples (encoding, training and prediction
 seconds over the table's rows). A view with fewer fold rows than expected is shown with an
@@ -66,6 +68,7 @@ COLUMNS = {
 }
 PER_FOLD = ["id", "encoder", "learner", "variant", "table", "task", "fold", "score", "total_s", "n_rows", "time_per_1k_s",
             "overlap"]
+FAMILIES = {"reg": {"regression"}, "clf": {"binary", "multiclass"}}  # the views of a one-family model
 URL = re.compile(r"^https?://[^\s\"'<>]+$")
 PAPER = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())  # display names of imported pipelines
 
@@ -74,6 +77,13 @@ def card_of(model: str) -> dict:
     """The card in models/, else a paper learner's name."""
     path = ROOT / "models" / model / "model.yaml"
     return yaml.safe_load(path.read_text()) if path.exists() else {"name": PAPER["learners"].get(model, model)}
+
+
+def card_views(card: dict) -> set[str]:
+    """The views of a model's pipelines: only reg or only clf when the card's ``tasks`` are one family, else all
+    three (also for the paper's learners, which have no card)."""
+    tasks = set(card.get("tasks") or [])
+    return next(({view} for view, family in FAMILIES.items() if tasks and tasks <= family), set(VIEW_KEYS.values()))
 
 
 def flags_path(json_path: Path) -> Path:
@@ -128,16 +138,16 @@ def folds_expected() -> dict:
     return {VIEW_KEYS[v]: n for v, n in expected_folds(tables).items()}
 
 
-def summarize(folds: pd.DataFrame, expected: dict) -> dict:
+def summarize(folds: pd.DataFrame, expected: dict, views=tuple(VIEW_KEYS.values())) -> dict:
     """Per view: [median score, median total s per 1K samples, fold rows, fold rows expected] or None.
 
-    ``folds`` are one pipeline's rows of the per-fold table.
+    ``folds`` are one pipeline's rows of the per-fold table; views not in ``views`` (card_views) are None.
     """
     out = {}
     for view, tasks in VIEWS.items():
         r = folds[folds["task"].isin(tasks)]
         out[VIEW_KEYS[view]] = [round(float(r["score"].median()), 4), _num(r["time_per_1k_s"].median()), len(r),
-                                expected[VIEW_KEYS[view]]] if len(r) else None
+                                expected[VIEW_KEYS[view]]] if len(r) and VIEW_KEYS[view] in views else None
     return out
 
 
@@ -177,7 +187,7 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
             if path.stem in flags:
                 record.update(overlap=True, overlap_evidence=flags[path.stem]["evidence"])
             folds.append(per_fold(rows, record))
-            record.update(summarize(folds[-1], expected))
+            record.update(summarize(folds[-1], expected, card_views(card)))
             pipelines.append(record)
     versions = yaml.safe_load((results_dir / "versions.yaml").read_text()) if (results_dir / "versions.yaml").exists() else []
     data = {"version": versions[0]["version"] if versions else "v0.0.0", "built": date.today().isoformat(),
@@ -241,7 +251,8 @@ def per_fold_problems(data: dict, path: Path) -> list[str]:
     if set(by_id) != {p["id"] for p in data["pipelines"]}:
         out.append(f"{path.name}: not the same pipelines as the JSON")
     for p in data["pipelines"]:
-        if p["id"] in by_id and summarize(by_id[p["id"]], expected) != {v: p.get(v) for v in VIEW_KEYS.values()}:
+        views = card_views(card_of(model_of(p["id"])))
+        if p["id"] in by_id and summarize(by_id[p["id"]], expected, views) != {v: p.get(v) for v in VIEW_KEYS.values()}:
             out.append(f"{p['id']}: medians or fold rows differ from {path.name}")
     return out
 

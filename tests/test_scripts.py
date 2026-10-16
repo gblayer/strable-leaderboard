@@ -10,6 +10,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+import build_site_data  # noqa: E402
 from build_site_data import (PER_FOLD, build, flags_problems, overlap_problems, parquet_problems,  # noqa: E402
                              per_fold_problems, problems, read_flags)
 from import_paper_results import convert  # noqa: E402
@@ -115,6 +116,33 @@ def test_flags_in_the_dispatchers_older_form_read_as_overlap(tmp_path):
     flags = read_flags(path)
     assert flags["m"] == {"overlap": True, "evidence": "https://github.com/gblayer/strable-leaderboard/pull/12"}
     assert flags_problems(flags) == ['flags.json: n must be {"overlap": true, "evidence": "<url>"}']
+
+
+def test_a_one_family_model_gets_only_its_view(tmp_path, monkeypatch):
+    """A model card with regression tasks only (or classification only): no "both" view and no view for the
+    other family, so the page lists it only under its own task. The paper's learners have no card: all views."""
+    results = tmp_path / "results"; results.mkdir()
+    full = _complete_results()
+    _complete_results().to_csv(results / "ridge.csv", index=False)
+    _complete_results(model="nori")[full["task"] == "regression"].to_csv(results / "nori.csv", index=False)
+    _complete_results(model="clfonly")[full["task"] != "regression"].to_csv(results / "clfonly.csv", index=False)
+    (results / "versions.yaml").write_text("- version: v0.1.1\n  date: 2026-11-20\n  note: Added Nori\n")
+    cards = {"nori": {"name": "Nori", "tasks": ["regression"]}, "clfonly": {"name": "C", "tasks": ["binary", "multiclass"]}}
+    monkeypatch.setattr(build_site_data, "card_of", lambda m: cards.get(m, {"name": m}))
+    data = build(results, tmp_path / "results.json")
+    by_id = {p["id"]: p for p in data["pipelines"]}
+    assert by_id["tfidf+nori"]["both"] is None and by_id["tfidf+nori"]["clf"] is None
+    assert by_id["tfidf+nori"]["reg"][2:] == [228, 228]
+    assert by_id["tfidf+clfonly"]["both"] is None and by_id["tfidf+clfonly"]["reg"] is None
+    assert by_id["tfidf+clfonly"]["clf"][2:] == [96, 96]
+    assert all(by_id["tfidf+ridge"][v] for v in ("both", "reg", "clf"))  # no card: unaffected
+    assert problems(data) == [] and parquet_problems(data, tmp_path / "results.parquet") == []
+    assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == []
+    long = pd.read_parquet(tmp_path / "results.parquet")
+    assert set(long.loc[long["id"] == "tfidf+nori", "view"]) == {"reg"}
+    monkeypatch.setattr(build_site_data, "card_of", lambda m: {"name": m})  # the card gone: views no longer match
+    assert "tfidf+nori: medians or fold rows differ from results_per_fold.parquet" in per_fold_problems(
+        data, tmp_path / "results_per_fold.parquet")
 
 
 def test_import_paper_rows():
