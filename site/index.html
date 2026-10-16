@@ -580,7 +580,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 
 <div class="tour" id="tour" role="dialog" aria-live="polite" aria-label="Demo tour" hidden>
   <div class="tour-top">
-    <span class="tour-count" id="tour-count">Demo 1/9</span>
+    <span class="tour-count" id="tour-count">Demo 1/10</span>
     <div class="tour-ctl">
       <button type="button" id="tour-prev">Back</button>
       <button type="button" id="tour-play">Pause</button>
@@ -1167,12 +1167,14 @@ function placeCaret() {
 placeCaret();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeCaret);
 
-/* ---------- demo tour: task, sort, table, plot, refresh, history, downloads, cite, adding a model ---------- */
+/* ---------- demo tour: task, sort, overlap, table, plot, refresh, history, downloads, cite, adding a model ---------- */
 const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
     text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of the order get a red frame; the plot stays the same.' },
+  { sel: '#ctl-overlap', block: 'center',
+    text: 'Overlap ∩. A small ∩ marks models whose pre-training data may include some STRABLE tables. Show, the default, keeps every model; Hide leaves these ones out of the table and the plot.' },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
     text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, ∩ marks models whose pre-training may overlap STRABLE, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
@@ -1189,6 +1191,8 @@ const TOUR = [
     text: 'Submit a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
 ];
 let tour = null;
+/* The steps whose control is on the page: the Overlap switch only shows when a model is marked. */
+const tourSteps = () => TOUR.filter((s) => !(document.querySelector(s.sel) || {}).hidden);
 function clearFocus() { document.querySelectorAll('.tour-focus').forEach((n) => n.classList.remove('tour-focus')); }
 function startBar() {
   const b = $('tour-bar'); b.style.transition = 'none'; b.style.width = '0%'; void b.offsetWidth;
@@ -1200,7 +1204,7 @@ function applyStep(s) {
   render();
 }
 function showStep() {
-  const s = TOUR[tour.i];
+  const s = tour.steps[tour.i];
   clearFocus();
   applyStep(s);
   const t = document.querySelector(s.sel);
@@ -1208,22 +1212,22 @@ function showStep() {
     t.classList.add('tour-focus');
     t.scrollIntoView({ block: s.block || 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
   }
-  $('tour-count').textContent = 'Demo ' + (tour.i + 1) + '/' + TOUR.length;
+  $('tour-count').textContent = 'Demo ' + (tour.i + 1) + '/' + tour.steps.length;
   $('tour-text').textContent = s.text;
   const link = $('tour-link');
   if (s.link) { link.href = s.link[0]; link.textContent = s.link[1] + ' ↗'; link.target = '_blank'; link.rel = 'noopener'; link.hidden = false; }
   else link.hidden = true;
   $('tour-prev').disabled = tour.i === 0;
-  $('tour-next').textContent = tour.i === TOUR.length - 1 ? 'Finish' : 'Next';
+  $('tour-next').textContent = tour.i === tour.steps.length - 1 ? 'Finish' : 'Next';
   clearTimeout(tour.timer);
   if (tour.playing) tour.timer = setTimeout(nextStep, 7000);
   startBar();
 }
-function nextStep() { if (!tour) return; if (tour.i < TOUR.length - 1) { tour.i++; showStep(); } else endTour(); }
+function nextStep() { if (!tour) return; if (tour.i < tour.steps.length - 1) { tour.i++; showStep(); } else endTour(); }
 function prevStep() { if (tour && tour.i > 0) { tour.i--; showStep(); } }
 function startTour() {
   if (tour) return;
-  tour = { i: 0, playing: true, timer: null, saved: { task: state.task, sort: state.sort, overlap: state.overlap } };
+  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, sort: state.sort, overlap: state.overlap } };
   $('tour').hidden = false; $('tour-play').textContent = 'Pause';
   showStep();
 }
