@@ -10,8 +10,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
-from build_site_data import (PER_FOLD, build, flags_problems, leakage_problems, parquet_problems,  # noqa: E402
-                             per_fold_problems, problems)
+import build_site_data  # noqa: E402
+from build_site_data import (PER_FOLD, build, flags_problems, overlap_problems, parquet_problems,  # noqa: E402
+                             per_fold_problems, problems, read_flags)
 from import_paper_results import convert  # noqa: E402
 from strable_leaderboard.encoders import NAMES  # noqa: E402
 from strable_leaderboard.metrics import pareto_front  # noqa: E402
@@ -73,35 +74,67 @@ def test_build_site_data(tmp_path):
     assert "results_per_fold.csv does not match results_per_fold.parquet: rebuild both" in per_fold_problems(data, tmp_path / "results_per_fold.parquet")
 
 
-def test_build_site_data_leakage_flags(tmp_path):
+def test_build_site_data_overlap_flags(tmp_path):
     results = tmp_path / "results"; results.mkdir()
     _complete_results().to_csv(results / "ridge.csv", index=False)
     _complete_results(model="tabpfn-2.5").to_csv(results / "tabpfn-2.5.csv", index=False)
     (results / "versions.yaml").write_text("- version: v0.1.1\n  date: 2026-11-20\n  note: Added TabPFN 2.5\n")
-    flags = {"tabpfn-2.5": {"leakage": "possible", "pr": 12}}
+    url = "https://arxiv.org/html/2605.12292#A4.SS1.SSS0.Px3"
+    flags = {"tabpfn-2.5": {"overlap": True, "evidence": url}}
     (tmp_path / "flags.json").write_text(json.dumps(flags))  # read from next to the output, like site/flags.json
     data = build(results, tmp_path / "results.json")
     ridge, tabpfn = data["pipelines"]
-    assert "leakage" not in ridge and "leakage_pr" not in ridge
-    assert tabpfn["id"] == "tfidf+tabpfn-2.5" and tabpfn["leakage"] == "possible" and tabpfn["leakage_pr"] == 12
-    assert problems(data) == [] and flags_problems(flags) == [] and leakage_problems(data, flags) == []
+    assert "overlap" not in ridge and "overlap_evidence" not in ridge
+    assert tabpfn["id"] == "tfidf+tabpfn-2.5" and tabpfn["overlap"] is True and tabpfn["overlap_evidence"] == url
+    assert problems(data) == [] and flags_problems(flags) == [] and overlap_problems(data, flags) == []
     long = pd.read_parquet(tmp_path / "results.parquet")
-    assert set(long.loc[long["id"] == "tfidf+tabpfn-2.5", "leakage"]) == {"possible"}
-    assert long.loc[long["id"] == "tfidf+ridge", "leakage"].isna().all()
+    assert long["overlap"].dtype == bool and set(long.loc[long["id"] == "tfidf+tabpfn-2.5", "overlap"]) == {True}
+    assert not long.loc[long["id"] == "tfidf+ridge", "overlap"].any()
     assert parquet_problems(data, tmp_path / "results.parquet") == []
     for folds in [pd.read_parquet(tmp_path / "results_per_fold.parquet"), pd.read_csv(tmp_path / "results_per_fold.csv")]:
-        assert (folds.loc[folds["id"] == "tfidf+tabpfn-2.5", "leakage"] == "possible").all()
-        assert folds.loc[folds["id"] == "tfidf+ridge", "leakage"].isna().all()
+        assert folds.loc[folds["id"] == "tfidf+tabpfn-2.5", "overlap"].all()
+        assert not folds.loc[folds["id"] == "tfidf+ridge", "overlap"].any()
     assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == []
-    assert leakage_problems(data, {}) == ["tfidf+tabpfn-2.5: leakage fields do not match flags.json"]
-    assert leakage_problems(data, {**flags, "ridge": {"leakage": "possible", "pr": 3}}) == [
-        "tfidf+ridge: leakage fields do not match flags.json"]
-    assert flags_problems([]) and flags_problems({"Bad Name": {"leakage": "possible", "pr": 1}})
-    for bad in [{"leakage": "none", "pr": 1}, {"leakage": "possible", "pr": None}, {"leakage": "possible"},
-                {"leakage": "possible", "pr": 1, "note": "x"}, "possible"]:
+    assert overlap_problems(data, {}) == ["tfidf+tabpfn-2.5: overlap fields do not match flags.json"]
+    assert overlap_problems(data, {**flags, "ridge": {"overlap": True, "evidence": url}}) == [
+        "tfidf+ridge: overlap fields do not match flags.json"]
+    assert flags_problems([]) and flags_problems({"Bad Name": {"overlap": True, "evidence": url}})
+    for bad in [{"overlap": False, "evidence": url}, {"overlap": True, "evidence": None}, {"overlap": True},
+                {"overlap": True, "evidence": "javascript:alert(1)"}, {"overlap": True, "evidence": url, "note": "x"},
+                {"overlap": "true", "evidence": url}, "possible"]:
         assert flags_problems({"m": bad}), bad
-    tabpfn["leakage_pr"] = "12"
-    assert problems(data) == ['tfidf+tabpfn-2.5: leakage must be "possible" with leakage_pr, the model pull request']
+    (tmp_path / "flags.json").write_text(json.dumps({"tabpfn-2.5": {"overlap": True}}))
+    with pytest.raises(SystemExit):  # a malformed flag stops the build
+        build(results, tmp_path / "results.json")
+    tabpfn["overlap_evidence"] = "not a url"
+    assert problems(data) == ["tfidf+tabpfn-2.5: overlap must be true with overlap_evidence, a URL"]
+
+
+def test_a_one_family_model_gets_only_its_view(tmp_path, monkeypatch):
+    """A model card with regression tasks only (or classification only): no "both" view and no view for the
+    other family, so the page lists it only under its own task. The paper's learners have no card: all views."""
+    results = tmp_path / "results"; results.mkdir()
+    full = _complete_results()
+    _complete_results().to_csv(results / "ridge.csv", index=False)
+    _complete_results(model="nori")[full["task"] == "regression"].to_csv(results / "nori.csv", index=False)
+    _complete_results(model="clfonly")[full["task"] != "regression"].to_csv(results / "clfonly.csv", index=False)
+    (results / "versions.yaml").write_text("- version: v0.1.1\n  date: 2026-11-20\n  note: Added Nori\n")
+    cards = {"nori": {"name": "Nori", "tasks": ["regression"]}, "clfonly": {"name": "C", "tasks": ["binary", "multiclass"]}}
+    monkeypatch.setattr(build_site_data, "card_of", lambda m: cards.get(m, {"name": m}))
+    data = build(results, tmp_path / "results.json")
+    by_id = {p["id"]: p for p in data["pipelines"]}
+    assert by_id["tfidf+nori"]["both"] is None and by_id["tfidf+nori"]["clf"] is None
+    assert by_id["tfidf+nori"]["reg"][2:] == [228, 228]
+    assert by_id["tfidf+clfonly"]["both"] is None and by_id["tfidf+clfonly"]["reg"] is None
+    assert by_id["tfidf+clfonly"]["clf"][2:] == [96, 96]
+    assert all(by_id["tfidf+ridge"][v] for v in ("both", "reg", "clf"))  # no card: unaffected
+    assert problems(data) == [] and parquet_problems(data, tmp_path / "results.parquet") == []
+    assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == []
+    long = pd.read_parquet(tmp_path / "results.parquet")
+    assert set(long.loc[long["id"] == "tfidf+nori", "view"]) == {"reg"}
+    monkeypatch.setattr(build_site_data, "card_of", lambda m: {"name": m})  # the card gone: views no longer match
+    assert "tfidf+nori: medians or fold rows differ from results_per_fold.parquet" in per_fold_problems(
+        data, tmp_path / "results_per_fold.parquet")
 
 
 def test_import_paper_rows():

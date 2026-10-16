@@ -1,6 +1,6 @@
 {
  "version": "v0.1.2",
- "built": "2026-10-14",
+ "built": "2026-10-16",
  "history": [
   {
    "version": "v0.1.2",
@@ -72,6 +72,8 @@
    "lrn": "ConTextTab",
    "kind": "e2e",
    "variant": "default",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2605.12292#A4.SS1.SSS0.Px3",
    "both": [
     0.7578,
     6.9247,

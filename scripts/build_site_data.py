@@ -11,18 +11,20 @@ being published). Only the files written here are public. ``--check`` validates 
 instead, which the Checks workflow runs on every pull request that changes it.
 
 One record per pipeline (model, encoder, variant), with a list per view (both, reg, clf):
-[score, time, fold rows, fold rows expected], or null when the pipeline has no row in that view.
+[score, time, fold rows, fold rows expected], or null when the pipeline has no row in that view. A
+model whose card lists the tasks of one family only (``tasks: [regression]``, say) gets that view
+alone: no "both" view, no view for the other family.
 As in the paper's Figure 4a, score is the median over the fold rows of the view of R² or AUC, and
 time the median of the total run time per 1,000 samples (encoding, training and prediction
 seconds over the table's rows). A view with fewer fold rows than expected is shown with an
 incomplete tag. ``hw`` lists the hardware the rows ran on, when recorded. The page computes the
 ranking and the Pareto front from this file.
 
-Leakage flags: when site/flags.json sits next to the output (``{"<model>": {"leakage": "possible",
-"pr": N}}``, written by the dispatcher from the model pull request's label), every pipeline of a
-flagged model gets ``"leakage": "possible"`` and ``"leakage_pr": N``, and the Parquet and per-fold
-files a ``leakage`` column ("possible" or empty). ``--check`` validates flags.json's shape and that
-the JSON carries exactly its flags.
+Overlap flags: when site/flags.json sits next to the output (``{"<model>": {"overlap": true,
+"evidence": "<url>"}}``, set by the maintainer), every pipeline of a flagged model gets
+``"overlap": true`` and ``"overlap_evidence": "<url>"``, which the page shows as a ∩ mark, and the
+Parquet and per-fold files an ``overlap`` column (true or false).
+``--check`` validates flags.json's shape and that the JSON carries exactly its flags.
 
 results.parquet holds the same numbers for all views in long format, one row per pipeline and view,
 with its place on the Pareto front, for download. results_per_fold.parquet and .csv hold one row per
@@ -35,6 +37,7 @@ import argparse
 import json
 import math
 import os
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -59,11 +62,13 @@ COLUMNS = {
     "median_time_per_1k_s": "median over the same fold rows of the total run time (encoding, training, prediction) in s per 1,000 samples",
     "fold_rows": "fold rows present; fewer than fold_rows_expected means incomplete",
     "pareto_front": "the score is strictly higher than that of every faster pipeline of the view",
-    "leakage": "possible when the model's documentation suggests its pre-training data may include web tables; "
-               "the review on the model's pull request quotes the evidence",
+    "overlap": "true when the maintainer marked the model's pre-training data as possibly overlapping STRABLE's tables "
+               "(the page's ∩ mark; results.json links the evidence)",
 }
 PER_FOLD = ["id", "encoder", "learner", "variant", "table", "task", "fold", "score", "total_s", "n_rows", "time_per_1k_s",
-            "leakage"]
+            "overlap"]
+FAMILIES = {"reg": {"regression"}, "clf": {"binary", "multiclass"}}  # the views of a one-family model
+URL = re.compile(r"^https?://[^\s\"'<>]+$")
 PAPER = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())  # display names of imported pipelines
 
 
@@ -73,27 +78,33 @@ def card_of(model: str) -> dict:
     return yaml.safe_load(path.read_text()) if path.exists() else {"name": PAPER["learners"].get(model, model)}
 
 
+def card_views(card: dict) -> set[str]:
+    """The views of a model's pipelines: only reg or only clf when the card's ``tasks`` are one family, else all
+    three (also for the paper's learners, which have no card)."""
+    tasks = set(card.get("tasks") or [])
+    return next(({view} for view, family in FAMILIES.items() if tasks and tasks <= family), set(VIEW_KEYS.values()))
+
+
 def flags_path(json_path: Path) -> Path:
     return json_path.with_name("flags.json")
 
 
 def read_flags(path: Path) -> dict:
-    """Per model folder, {"leakage": "possible", "pr": N}; empty when the file is absent."""
+    """Per model folder, {"overlap": true, "evidence": "<url>"}; empty when the file is absent."""
     return json.loads(path.read_text()) if path.exists() else {}
 
 
 def flags_problems(flags) -> list[str]:
     """What is wrong with the shape of a flags.json."""
     if not isinstance(flags, dict):
-        return ["flags.json must map model folders to {\"leakage\": \"possible\", \"pr\": N}"]
+        return ["flags.json must map model folders to {\"overlap\": true, \"evidence\": \"<url>\"}"]
     out = []
     for model, flag in flags.items():
         if not SLUG.match(model):
             out.append(f"flags.json: {model!r} is not a model folder name")
-        pr = flag.get("pr") if isinstance(flag, dict) else None
-        if (not isinstance(flag, dict) or set(flag) != {"leakage", "pr"} or flag["leakage"] != "possible"
-                or not isinstance(pr, int) or isinstance(pr, bool) or pr < 1):
-            out.append(f"flags.json: {model} must be {{\"leakage\": \"possible\", \"pr\": <pull request number>}}")
+        if (not isinstance(flag, dict) or set(flag) != {"overlap", "evidence"} or flag["overlap"] is not True
+                or not isinstance(flag["evidence"], str) or not URL.match(flag["evidence"])):
+            out.append(f"flags.json: {model} must be {{\"overlap\": true, \"evidence\": \"<url>\"}}")
     return out
 
 
@@ -102,14 +113,14 @@ def model_of(pid: str) -> str:
     return pid.split(":")[0].split("+")[-1]
 
 
-def leakage_problems(data: dict, flags: dict) -> list[str]:
-    """The JSON must carry exactly the flags: leakage and leakage_pr on every pipeline of a flagged model only."""
+def overlap_problems(data: dict, flags: dict) -> list[str]:
+    """The JSON must carry exactly the flags: overlap and overlap_evidence on every pipeline of a flagged model only."""
     out = []
     for p in data["pipelines"]:
         flag = flags.get(model_of(p["id"]))
-        want = {"leakage": "possible", "leakage_pr": flag["pr"]} if flag else {}
-        if {k: p[k] for k in ("leakage", "leakage_pr") if k in p} != want:
-            out.append(f"{p['id']}: leakage fields do not match flags.json")
+        want = {"overlap": True, "overlap_evidence": flag["evidence"]} if flag else {}
+        if {k: p[k] for k in ("overlap", "overlap_evidence") if k in p} != want:
+            out.append(f"{p['id']}: overlap fields do not match flags.json")
     return out
 
 
@@ -119,16 +130,16 @@ def folds_expected() -> dict:
     return {VIEW_KEYS[v]: n for v, n in expected_folds(tables).items()}
 
 
-def summarize(folds: pd.DataFrame, expected: dict) -> dict:
+def summarize(folds: pd.DataFrame, expected: dict, views=tuple(VIEW_KEYS.values())) -> dict:
     """Per view: [median score, median total s per 1K samples, fold rows, fold rows expected] or None.
 
-    ``folds`` are one pipeline's rows of the per-fold table.
+    ``folds`` are one pipeline's rows of the per-fold table; views not in ``views`` (card_views) are None.
     """
     out = {}
     for view, tasks in VIEWS.items():
         r = folds[folds["task"].isin(tasks)]
         out[VIEW_KEYS[view]] = [round(float(r["score"].median()), 4), _num(r["time_per_1k_s"].median()), len(r),
-                                expected[VIEW_KEYS[view]]] if len(r) else None
+                                expected[VIEW_KEYS[view]]] if len(r) and VIEW_KEYS[view] in views else None
     return out
 
 
@@ -136,8 +147,7 @@ def per_fold(rows: pd.DataFrame, record: dict) -> pd.DataFrame:
     """One pipeline's fold rows in PER_FOLD columns. Only rows with a score count; check_results flags the others."""
     rows = per_1k(rows[rows["score"].notna()])
     out = rows.drop(columns="total_s", errors="ignore").rename(columns={"total": "total_s", "total_per_1k": "time_per_1k_s"})
-    out = out.assign(id=record["id"], encoder=record["enc"], learner=record["lrn"],
-                     leakage=pd.Series(record.get("leakage"), index=out.index, dtype="string"))
+    out = out.assign(id=record["id"], encoder=record["enc"], learner=record["lrn"], overlap=bool(record.get("overlap")))
     return out[PER_FOLD].sort_values(["table", "fold"]).reset_index(drop=True)
 
 
@@ -148,6 +158,8 @@ def _num(x):
 def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=None) -> dict:
     expected = folds_expected()
     flags = read_flags(flags_path(out))
+    if flags_problems(flags):
+        sys.exit("\n".join(flags_problems(flags)))
     pipelines, folds = [], []
     paths = [results_dir / f"{m}.csv" for m in sorted(models)] if models else sorted(results_dir.glob("*.csv"))
     for path in paths:
@@ -165,9 +177,9 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
             if hw:
                 record["hw"] = ", ".join(hw)
             if path.stem in flags:
-                record.update(leakage=flags[path.stem]["leakage"], leakage_pr=flags[path.stem]["pr"])
+                record.update(overlap=True, overlap_evidence=flags[path.stem]["evidence"])
             folds.append(per_fold(rows, record))
-            record.update(summarize(folds[-1], expected))
+            record.update(summarize(folds[-1], expected, card_views(card)))
             pipelines.append(record)
     versions = yaml.safe_load((results_dir / "versions.yaml").read_text()) if (results_dir / "versions.yaml").exists() else []
     data = {"version": versions[0]["version"] if versions else "v0.0.0", "built": date.today().isoformat(),
@@ -194,8 +206,8 @@ def long_table(data: dict) -> pd.DataFrame:
             rows.append({"version": data["version"], "date": data["built"], "view": view, "view_name": VIEW_NAMES[view],
                          "id": p["id"], "encoder": p["enc"], "learner": p["lrn"], "kind": p["kind"], "variant": p["variant"],
                          "median_score": score, "median_time_per_1k_s": time, "fold_rows": n, "fold_rows_expected": expected,
-                         "pareto_front": p["id"] in front, "leakage": p.get("leakage")})
-    return pd.DataFrame(rows).astype({"leakage": "string"}) if rows else pd.DataFrame(rows)
+                         "pareto_front": p["id"] in front, "overlap": bool(p.get("overlap"))})
+    return pd.DataFrame(rows)
 
 
 def write_parquet(data: dict, out: Path) -> None:
@@ -231,7 +243,8 @@ def per_fold_problems(data: dict, path: Path) -> list[str]:
     if set(by_id) != {p["id"] for p in data["pipelines"]}:
         out.append(f"{path.name}: not the same pipelines as the JSON")
     for p in data["pipelines"]:
-        if p["id"] in by_id and summarize(by_id[p["id"]], expected) != {v: p.get(v) for v in VIEW_KEYS.values()}:
+        views = card_views(card_of(model_of(p["id"])))
+        if p["id"] in by_id and summarize(by_id[p["id"]], expected, views) != {v: p.get(v) for v in VIEW_KEYS.values()}:
             out.append(f"{p['id']}: medians or fold rows differ from {path.name}")
     return out
 
@@ -250,8 +263,9 @@ def problems(data: dict) -> list[str]:
     if len(set(ids)) != len(ids):
         out.append("duplicate pipeline ids")
     for p in data["pipelines"]:
-        if ("leakage" in p or "leakage_pr" in p) and (p.get("leakage") != "possible" or not isinstance(p.get("leakage_pr"), int)):
-            out.append(f"{p.get('id')}: leakage must be \"possible\" with leakage_pr, the model pull request")
+        if ("overlap" in p or "overlap_evidence" in p) and (p.get("overlap") is not True
+                                                            or not URL.match(str(p.get("overlap_evidence")))):
+            out.append(f"{p.get('id')}: overlap must be true with overlap_evidence, a URL")
     expected = folds_expected()
     for p in data["pipelines"]:
         if not p.get("lrn") or p.get("kind") not in ("modular", "e2e"):
@@ -283,7 +297,7 @@ if __name__ == "__main__":
         found = problems(data)
         if not found and flags_path(args.check).exists():
             flags = read_flags(flags_path(args.check))
-            found = flags_problems(flags) or leakage_problems(data, flags)
+            found = flags_problems(flags) or overlap_problems(data, flags)
         if not found and args.check.with_suffix(".parquet").exists():
             found = parquet_problems(data, args.check.with_suffix(".parquet"))
         if not found and per_fold_path(args.check).exists():
