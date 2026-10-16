@@ -17,12 +17,12 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 
 **Card: complete**
 - Every field of `models/_template/model.yaml` is present and filled with this model's real values, no template placeholder left: `name`, `version`, `end_to_end`, `tasks`, `variant` (`default`), `hardware` (`gpu` or `cpu`), `package`, `checkpoint`, `licence`, `pretraining_data` (`synthetic`, `real`, `mixed`, `none` or `not disclosed`).
-- `package` is a `name==version` pin from PyPI, and `checkpoint` a Hugging Face repository: the runner installs and downloads nothing else.
+- `package` is a `name==version` pin from PyPI (or, for a package that is not on PyPI, a git pin `name @ git+https://…@<full 40-character commit hash>`), and `checkpoint` a Hugging Face repository: the runner installs and downloads nothing else.
 - `checkpoint.revision` is a full 40-character commit hash, or `checkpoint` is null for a model without weights.
 - The values match the code and the package: `end_to_end` as in `model.py`, `package` as in `requirements.txt`, `tasks` what the model supports.
 
 **Pins: the shared environment**
-- `requirements.txt` holds only `name==version` lines, each equal to the version in `env/requirements.txt` (the shared environment every model runs in). No ranges, URLs, local paths or archives, no `strable-leaderboard` itself.
+- `requirements.txt` holds only `name==version` lines, each equal to the version in `env/requirements.txt` (the shared environment every model runs in), or a git pin at a full 40-character commit hash, identical to its line there. No ranges, other URLs, branches, tags, short hashes, local paths or archives, no `strable-leaderboard` itself.
 - A package not in the shared environment: fine when the pull request adds exactly that pin to `env/requirements.in` and asks for it in its text (the maintainer decides and relocks; say so). Another version of a package already there, or any changed or removed pin in `env/`: FIX.
 
 **Protocol**
