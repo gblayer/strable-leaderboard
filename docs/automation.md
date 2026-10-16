@@ -25,7 +25,7 @@ flowchart TD
 
 `.github/workflows/claude-review.yml` runs two review passes: two fresh Claude sessions that never see each other's answer, with the checklist of `.claude/skills/review-submission/SKILL.md`. Each answers MERGE, FIX or REJECT, with one line per problem. They read the pull request through GitHub only: they never run its code, and they cannot comment, label or merge.
 
-A third pass, the overlap job (`.claude/skills/review-leakage/SKILL.md`), runs on a pull request that adds a model. It reads the model's paper, Hugging Face card and code README, and reports facts only: the model's documented pre-training data, and public reports of overlap with STRABLE tables, each with a quote and its link. It never blocks the merge and never adds a label.
+A third pass, the overlap job (`.claude/skills/review-overlap/SKILL.md`), runs on a pull request that adds a model. It reads the model's paper, Hugging Face card and code README, and reports facts only: the model's documented pre-training data, and public reports of overlap with STRABLE tables, each with a quote and its link. It never blocks the merge and never adds a label.
 
 One comment on the pull request gives both verdicts and these facts.
 

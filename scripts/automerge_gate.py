@@ -60,7 +60,7 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
         elif name in existing_models:
             out.append(f"`models/{name}/` already exists on main: a change to a merged model")
         elif name in RESERVED:
-            out.append(f"`models/{name}/` is reserved for a learner of the paper")
+            out.append(f"`models/{name}/` is reserved for the maintainer")
         elif name.startswith(TEST_PREFIX) and author != MAINTAINER:
             out.append(f"`models/{name}/` is reserved for the maintainer's test runs")
     return out

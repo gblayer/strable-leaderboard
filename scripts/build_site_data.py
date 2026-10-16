@@ -23,8 +23,7 @@ ranking and the Pareto front from this file.
 Overlap flags: when site/flags.json sits next to the output (``{"<model>": {"overlap": true,
 "evidence": "<url>"}}``, set by the maintainer), every pipeline of a flagged model gets
 ``"overlap": true`` and ``"overlap_evidence": "<url>"``, which the page shows as a ∩ mark, and the
-Parquet and per-fold files an ``overlap`` column (true or false). The dispatcher's older entries,
-``{"leakage": "possible", "pr": N}``, read as an overlap whose evidence is pull request N.
+Parquet and per-fold files an ``overlap`` column (true or false).
 ``--check`` validates flags.json's shape and that the JSON carries exactly its flags.
 
 results.parquet holds the same numbers for all views in long format, one row per pipeline and view,
@@ -48,7 +47,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from strable_leaderboard import REPO, SLUG  # noqa: E402
+from strable_leaderboard import SLUG  # noqa: E402
 from strable_leaderboard.data import MANIFEST  # noqa: E402
 from strable_leaderboard.encoders import NAMES  # noqa: E402
 from strable_leaderboard.metrics import VARIANTS, VIEWS, expected_folds, pareto_front, per_1k  # noqa: E402
@@ -91,15 +90,8 @@ def flags_path(json_path: Path) -> Path:
 
 
 def read_flags(path: Path) -> dict:
-    """Per model folder, {"overlap": true, "evidence": "<url>"}; empty when the file is absent. An entry in the
-    dispatcher's older form, {"leakage": "possible", "pr": N}, reads as an overlap with pull request N as evidence."""
-    flags = json.loads(path.read_text()) if path.exists() else {}
-    for model, flag in flags.items() if isinstance(flags, dict) else ():
-        pr = flag.get("pr") if isinstance(flag, dict) else None
-        if (isinstance(flag, dict) and set(flag) == {"leakage", "pr"} and flag["leakage"] == "possible"
-                and isinstance(pr, int) and not isinstance(pr, bool) and pr >= 1):
-            flags[model] = {"overlap": True, "evidence": f"https://github.com/{REPO}/pull/{pr}"}
-    return flags
+    """Per model folder, {"overlap": true, "evidence": "<url>"}; empty when the file is absent."""
+    return json.loads(path.read_text()) if path.exists() else {}
 
 
 def flags_problems(flags) -> list[str]:

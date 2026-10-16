@@ -110,14 +110,6 @@ def test_build_site_data_overlap_flags(tmp_path):
     assert problems(data) == ["tfidf+tabpfn-2.5: overlap must be true with overlap_evidence, a URL"]
 
 
-def test_flags_in_the_dispatchers_older_form_read_as_overlap(tmp_path):
-    path = tmp_path / "flags.json"
-    path.write_text(json.dumps({"m": {"leakage": "possible", "pr": 12}, "n": {"leakage": "possible", "pr": "12"}}))
-    flags = read_flags(path)
-    assert flags["m"] == {"overlap": True, "evidence": "https://github.com/gblayer/strable-leaderboard/pull/12"}
-    assert flags_problems(flags) == ['flags.json: n must be {"overlap": true, "evidence": "<url>"}']
-
-
 def test_a_one_family_model_gets_only_its_view(tmp_path, monkeypatch):
     """A model card with regression tasks only (or classification only): no "both" view and no view for the
     other family, so the page lists it only under its own task. The paper's learners have no card: all views."""

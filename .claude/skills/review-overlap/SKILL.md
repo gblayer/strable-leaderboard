@@ -1,5 +1,5 @@
 ---
-name: review-leakage
+name: review-overlap
 description: Report, from a STRABLE leaderboard model pull request and the model's public documents (paper, technical report, Hugging Face card, code README), what the model was pre-trained on and whether public reports say its pre-training data overlaps STRABLE tables, with quoted evidence. Facts only. Never comments, labels or merges. Use for the overlap pass of the review workflow.
 ---
 
