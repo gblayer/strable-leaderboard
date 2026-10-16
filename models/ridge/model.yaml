@@ -8,6 +8,6 @@ hardware: cpu
 package: scikit-learn==1.7.2
 checkpoint: null
 licence: BSD-3-Clause
-trained_on_strable: []
+pretraining_data: none
 
 code: https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification

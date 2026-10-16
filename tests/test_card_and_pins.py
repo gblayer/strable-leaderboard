@@ -12,7 +12,7 @@ GOOD = {
     "name": "TabPFN", "version": "2.5", "end_to_end": False, "tasks": ["regression", "binary"],
     "variant": "default", "hardware": "gpu", "package": "tabpfn==9.0.0",
     "checkpoint": {"repo": "Prior-Labs/TabPFN-v2.5", "revision": "a" * 40}, "licence": "Prior Labs licence",
-    "trained_on_strable": [], "code": "https://github.com/PriorLabs/TabPFN",
+    "pretraining_data": "synthetic", "code": "https://github.com/PriorLabs/TabPFN",
 }
 
 
@@ -33,11 +33,19 @@ def test_every_missing_or_invalid_field_is_reported():
     bad = copy.deepcopy(GOOD)
     del bad["licence"]
     bad.update(variant="tuned", access="api", hardware="tpu", tasks=["ranking"], typo_field=1,
-               checkpoint={"repo": "x/y", "revision": "main"}, trained_on_strable=["not-a-table"])
+               checkpoint={"repo": "x/y", "revision": "main"}, pretraining_data="web tables")
     found = "\n".join(card_problems(bad))
     for word in ["missing field licence", "unknown field typo_field", "unknown field access", "variant", "hardware", "tasks",
-                 "40-character commit hash", "unknown tables"]:
+                 "40-character commit hash", "pretraining_data must be one of"]:
         assert word in found
+
+
+def test_pretraining_data_takes_one_of_five_values():
+    for value in ["synthetic", "real", "mixed", "none", "not disclosed"]:
+        assert card_problems(dict(GOOD, pretraining_data=value)) == []
+    for value in [None, "unknown", ["synthetic"]]:
+        assert card_problems(dict(GOOD, pretraining_data=value)) == [
+            "pretraining_data must be one of ['mixed', 'none', 'not disclosed', 'real', 'synthetic']"]
 
 
 def test_checkpoint_files_are_optional():

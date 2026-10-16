@@ -15,7 +15,7 @@ import dispatch  # noqa: E402
 
 CARD = {"name": "ExtraTrees", "version": "sklearn-1.7", "end_to_end": False, "tasks": ["regression"],
         "variant": "default", "hardware": "cpu", "package": "scikit-learn==1.7.2",
-        "checkpoint": None, "licence": "BSD-3-Clause", "trained_on_strable": []}
+        "checkpoint": None, "licence": "BSD-3-Clause", "pretraining_data": "none"}
 
 
 class FakeGitHub:
