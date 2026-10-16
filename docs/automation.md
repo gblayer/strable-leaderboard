@@ -19,7 +19,7 @@ flowchart TD
 
 ## 1. Checks
 
-`.github/workflows/checks.yml` runs on every pull request, on GitHub's machines, without secrets. It runs the tests, then, for each changed model folder, the checks of the card, the versions and the code, and the smoke test on CPU. A GPU model whose package cannot run on CPU gets the static checks only; its smoke test runs on our GPU after the merge. For a results pull request, `scripts/build_site_data.py --check` validates the results files, including that their overlap fields match `site/flags.json`.
+`.github/workflows/checks.yml` runs on every pull request, on GitHub's machines, without secrets. It runs the tests, then, for each changed model folder, the checks of the card, the versions and the code, and the smoke test on CPU. A GPU model (`hardware: gpu`) gets the static checks only; its smoke test runs on our GPU after the merge. For a results pull request, `scripts/build_site_data.py --check` validates the results files, including that their overlap fields match `site/flags.json`.
 
 ## 2. Claude review
 

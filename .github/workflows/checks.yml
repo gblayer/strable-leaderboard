@@ -7,9 +7,8 @@ name: Checks
 # - env: in a contributor's pull request, env/requirements.in and env/requirements.txt only gain
 #   lines; no existing pin changes.
 # - models: for each changed model folder, the card, the pins and the code (`smoke --static`),
-#   then the smoke test on CPU. A `hardware: gpu` model gets its smoke test with `--device cpu`
-#   too; if that fails, the package may need a GPU, so only the static checks count here and the
-#   failure is reported as a warning: its full smoke test runs on the reference GPU on the
+#   then the smoke test on CPU. A `hardware: gpu` model gets the static checks only: on CPU its
+#   smoke test can take longer than the job allows, and it runs on the reference GPU on the
 #   cluster, as the dispatcher's first step after the merge. The model is installed with
 #   env/requirements.txt as constraints, so every package, dependencies included, has the shared
 #   environment's version. Changed results files (RESULTS_FILES in strable_leaderboard/__init__.py)
@@ -93,12 +92,10 @@ jobs:
               "$py" -m pip install --quiet --extra-index-url https://download.pytorch.org/whl/cpu \
                 -c env/requirements.txt -e ".[smoke]" -r "models/$m/requirements.txt"
               hw=$("$py" -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["hardware"])' "models/$m/model.yaml")
-              if "$py" -m strable_leaderboard.smoke "models/$m" --device cpu | tee -a "$GITHUB_STEP_SUMMARY"; then
-                :
-              elif [ "$hw" = gpu ]; then
-                echo "::warning::$m: the smoke test failed on CPU; only the static checks count here, the reference GPU runs it after the merge"
+              if [ "$hw" = gpu ]; then
+                echo "::notice::$m: GPU model, static checks only; its smoke test runs on the reference GPU after the merge"
                 "$py" -m strable_leaderboard.smoke "models/$m" --static | tee -a "$GITHUB_STEP_SUMMARY" || status=1
-              else
+              elif ! "$py" -m strable_leaderboard.smoke "models/$m" --device cpu | tee -a "$GITHUB_STEP_SUMMARY"; then
                 status=1
               fi
             else
