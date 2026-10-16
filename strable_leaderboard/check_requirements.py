@@ -34,7 +34,7 @@ ENV_REQUIREMENTS, ENV_INPUT, FREEZE = ENV / "requirements.txt", ENV / "requireme
 UV_COMPILE = ["uv", "pip", "compile", "--python-version", "3.12", "--python-platform", "x86_64-manylinux_2_28",
               "--no-header", "--no-annotate", "--quiet"]
 LOCK_HEADER = """# The shared environment, every package pinned to the version of the STRABLE paper environment
-# (salts_env, 2026-03-23, Python 3.12.12). Generated from env/requirements.in; do not edit by hand.
+# (2026-03-23, Python 3.12.12). Generated from env/requirements.in; do not edit by hand.
 # scripts/prepare.py installs it into cache/env together with this package (-e .).
 """
 PIN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[A-Za-z0-9,._-]+\])?==([A-Za-z0-9.+!_-]+)$")

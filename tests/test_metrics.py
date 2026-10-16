@@ -30,8 +30,8 @@ def test_fold_scores():
 
 
 def test_multiclass_auc_applies_the_papers_softmax():
-    """salts src/utils_evaluation.py: reshape_pred_output softmaxes (n, K>2) outputs, then return_score
-    computes roc_auc_score(multi_class="ovr", average="macro")."""
+    """The paper's code (soda-inria/strable, src/utils_evaluation.py): reshape_pred_output softmaxes
+    (n, K>2) outputs, then return_score computes roc_auc_score(multi_class="ovr", average="macro")."""
     from scipy.special import softmax
     from sklearn.metrics import roc_auc_score
 

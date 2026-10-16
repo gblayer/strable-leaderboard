@@ -1,5 +1,5 @@
-# The STRABLE paper's environment (salts_env, 2026-03-23, Python 3.12.12): its pip freeze without the
-# SAP packages, then the eight packages conda installed (salts_env_2026-03-23_nobuilds.yml).
+# The STRABLE paper's environment (2026-03-23, Python 3.12.12): its pip freeze without the
+# SAP packages, then the eight packages conda installed.
 # scripts/lock_env.sh uses it as constraints. Never edited.
 accelerate==1.12.0
 adjusttext==1.3.0

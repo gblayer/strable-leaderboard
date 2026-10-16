@@ -1,8 +1,8 @@
 """Import the paper's Figure 4a pipelines into results/<model>.csv.
 
-    python scripts/import_paper_results.py salts/results/compiled_results --out $STRABLE_RESULTS
+    python scripts/import_paper_results.py <paper results folder> --out $STRABLE_RESULTS
 
-Run it where the paper's CSVs are, on the cluster. Exactly the pipelines listed in
+Run it where the paper's result CSVs are. Exactly the pipelines listed in
 ``scripts/paper_selection.yaml`` are imported, by source CSV and method token, nothing else; a
 listed pipeline missing from its CSV is an error. The paper timed fit and predict together, so
 imported rows carry ``total_s`` only (the paper's ``run_time``), with ``hardware`` and
