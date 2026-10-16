@@ -4,7 +4,7 @@
  "seed": 1234,
  "outer_folds": 3,
  "inner_folds": 8,
- "scikit_learn": "1.9.1",
+ "scikit_learn": "1.7.2",
  "tables": {
   "aca-federal-upper-limits-wide": {
    "task": "regression",
