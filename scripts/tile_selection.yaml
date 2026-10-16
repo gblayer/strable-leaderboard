@@ -1,0 +1,41 @@
+# The five pipelines of the TILE paper's Table H.5 on STRABLE (https://arxiv.org/abs/2610.17065), the set
+# scripts/import_tile_results.py imports. Each source row is one table and outer fold, on the board's 108 tables and outer folds.
+#
+# TILE (named latte in its authors' code, hence the method tokens) is an encoder. Every row is written
+# as one sentence, "The <column> is <value>." per cell, numbers included, and goes through the first
+# 14 layers of LLaMA-3.1-8B; the token states of each cell are averaged into one embedding per cell.
+# Only the string columns' embeddings are kept, standardized on the training rows and reduced by one
+# PCA per column to 30 components, the counts rescaled into the learner's feature window. The learner
+# gets them with the numerical columns, an out-of-fold target encoding of the string columns and the
+# string columns of fewer than 50 distinct values as categorical features.
+#
+# pipelines: source CSV (the TILE authors' compiled results) -> method token -> model folder, encoder
+# id, variant, and in `where` the source columns that pick TILE's default settings for that learner
+# (`model` there is the source's language-model column). num-str_tabvec_causilo is the board's own
+# Tf-Idf encoder, so it gets the id the runner gives a models/causilo folder with tfidf.
+
+date: "2026-09"  # when the source rows were computed
+
+learners:  # model folder -> display name, for learners without a models/ folder
+  causilo: Causilo
+
+encoders:  # encoder id -> display name
+  tile: TILE
+
+settings: &tile  # TILE's default settings, the same for every learner
+  model: llama3_14_layers|cell_meanpool|include_numbers
+  standard_scaling: true
+  per_column_components: 30
+  string_cells_only: true
+  normalize_cells: false
+  cardinality_threshold: 50
+  target_encode: proba
+
+pipelines:
+  strable_colwin.csv:
+    num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile, variant: default, where: {<<: *tile, pca: 150, feature_window: 100-300}}
+    num-str_latte_tabicl: {model: tabicl-v2, encoder: tile, variant: default, where: {<<: *tile, pca: 100, feature_window: 50-300}}
+    num-str_latte_tabpfn3: {model: tabpfn-3, encoder: tile, variant: default, where: {<<: *tile, pca: 75, feature_window: 50-250}}
+    num-str_latte_causilo: {model: causilo, encoder: tile, variant: default, where: {<<: *tile, pca: 150, feature_window: 75-400}}
+  strable_tfidf.csv:
+    num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default}

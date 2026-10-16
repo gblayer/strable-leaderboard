@@ -69,7 +69,9 @@ PER_FOLD = ["id", "encoder", "learner", "variant", "table", "task", "fold", "sco
             "overlap"]
 FAMILIES = {"reg": {"regression"}, "clf": {"binary", "multiclass"}}  # the views of a one-family model
 URL = re.compile(r"^https?://[^\s\"'<>]+$")
-PAPER = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())  # display names of imported pipelines
+# Display names of imported pipelines: the paper's and the TILE paper's selections.
+IMPORTS = [yaml.safe_load((ROOT / "scripts" / f).read_text()) for f in ("paper_selection.yaml", "tile_selection.yaml")]
+PAPER = {key: {k: v for s in IMPORTS for k, v in s[key].items()} for key in ("learners", "encoders")}
 
 
 def card_of(model: str) -> dict:
