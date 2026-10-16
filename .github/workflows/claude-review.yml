@@ -2,20 +2,21 @@ name: Claude review
 
 # Two independent Claude passes on every pull request that touches models/, site/results.json or
 # env/requirements.in, then one verdict job. The maintainer's own pull requests are not reviewed,
-# except results updates: the verdict job only sets the status. A pull request adding a model also gets the leakage
+# except results updates: the verdict job only sets the status. A pull request adding a model also gets the overlap
 # pass (does its pre-training data overlap STRABLE's tables?), which never blocks; one changing
 # env/requirements.in gets the env job (what locking it would add and change). Needs the secret
 # CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`) and the labels claude-approved,
 # needs-maintainer and pretraining-overlap. The gate's conditions: docs/automation.md, section 3.
 #
 # pull_request_target runs with this repository's secrets, so the pull request's code is never
-# checked out: Claude reads it through `gh pr view/diff/checks` only. The review and leakage jobs
+# checked out: Claude reads it through `gh pr view/diff/checks` only. The review and overlap jobs
 # check out, without credentials, only their skill and the few base-branch files they may read.
 # They cannot comment, label or merge: each pass returns a structured verdict as a job output. The
 # env job resolves the pull request's env/requirements.in, fetched through the API, with uv and no
-# package build, so nothing from the pull request runs. The verdict job posts one comment, sets
-# claude-approved when both review passes say MERGE and pretraining-overlap when the leakage pass
-# says possible, records the commit status "Claude review" and runs the gate (scripts/automerge_gate.py).
+# package build, so nothing from the pull request runs. The verdict job posts one comment (with the
+# overlap pass's findings), sets claude-approved when both review passes say MERGE, records the commit
+# status "Claude review" and runs the gate (scripts/automerge_gate.py). It never sets
+# pretraining-overlap: only the maintainer does, and that label is what marks the model on the board.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
@@ -115,7 +116,7 @@ jobs:
           prompt: ${{ env.PROMPT }}
           claude_args: ${{ env.CLAUDE_ARGS }}
 
-  leakage:
+  overlap:
     # The third pass, on a pull request that adds a model: reads the model's paper, Hugging Face
     # card and code README, fetching only arxiv.org, huggingface.co, github.com and the hosts of
     # the card's code and paper links, and returns {risk, evidence}. No write tool; its failure or
@@ -193,7 +194,7 @@ jobs:
 
   verdict:
     # The only job that writes: one comment, the labels, the commit status, then the gate.
-    needs: [reset, review, leakage, env]
+    needs: [reset, review, overlap, env]
     if: ${{ !cancelled() && needs.reset.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -218,7 +219,7 @@ jobs:
           REVIEW_TWO: ${{ needs.review.outputs.two }}
           ENV_REPORT: ${{ needs.env.outputs.report }}
           MODEL: ${{ needs.reset.outputs.model }}
-          LEAKAGE: ${{ needs.leakage.outputs.verdict }}
+          OVERLAP_PASS: ${{ needs.overlap.outputs.verdict }}
         run: |
           if [ "${{ needs.reset.outputs.review }}" = true ]; then
             python3 scripts/automerge_gate.py verdict --pr "$PR" --sha "$SHA"

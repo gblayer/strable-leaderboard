@@ -34,7 +34,7 @@ BOTS = {"github-actions[bot]", "claude[bot]"}
 CHECKS_WORKFLOW = "checks.yml"
 REVIEW_CONTEXT = "Claude review"
 ENV_INPUT = "env/requirements.in"  # a contributor may add packages here; the maintainer reviews every change
-# The sites the leakage pass may fetch, plus the hosts of the card's code and paper links.
+# The sites the overlap pass may fetch, plus the hosts of the card's code and paper links.
 WEB = ("arxiv.org", "huggingface.co", "github.com", "raw.githubusercontent.com")
 HOST = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$")
 CARD_LINK = re.compile(r"^(?:code|paper):\s*[\"']?(https?://[^\s\"'#]+)", re.M)
@@ -76,19 +76,20 @@ def needs_review(paths: list[str], author: str) -> bool:
 
 
 def web_tools(card_text: str) -> str:
-    """The leakage pass's WebFetch permissions: the fixed sites and the hosts of the card's code and paper."""
+    """The overlap pass's WebFetch permissions: the fixed sites and the hosts of the card's code and paper."""
     hosts = set(WEB) | {urlsplit(url).hostname or "" for url in CARD_LINK.findall(card_text)}
     return ",".join(f"WebFetch(domain:{h})" for h in sorted(hosts) if HOST.match(h))
 
 
-def leakage_verdict(raw: str | None) -> tuple[str | None, str]:
-    """(risk, comment section) from the leakage pass's structured output; risk None when it gave none."""
+def overlap_section(raw: str | None) -> str:
+    """The comment section from the overlap pass's structured output: its risk and quoted evidence, as facts for
+    the maintainer. It never labels: only the maintainer adds OVERLAP, which marks the model on the board."""
     try:
         out = json.loads(raw or "")
     except ValueError:
         out = None
     if not isinstance(out, dict) or out.get("risk") not in ("none", "possible", "unknown"):
-        return None, "**Pre-training overlap** (never blocks the merge): no verdict (the pass failed)"
+        return "**Pre-training overlap** (never blocks the merge): no verdict (the pass failed)"
     lines = [f"**Pre-training overlap** (never blocks the merge): **{out['risk']}**"]
     for item in list(out.get("evidence") or [])[:5]:
         if isinstance(item, dict):
@@ -96,7 +97,8 @@ def leakage_verdict(raw: str | None) -> tuple[str | None, str]:
             url = url if re.match(r"^https?://[^\s<>()]+$", url) else "no valid URL"
             quote = " ".join(str(item.get("quote", "")).split())[:400]
             lines.append(f"- \"{quote}\" ({url})".replace("@", "@\u200b"))
-    return out["risk"], "\n".join(lines)
+    lines.append(f"The board marks the model only if the maintainer adds the label `{OVERLAP}`.")
+    return "\n".join(lines)
 
 
 def parse_review(raw: str | None) -> dict | None:
@@ -233,8 +235,8 @@ def gate(pr: dict, details: str = "") -> str:
 
 def reset(number: int, sha: str) -> None:
     """A review round starts on ``sha``: status pending, and claude-approved, needs-maintainer and
-    pretraining-overlap removed when a bot set them for an older commit. A label the maintainer set
-    by hand stays."""
+    pretraining-overlap removed when a bot set them for an older commit (bots no longer set
+    pretraining-overlap; only the maintainer does). A label the maintainer set by hand stays."""
     set_status(sha, "pending", "the two Claude reviews are running")
     events = api(f"issues/{number}/events?per_page=100", paginate=True)
     last = {}
@@ -249,16 +251,14 @@ def reset(number: int, sha: str) -> None:
 
 
 def verdict(number: int, sha: str) -> None:
-    """The review round of ``sha`` ended: one comment, the labels, the commit status, then the gate.
-    The leakage pass ($LEAKAGE, model pull requests only) adds a section and maybe its label, never a block."""
+    """The review round of ``sha`` ended: one comment, the label claude-approved, the commit status, then the gate.
+    The overlap pass ($OVERLAP_PASS, model pull requests only) adds a section to the comment, never a label or a block."""
     state, description, lines = review_verdict([os.environ.get("REVIEW_ONE"), os.environ.get("REVIEW_TWO")])
-    risk, leakage = leakage_verdict(os.environ.get("LEAKAGE")) if os.environ.get("MODEL") else (None, "")
-    body = f"**Claude review of {sha[:7]}**\n{lines}"[:4000] + (f"\n\n{leakage}" if leakage else "")
+    overlap = overlap_section(os.environ.get("OVERLAP_PASS")) if os.environ.get("MODEL") else ""
+    body = f"**Claude review of {sha[:7]}**\n{lines}"[:4000] + (f"\n\n{overlap}" if overlap else "")
     comment_once(number, body, f"<!-- claude-review {sha} -->")
     if state == "success":
         gh("pr", "edit", str(number), "--repo", REPO, "--add-label", APPROVED)
-    if risk == "possible":
-        gh("pr", "edit", str(number), "--repo", REPO, "--add-label", OVERLAP)
     set_status(sha, state, description)
     print(f"#{number} {sha[:7]}: review {state} ({description})")
     pr = api(f"pulls/{number}")
@@ -269,7 +269,7 @@ def verdict(number: int, sha: str) -> None:
 def inputs(number: int, sha: str) -> dict[str, str]:
     """What the review round's jobs need, written to $GITHUB_OUTPUT by the reset job: whether there
     is a review at all (needs_review); whether env/requirements.in changes; the one model folder whose model.yaml the pull request adds, if
-    any; the web sites its leakage pass may fetch."""
+    any; the web sites its overlap pass may fetch."""
     files = api(f"pulls/{number}/files?per_page=100", paginate=True)
     paths = [f["filename"] for f in files]
     if not needs_review(paths, api(f"pulls/{number}")["user"]["login"]):
