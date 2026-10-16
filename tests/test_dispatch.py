@@ -1,4 +1,4 @@
-"""The dispatcher with a fake GitHub, fake sbatch and fake squeue: no cluster, no network."""
+"""Checks each step of the automatic runner (approve, smoke test, run, publish)."""
 
 import json
 import shutil
@@ -114,7 +114,7 @@ def test_full_path_with_one_comment_on_success(clone):
 
     d.todo = []
     d.run(fetch=False)
-    assert state(d)["step"] == "published" and state(d)["version"] == "v0.1.0" and state(d)["leakage"] is None
+    assert state(d)["step"] == "published" and state(d)["version"] == "v0.1.0" and state(d)["overlap"] is False
     assert yaml.safe_load((d.root / "results" / "versions.yaml").read_text())[0]["note"] == "Added ExtraTrees sklearn-1.7"
 
     d.gh.results_pr = {"number": 9, "state": "closed", "merged_at": "x", "merge_commit_sha": "abc"}
@@ -195,15 +195,15 @@ def test_the_overlap_label_flags_the_model_when_publishing(clone):
     d.run(fetch=False)
     d.todo = []
     d.run(fetch=False)
-    assert state(d)["step"] == "published" and state(d)["leakage"] == "possible"
+    assert state(d)["step"] == "published" and state(d)["overlap"] is True
 
 
 def test_flags_keep_other_models(tmp_path):
     path = tmp_path / "flags.json"
-    dispatch.write_flags(path, "a", {"leakage": "possible", "pr": 4})
-    dispatch.write_flags(path, "b", {"leakage": None, "pr": 5})
-    assert json.loads(path.read_text()) == {"a": {"leakage": "possible", "pr": 4}}
-    dispatch.write_flags(path, "a", {"leakage": None})
+    dispatch.write_flags(path, "a", {"overlap": True, "pr": 4})
+    dispatch.write_flags(path, "b", {"overlap": False, "pr": 5})
+    assert json.loads(path.read_text()) == {"a": {"overlap": True, "evidence": f"https://github.com/{dispatch.REPO}/pull/4"}}
+    dispatch.write_flags(path, "a", {"overlap": False})
     assert json.loads(path.read_text()) == {}
 
 
