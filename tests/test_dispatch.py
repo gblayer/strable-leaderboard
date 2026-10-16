@@ -415,3 +415,21 @@ def test_test_tasks_are_fold_0_of_the_smoke_tables(tmp_path):
     row.parent.mkdir(parents=True)
     row.write_text("{}")  # a row in cache/test/runs counts for the test; one in runs/ would not
     assert len(d.missing_tasks(Path("models/test-strings"), tmp_path)) == 2
+
+
+def test_a_pipeline_already_on_the_board_is_not_run_again(tmp_path):
+    """Imported rows (hardware "paper") count as done: the model gets only its missing encoders."""
+    import pandas as pd
+    from make_tasks import tasks
+    from strable_leaderboard.data import MANIFEST
+
+    folder = tmp_path / "models" / "causilo"
+    folder.mkdir(parents=True)
+    (folder / "model.yaml").write_text(yaml.safe_dump(dict(CARD, end_to_end=False, tasks=["regression", "binary", "multiclass"])))
+    results = tmp_path / "results"
+    results.mkdir()
+    tables = sorted(json.loads(MANIFEST.read_text())["tables"])
+    pd.DataFrame([{"encoder": "tfidf", "table": t, "fold": f, "hardware": "paper"} for t in tables for f in range(3)]) \
+        .to_csv(results / "causilo.csv", index=False)
+    todo = tasks([str(folder)], runs=tmp_path / "runs", results=results)
+    assert len(todo) == 3 * 108 * 3 and "tfidf" not in {line.split()[1] for line in todo}
