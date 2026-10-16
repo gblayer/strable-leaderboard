@@ -1,0 +1,58 @@
+name: Hugging Face Space
+
+# Copies site/ to the Hugging Face Space inria-soda/strable-leaderboard on every push to main that
+# touches it, so the Space shows the same page as GitHub Pages. The page names the GitHub Pages
+# address as canonical. Needs the repository secret HF_TOKEN: a Hugging Face fine-grained token with
+# write access to that Space only.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/hf-space.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hf-space
+  cancel-in-progress: true
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install huggingface_hub==0.36.0
+      - name: Upload site/ to the Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          mkdir space && cp -r site/. space/
+          cat > space/README.md <<'MD'
+          ---
+          title: STRABLE Leaderboard
+          emoji: 🏆
+          colorFrom: gray
+          colorTo: green
+          sdk: static
+          app_file: index.html
+          pinned: false
+          license: bsd-3-clause
+          short_description: Tabular learning with strings, score vs run time
+          ---
+
+          A copy of the STRABLE leaderboard, https://gblayer.github.io/strable-leaderboard/, updated
+          automatically from https://github.com/gblayer/strable-leaderboard.
+          MD
+          python - <<'PY'
+          import os
+          from huggingface_hub import upload_folder
+          upload_folder(folder_path="space", repo_id="inria-soda/strable-leaderboard", repo_type="space",
+                        token=os.environ["HF_TOKEN"], commit_message=f"Leaderboard page at {os.environ['GITHUB_SHA'][:7]}",
+                        delete_patterns=["*.html", "*.json", "*.csv", "*.parquet", "*.xml", "*.md"])
+          PY
