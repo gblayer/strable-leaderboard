@@ -1,3 +1,6 @@
+"""Checks the cross-validation folds: every row is a test row once, classes are stratified, and the files in
+splits/ match their manifest."""
+
 import json
 from pathlib import Path
 

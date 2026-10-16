@@ -1,3 +1,6 @@
+"""Checks that the smoke test rejects incomplete model cards, versions that differ from the shared environment
+and own folds or seeds, and runs the model with Hugging Face downloads off."""
+
 import copy
 import json
 import subprocess

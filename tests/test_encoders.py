@@ -1,3 +1,6 @@
+"""Checks that the four string encoders follow the paper: their names, the first-30 and PCA-30 reductions,
+missing cells and dates."""
+
 import numpy as np
 import pandas as pd
 import pytest

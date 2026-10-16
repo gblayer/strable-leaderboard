@@ -10,28 +10,44 @@
 
 The living leaderboard of [STRABLE](https://arxiv.org/abs/2605.12292), the benchmark of 108 real-world tables with raw strings: 76 regression and 32 classification tasks. One score and one run time per pipeline, Pareto-optimal pipelines first.
 
-If you benchmark on STRABLE, [star this repository](https://github.com/gblayer/strable-leaderboard/stargazers) and cite the paper ([BibTeX](#citation)). To claim a rank, name the board version and date shown at the top of the page.
-
 **Leaderboard:** https://gblayer.github.io/strable-leaderboard/
 
-The board currently holds the paper's 75 Figure 4a pipelines, version v0.1.0.
+⭐ If you find STRABLE useful, star the repository and cite the paper ([BibTeX](#citation)) 🙂
+
+When you report a position on the board, give the version and date shown at the top of the page (for example v0.1.2, 2026-10-14): the board changes as models are added.
 
 ## Submit a model
 
 <!-- The page's "Submit a model" button links to this heading (#submit-a-model): keep its text. -->
 
-You submit code, not results.
+One pull request adds one folder, `models/<name>/`, with three files: `model.py` (your model), `model.yaml` (its card) and `requirements.txt` (its version).
 
-1. **Fork** the repository on GitHub, your own copy since you cannot push to this one, and clone your fork.
-2. **Add one folder**, `models/<name>/`, with `model.py`, `model.yaml` and `requirements.txt`, starting from [models/_template/](models/_template/). One folder per model version, named with lowercase letters, digits, dots and hyphens; the version lives in `model.yaml`, and the names of the paper's learners are reserved ([list](docs/submitting.md)). No container, no bash script: every model runs in one shared environment, and each pin in your `requirements.txt` must equal its version in [env/requirements.txt](env/requirements.txt). A package that is not there: add one line `name==version` to [env/requirements.in](env/requirements.in) in the same pull request; never change an existing pin. Your coding agent can do it; tell it:
-   ```
-   Add my model to the STRABLE leaderboard, test it, and open a pull request.
-   ```
-   It follows [AGENTS.md](AGENTS.md) (Claude Code reads it through [CLAUDE.md](CLAUDE.md)) and [.claude/skills/add-model/SKILL.md](.claude/skills/add-model/SKILL.md).
+1. **Fork** the repository on GitHub and clone your fork.
+2. **Add one folder**, `models/<name>/`, starting from [models/_template/](models/_template/), and fill its three files. One folder per model version, named with lowercase letters, digits, dots and hyphens. Folder names already used by the paper's models (`ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`) and `causilo` are taken.
 3. **Run the smoke test**, as in [Check your model locally](#check-your-model-locally).
-4. **Open a pull request** from your fork. Only `models/<name>/` may change, plus added lines in `env/requirements.in`.
+4. **Open a pull request** from your fork. Only `models/<name>/` changes, plus the lines you add to `env/requirements.in`.
 
-**What happens next.** Automatic checks run and Claude reviews the pull request twice. If everything passes, it is merged automatically; otherwise the maintainer reviews it. After the merge we run the model on all 108 tables × 3 folds and the board updates. Details: [docs/submitting.md](docs/submitting.md).
+Step by step, with the model card and examples: [docs/submitting.md](docs/submitting.md).
+
+**One shared environment.** All models run in one Python environment, [env/requirements.txt](env/requirements.txt), so that results stay comparable. In your `requirements.txt`, write your model's version, as listed there. If your model needs a package that is missing, ask for it in the pull request text and add one line `name==version` to [env/requirements.in](env/requirements.in). The maintainer decides on any other version.
+
+## Ask your agent
+
+Your agent can do steps 1 to 4. Tell it:
+
+```
+Add my model to the STRABLE leaderboard, test it, and open a pull request.
+```
+
+It reads [AGENTS.md](AGENTS.md) (Claude Code reads it through [CLAUDE.md](CLAUDE.md)) and follows [.claude/skills/add-model/SKILL.md](.claude/skills/add-model/SKILL.md).
+
+## What happens next
+
+- Automatic checks run, and Claude reviews the pull request twice.
+- If the checks and both reviews pass, the pull request merges by itself. Otherwise the maintainer looks at it.
+- After the merge, we run your model on all 108 tables × 3 folds, and it appears on the board.
+
+How this works: [docs/automation.md](docs/automation.md).
 
 ## Check your model locally
 
@@ -42,22 +58,23 @@ pip install -c env/requirements.txt -e ".[smoke]" -r models/<name>/requirements.
 python -m strable_leaderboard.smoke models/<name>
 ```
 
-The first line installs this package, the smoke-test tools and your model's packages, at the shared environment's versions. The second runs your model on outer fold 0 of three small tables and checks its card and predictions; it does not compute leaderboard scores.
+The first line installs this package, the packages the test needs and your model's packages, at the shared environment's versions. The second runs your model on outer fold 0 of three small tables and checks its card and predictions; it does not compute leaderboard scores.
 
 ## Layout
 
 | Path | |
 |---|---|
-| [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a working example (it never runs; the board's Ridge rows come from the paper) |
-| [strable_leaderboard/](strable_leaderboard/) | Splits, metrics, the model contract and the smoke test |
-| [splits/](splits/) | Outer and inner cross-validation folds of all 108 tables |
-| [env/](env/) | The shared environment every model runs in: `requirements.txt` (pins), `requirements.in` (where new packages are added) |
+| [models/](models/) | One folder per model: `_template/` to start from, `ridge/` as a complete example (the board's Ridge results are the paper's) |
+| [strable_leaderboard/](strable_leaderboard/) | Folds, scores, the model contract and the smoke test |
+| [splits/](splits/) | The folds of all 108 tables: for each row, its test fold and its validation groups |
+| [env/](env/) | The shared environment: `requirements.txt` (exact versions), `requirements.in` (where a new package is added) |
 | [Paper](https://arxiv.org/abs/2605.12292) | The evaluation protocol: data, cross-validation, scores, time, encoders |
-| [docs/submitting.md](docs/submitting.md) | The contract, the model card, versions, examples |
+| [docs/submitting.md](docs/submitting.md) | How to add a model: the steps, the contract, the model card, examples |
+| [docs/automation.md](docs/automation.md) | What happens after a pull request is opened |
 | [site/](site/) | The page and its data: `results.json`, `results.parquet`, and every fold in `results_per_fold.csv` and `results_per_fold.parquet` |
 | [AGENTS.md](AGENTS.md) | Where coding agents start |
 
-Maintainer and infrastructure files: `scripts/`, `tests/`, [docs/automation.md](docs/automation.md).
+Maintainer files: `scripts/`, `tests/`.
 
 ## Contact
 
@@ -79,4 +96,4 @@ Gioia Blayer, gioia.blayer@inria.fr
 
 ## Issues and ideas
 
-[Open an issue](../../issues/new/choose) for a bug, a wrong score, a table problem or a feature.
+[Open an issue](../../issues/new/choose) for a question, a bug, a wrong score, a table problem or a feature.

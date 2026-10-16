@@ -1,3 +1,5 @@
+"""Checks scores, run times per 1,000 rows and the Pareto front, computed as in the paper."""
+
 import numpy as np
 import pandas as pd
 import pytest

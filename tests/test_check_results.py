@@ -1,3 +1,6 @@
+"""Checks that a results file with impossible scores, wrong row counts or empty scores is rejected before it
+reaches the board."""
+
 import pandas as pd
 
 from strable_leaderboard.check_results import check

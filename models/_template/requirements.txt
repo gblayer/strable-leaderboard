@@ -1,3 +1,2 @@
-# Exact versions only (==), each equal to the shared environment's (env/requirements.txt):
-# every model runs in that one environment. Do not list strable-leaderboard itself.
+# Write your model's version, as in env/requirements.txt: the shared environment every model runs in.
 my-model==1.0.0
