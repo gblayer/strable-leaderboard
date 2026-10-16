@@ -5,8 +5,10 @@
 #
 # Called by strable_leaderboard.run, the trusted parent, which writes X_train, y_train and X_test
 # into the inputs folder and reads the predictions back from the outputs folder.
-# `singularity exec --containall --net --network none` on a small Debian image
-# ($STRABLE_CACHE/sandbox/base.sif, pulled once by scripts/prepare.py). The container sees only,
+# `singularity exec --containall --net --network none` on a Debian image with gcc and the C library
+# headers ($STRABLE_CACHE/sandbox/base.sif, pulled by scripts/prepare.py; $STRABLE_IMAGE overrides
+# it): Triton, which some packages run, compiles a small C launcher with the Python headers of the
+# bound interpreter when its first kernel runs. The container sees only,
 # read-only: the shared env and its interpreter, this model's weights, the package code, the model
 # folder and the inputs; read-write: the outputs folder, and an empty /tmp and home on node disk.
 # No dataset, no folds, no embeddings, no results, no real home, no credentials, no other model,

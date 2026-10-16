@@ -13,8 +13,9 @@ overrides it). It is gitignored and never reaches GitHub:
   ``checkpoint.files`` when it lists them (``strable_leaderboard.card.fetch_checkpoint``, which the
   smoke test uses too), refused above 20 GB unless the folder is in ``LARGE_CHECKPOINTS`` (this
   file, so only the maintainer can change it).
-- ``sandbox/base.sif``: the small Debian image scripts/sandbox.sh runs model code in, pinned by
-  digest, pulled once when Singularity is installed.
+- ``sandbox/base.sif``: the Debian image scripts/sandbox.sh runs model code in, with gcc and the C
+  library headers, pinned by digest; pulled when Singularity is installed, and again when ``IMAGE``
+  changes (``sandbox/base.sif.source`` records what it was pulled from).
 
 Each model's requirements.txt must be satisfied by the shared environment
 (``strable_leaderboard.check_requirements``); a model that needs another version stops here.
@@ -39,7 +40,10 @@ from strable_leaderboard.card import checkpoint_bytes, default_cache, fetch_chec
 PYTHON = "3.12.12"  # the paper's interpreter
 MAX_CHECKPOINT_BYTES = 20e9
 LARGE_CHECKPOINTS: set[str] = set()  # model folders allowed a checkpoint above the cap
-IMAGE = "docker://debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587"
+# Debian bookworm with gcc and the C library headers (buildpack-deps:bookworm, 351 MB compressed), for
+# every model: Triton, which some packages run (Kumo Tabular's), compiles a small C launcher when its
+# first kernel runs. The Python headers it also needs come from the bound interpreter, cache/python.
+IMAGE = "docker://buildpack-deps:bookworm@sha256:b22578185ebfdbd9a4050f697638b9c9696b70616d9b01bddfa79145db2b6dfd"
 
 
 def env_python(cache: Path) -> Path:
@@ -77,12 +81,17 @@ def build_env(cache: Path, force: bool = False) -> Path:
 
 def pull_image(cache: Path) -> None:
     """The sandbox image: only a root file system; the env and the data are bound in read-only."""
-    image = cache / "sandbox" / "base.sif"
-    if image.exists() or not shutil.which("singularity"):
+    image, source = cache / "sandbox" / "base.sif", cache / "sandbox" / "base.sif.source"
+    if not shutil.which("singularity") or (image.exists() and source.exists() and source.read_text().strip() == IMAGE):
         return
-    image.parent.mkdir(parents=True, exist_ok=True)
-    env = dict(os.environ, SINGULARITY_CACHEDIR=str(cache / "sandbox" / ".singularity"))
-    subprocess.run(["singularity", "pull", str(image), IMAGE], check=True, env=env)
+    tmp = cache / "sandbox" / ".tmp"
+    tmp.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ, SINGULARITY_CACHEDIR=str(cache / "sandbox" / ".singularity"), SINGULARITY_TMPDIR=str(tmp))
+    new = image.with_suffix(".sif.new")
+    new.unlink(missing_ok=True)
+    subprocess.run(["singularity", "pull", str(new), IMAGE], check=True, env=env)
+    os.replace(new, image)  # a running job keeps reading the image it opened
+    source.write_text(IMAGE + "\n")
 
 
 def main(argv=None) -> int:
