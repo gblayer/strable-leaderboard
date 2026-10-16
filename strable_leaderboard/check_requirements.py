@@ -5,19 +5,21 @@
     python -m strable_leaderboard.check_requirements --lock                       # scripts/lock_env.sh
 
 Every model runs in ONE shared environment, env/requirements.txt (the paper's versions), locked
-from env/requirements.in by scripts/lock_env.sh. A model's requirements.txt may only list
-``name==version`` pins, and each pin must equal the shared environment's version. A package the
-shared environment lacks may be added to env/requirements.in in the same pull request; the
-maintainer then relocks. ``--base-env`` gives the base branch's env/ folder: every pin there must
-be unchanged, since a pull request may only add packages.
+from env/requirements.in by scripts/lock_env.sh. A model's requirements.txt may only list exact
+pins, and each pin must equal the shared environment's: ``name==version``, or, for a package that is
+not on PyPI, a git reference at one commit, ``name @ git+https://<host>/<repository>@<full
+40-character commit hash>`` (never a branch, a tag or a short hash). A package the shared
+environment lacks may be added to env/requirements.in in the same pull request; the maintainer then
+relocks. ``--base-env`` gives the base branch's env/ folder: every pin there must be unchanged,
+since a pull request may only add packages.
 
 ``--lock`` regenerates env/requirements.txt with uv, the paper's full freeze (env/paper-freeze.txt)
 as constraints, except for a package env/requirements.in pins to another version (the maintainer's
-decision). ``--report`` resolves another requirements.in the same way, never building a
-package, and prints for the maintainer the packages it adds and every existing version it changes;
-when that fails, it resolves again without the freeze and with the current pins of
-env/requirements.in loosened to bare names, keeping the current versions where uv can, to show
-what would have to move.
+decision). ``--report`` resolves another requirements.in the same way, never building a package
+(git pins, which uv reads only by building them, are carried over unresolved), and prints for the
+maintainer the packages it adds and every existing version it changes; when that fails, it
+resolves again without the freeze and with the current pins of env/requirements.in loosened to bare
+names, keeping the current versions where uv can, to show what would have to move.
 """
 
 from __future__ import annotations
@@ -38,6 +40,10 @@ LOCK_HEADER = """# The shared environment, every package pinned to the version o
 # scripts/prepare.py installs it into cache/env together with this package (-e .).
 """
 PIN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[A-Za-z0-9,._-]+\])?==([A-Za-z0-9.+!_-]+)$")
+# A package that is not on PyPI: a PEP 508 direct reference to a git repository at one full commit hash.
+# Its "version" (group 3) is the whole reference, so two pins are equal only with the same URL and commit.
+GIT_PIN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[A-Za-z0-9,._-]+\])?\s*@\s*"
+                     r"(git\+https://[A-Za-z0-9.-]+/[A-Za-z0-9._/-]+@[0-9a-f]{40})$")
 
 
 def normalize(name: str) -> str:
@@ -45,16 +51,27 @@ def normalize(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name).lower()
 
 
+def match_pin(line: str):
+    """The match of one exact pin, ``name==version`` or a git pin; groups: name, extras, version."""
+    return PIN.match(line) or GIT_PIN.match(line)
+
+
+def spec(name: str, version: str) -> str:
+    """A pin as a requirements file writes it."""
+    return f"{name} @ {version}" if version.startswith("git+") else f"{name}=={version}"
+
+
 def read_pins(path: Path) -> tuple[dict[str, str], list[str]]:
-    """``({name: version}, problems)`` from a requirements file: only ``name==version`` lines."""
+    """``({name: version}, problems)`` from a requirements file: only exact pins."""
     pins, problems = {}, []
     for raw in Path(path).read_text().splitlines():
         line = raw.split("#", 1)[0].strip()
         if not line:
             continue
-        m = PIN.match(line)
+        m = match_pin(line)
         if not m:
-            problems.append(f"{line!r}: only exact pins name==version are allowed (no ranges, URLs, paths or options)")
+            problems.append(f"{line!r}: only exact pins are allowed, name==version or name @ git+https://...@<full "
+                            "40-character commit hash> (no ranges, branches, tags, short hashes, paths or options)")
             continue
         pins[normalize(m.group(1))] = m.group(3)
     return pins, problems
@@ -76,15 +93,15 @@ def problems(folder: Path, env_files=(ENV_REQUIREMENTS, ENV_INPUT)) -> list[str]
         out.append("do not list strable-leaderboard itself")
     for name, version in sorted(pins.items()):
         if name not in env:
-            out.append(f"{name}=={version}: not in the shared environment; add this pin to env/requirements.in")
+            out.append(f"{spec(name, version)}: not in the shared environment; add this pin to env/requirements.in")
         elif env[name] != version:
-            out.append(f"{name}=={version}: the shared environment has {name}=={env[name]}; pin that version")
+            out.append(f"{spec(name, version)}: the shared environment has {spec(name, env[name])}; pin that version")
     card_path = folder / "model.yaml"
     if card_path.exists():
         import yaml
 
         card = yaml.safe_load(card_path.read_text()) or {}
-        m = PIN.match(str(card.get("package", "")))
+        m = match_pin(str(card.get("package", "")))
         if m and pins.get(normalize(m.group(1))) != m.group(3):
             out.append(f"model.yaml package {card['package']} is not pinned the same way in requirements.txt")
     return out
@@ -96,10 +113,10 @@ def pin_changes(base: Path, head: Path = ENV) -> list[str]:
     old = {f: read_pins(base / f)[0] for f in files}
     new_in, found = read_pins(head / "requirements.in")
     new = {"requirements.in": new_in, "requirements.txt": read_pins(head / "requirements.txt")[0]}
-    out = [f"env/{f}: {n}=={v} is changed or removed; existing pins never change in a pull request"
+    out = [f"env/{f}: {spec(n, v)} is changed or removed; existing pins never change in a pull request"
            for f in files for n, v in sorted(old[f].items()) if new[f].get(n) != v]
     locked = old["requirements.txt"]
-    out += [f"env/requirements.in: {n}=={v}, but the shared environment has {n}=={locked[n]}"
+    out += [f"env/requirements.in: {spec(n, v)}, but the shared environment has {spec(n, locked[n])}"
             for n, v in sorted(new_in.items()) if n not in old["requirements.in"] and locked.get(n, v) != v]
     return out + [f"env/requirements.in: {p}" for p in found]
 
@@ -133,14 +150,20 @@ def lock() -> None:
 
 def lock_changes(old: dict[str, str], new: dict[str, str]) -> list[str]:
     """Markdown lines: the packages ``new`` adds, then every version of ``old`` it changes or drops."""
-    from packaging.version import Version
+    from packaging.version import InvalidVersion, Version
 
-    added = [f"`{n}=={v}`" for n, v in sorted(new.items()) if n not in old]
+    def older(a: str, b: str) -> bool:
+        try:
+            return Version(a) < Version(b)
+        except InvalidVersion:  # a git pin has no order
+            return False
+
+    added = [f"`{spec(n, v)}`" for n, v in sorted(new.items()) if n not in old]
     out = ["- Added: " + (", ".join(added) if added else "none")]
     for n, v in sorted(old.items()):
         if new.get(n) == v:
             continue
-        down = n in new and Version(new[n]) < Version(v)
+        down = n in new and older(new[n], v)
         out.append(f"- `{n}` {v} → {new.get(n, 'removed')}" + (" **downgrade**" if down else ""))
     if len(out) == 1:
         out.append("- No existing package changes version.")
@@ -149,9 +172,12 @@ def lock_changes(old: dict[str, str], new: dict[str, str]) -> list[str]:
 
 def report(requirements_in: Path, base: Path = ENV) -> str:
     """For the maintainer: what locking ``requirements_in`` as --lock does would add to and change in
-    ``base``'s lock. Only ``name==version`` lines are read, and no package is ever built."""
+    ``base``'s lock. Only exact pins are read, and no package is ever built: uv reads a git pin only by
+    building it, so git pins are carried over to the result unresolved; scripts/lock_env.sh resolves them."""
     matches = [m for raw in Path(requirements_in).read_text().splitlines()
-               if (m := PIN.match(raw.split("#", 1)[0].strip()))]
+               if (m := match_pin(raw.split("#", 1)[0].strip()))]
+    git = {normalize(m.group(1)): m.group(3) for m in matches if GIT_PIN.match(m.group(0))}
+    matches = [m for m in matches if not GIT_PIN.match(m.group(0))]
     lines = [m.group(0) for m in matches]
     current = read_pins(base / "requirements.in")[0]
     loose = [m.group(1) + (m.group(2) or "") if normalize(m.group(1)) in current else m.group(0) for m in matches]
@@ -166,12 +192,13 @@ def report(requirements_in: Path, base: Path = ENV) -> str:
                     "```", r.stderr.strip()[-1200:], "```",
                     "Resolved without the freeze, keeping the current versions where possible:"]
             pins.write_text("\n".join(loose) + "\n")
-            out.write_text((base / "requirements.txt").read_text())  # uv prefers the versions out pins
+            out.write_text("".join(line + "\n" for line in (base / "requirements.txt").read_text().splitlines()
+                                   if not GIT_PIN.match(line.strip())))  # uv prefers the versions out pins
             r = compile_lock(pins, out, False, "--no-build")
             if r.returncode:
                 return "\n".join(head[:-1] + ["It does not resolve without the freeze either:", "```",
                                                 r.stderr.strip()[-1200:], "```"])
-        return "\n".join(head + lock_changes(old, read_pins(out)[0]))
+        return "\n".join(head + lock_changes(old, {**read_pins(out)[0], **git}))
 
 
 def main(argv=None) -> int:

@@ -7,7 +7,7 @@
 # waits for the maintainer, who decides, relocks and rebuilds the environment.
 
 # data, metrics, protocol
-numpy==2.3.4
+numpy==2.3.5  # 2.3.4 in the paper; EXAONE Tabular needs 2.3.5 or later
 pandas==2.3.3
 pyarrow==22.0.0
 scipy==1.16.3
@@ -29,6 +29,10 @@ tabpfn==9.0.0  # 6.0.6 in the paper; 9.0.0 adds TabPFN-3 and TabPFN-3.5
 tabicl==2.0.3
 tabstar==1.1.15
 pytabkit==1.7.1
+
+# learners added after the paper
+structured-data-models==0.2.1  # Kumo Tabular (NVIDIA)
+exaonetabular @ git+https://github.com/LGAI-Research/EXAONE-Tabular.git@841927fc4f2c573db5c88325f64ecc4fe5affd12  # EXAONE Tabular (LG), not on PyPI
 
 # tests
 pytest==9.0.2

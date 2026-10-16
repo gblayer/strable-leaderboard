@@ -200,3 +200,28 @@ def test_published_board_reproduces_table_e10():
     ids = [(p["model"] if p["encoder"] == "none" else p["encoder"] + "+" + p["model"]) + ("" if p["variant"] == "default" else ":" + p["variant"])
            for methods in sel["pipelines"].values() for p in methods.values()]
     assert pareto_front(board.loc[ids]) == list(e10)
+
+
+def test_the_sandbox_image_is_pulled_again_when_it_changes(tmp_path, monkeypatch):
+    import prepare
+
+    pulls = []
+
+    def fake_run(cmd, check, env):
+        pulls.append(cmd[-1])
+        Path(cmd[-2]).write_text(cmd[-1])  # singularity pull <file> <image>
+        assert env["SINGULARITY_TMPDIR"].startswith(str(tmp_path))
+
+    monkeypatch.setattr(prepare.shutil, "which", lambda name: "/usr/bin/" + name)
+    monkeypatch.setattr(prepare.subprocess, "run", fake_run)
+    image = tmp_path / "sandbox" / "base.sif"
+    image.parent.mkdir()
+    image.write_text("an image without a source: the one before the source was recorded")
+    prepare.pull_image(tmp_path)
+    prepare.pull_image(tmp_path)  # up to date: nothing pulled
+    monkeypatch.setattr(prepare, "IMAGE", "docker://debian:trixie@sha256:" + "0" * 64)
+    prepare.pull_image(tmp_path)
+    assert pulls == [pulls[0], prepare.IMAGE] and pulls[0].startswith("docker://buildpack-deps:bookworm@sha256:")
+    assert image.read_text() == prepare.IMAGE
+    assert (tmp_path / "sandbox" / "base.sif.source").read_text() == prepare.IMAGE + "\n"
+    assert not image.with_suffix(".sif.new").exists()

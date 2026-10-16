@@ -13,7 +13,7 @@ from pathlib import Path
 
 import yaml
 
-from .check_requirements import PIN
+from .check_requirements import match_pin
 
 REQUIRED = ["name", "version", "end_to_end", "tasks", "variant", "hardware", "package", "checkpoint", "licence",
             "pretraining_data"]
@@ -49,8 +49,9 @@ def card_problems(card) -> list[str]:
     for key, allowed in [("variant", VARIANTS), ("hardware", HARDWARE), ("pretraining_data", PRETRAINING)]:
         if key in card and (not isinstance(card[key], str) or card[key] not in allowed):
             out.append(f"{key} must be one of {sorted(allowed)}")
-    if "package" in card and not (isinstance(card["package"], str) and PIN.match(card["package"])):
-        out.append("package must be one pin, name==version")
+    if "package" in card and not (isinstance(card["package"], str) and match_pin(card["package"])):
+        out.append("package must be one exact pin, as in requirements.txt: name==version, or "
+                   "name @ git+https://...@<full 40-character commit hash>")
     if "checkpoint" in card and card["checkpoint"] is not None:
         ckpt = card["checkpoint"]
         if not isinstance(ckpt, dict) or set(ckpt) - {"files"} != {"repo", "revision"}:

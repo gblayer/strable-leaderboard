@@ -173,3 +173,69 @@ def test_a_requirements_in_pin_overrides_the_freeze(tmp_path):
     req.write_text("tabpfn==9.0.0\nnumpy==2.3.4\n")
     kept = freeze_constraints(req, tmp_path / "freeze.txt").read_text().splitlines()
     assert "tabpfn==6.0.6" not in kept and "numpy==2.3.4" in kept and "skrub==0.6.2" in kept
+
+
+EXAONE_PIN = ("exaonetabular @ git+https://github.com/LGAI-Research/EXAONE-Tabular.git"
+              "@841927fc4f2c573db5c88325f64ecc4fe5affd12")
+
+
+def test_a_git_pin_needs_a_full_commit_hash(tmp_path):
+    from strable_leaderboard.check_requirements import read_pins
+
+    url = "git+https://github.com/LGAI-Research/EXAONE-Tabular.git"
+    good = tmp_path / "good.txt"
+    good.write_text(f"{EXAONE_PIN}  # a comment\nnumpy==2.3.5\nexaonetabular@{url}@{'a' * 40}\n")
+    pins, found = read_pins(good)
+    assert found == [] and pins["exaonetabular"] == f"{url}@{'a' * 40}" and pins["numpy"] == "2.3.5"
+    for ref in [f"{url}@main", f"{url}@v1.0.0", f"{url}@841927f", f"{url}@{'A' * 40}", url,
+                f"git+http://github.com/LGAI-Research/EXAONE-Tabular.git@{'a' * 40}",
+                "https://example.org/exaonetabular-1.0.0-py3-none-any.whl", "file:///tmp/exaonetabular"]:
+        bad = tmp_path / "bad.txt"
+        bad.write_text(f"exaonetabular @ {ref}\n")
+        assert read_pins(bad) == ({}, [f"'exaonetabular @ {ref}': only exact pins are allowed, name==version or "
+                                       "name @ git+https://...@<full 40-character commit hash> (no ranges, branches, "
+                                       "tags, short hashes, paths or options)"]), ref
+
+
+def test_a_git_pin_satisfies_a_model_only_at_the_same_commit(tmp_path):
+    env = _env(tmp_path / "env", f"numpy==2.3.5\n{EXAONE_PIN}\n", f"{EXAONE_PIN}\n")
+    files = (env / "requirements.txt",)
+    card = dict(GOOD, package=EXAONE_PIN, checkpoint=None)
+    assert card_problems(card) == []
+    assert pin_problems(_folder(tmp_path / "same", card=card, requirements=EXAONE_PIN + "\n"), files) == []
+    other = EXAONE_PIN[:-40] + "b" * 40
+    found = pin_problems(_folder(tmp_path / "other", card=dict(card, package=other), requirements=other + "\n"), files)
+    assert found == [f"{other}: the shared environment has {EXAONE_PIN}; pin that version"]
+    found = pin_problems(_folder(tmp_path / "card", card=dict(card, package="exaonetabular==1.0.0"),
+                                 requirements=EXAONE_PIN + "\n"), files)
+    assert found == ["model.yaml package exaonetabular==1.0.0 is not pinned the same way in requirements.txt"]
+    assert "package must be one exact pin" in "\n".join(card_problems(dict(card, package=EXAONE_PIN[:-40] + "main")))
+
+
+def test_a_pull_request_keeps_a_git_pin(tmp_path):
+    base = _env(tmp_path / "base", f"numpy==2.3.5\n{EXAONE_PIN}\n", f"numpy==2.3.5\n{EXAONE_PIN}\n")
+    same = _env(tmp_path / "same", f"numpy==2.3.5\n{EXAONE_PIN}\n", f"numpy==2.3.5\n{EXAONE_PIN}\nkumo==1.0\n")
+    assert pin_changes(base, same) == []
+    moved = EXAONE_PIN[:-40] + "b" * 40
+    assert pin_changes(base, _env(tmp_path / "moved", f"numpy==2.3.5\n{moved}\n", f"numpy==2.3.5\n{moved}\n")) == [
+        f"env/requirements.in: {EXAONE_PIN} is changed or removed; existing pins never change in a pull request",
+        f"env/requirements.txt: {EXAONE_PIN} is changed or removed; existing pins never change in a pull request"]
+
+
+def test_the_report_never_builds_a_git_pin(tmp_path, monkeypatch):
+    from strable_leaderboard import check_requirements as cr
+
+    base = _env(tmp_path / "base", "numpy==2.3.5\n", "numpy==2.3.5\n")
+    seen = []
+
+    def fake_compile(requirements_in, out, freeze=True, *extra):
+        seen.append((requirements_in.read_text(), extra))
+        out.write_text("numpy==2.3.5\ntabulate==0.9.0\n")
+        return subprocess.CompletedProcess([], 0, "", "")
+
+    monkeypatch.setattr(cr, "compile_lock", fake_compile)
+    req = tmp_path / "requirements.in"
+    req.write_text(f"numpy==2.3.5\ntabulate==0.9.0\n{EXAONE_PIN}\n")
+    text = cr.report(req, base)
+    assert seen == [("numpy==2.3.5\ntabulate==0.9.0\n", ("--no-build",))]
+    assert f"- Added: `{EXAONE_PIN}`, `tabulate==0.9.0`" in text and "No existing package changes version." in text
