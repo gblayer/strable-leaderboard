@@ -9,16 +9,17 @@ that the shared environment does not satisfy (``strable_leaderboard.check_requir
 on code that ``FORBIDDEN`` flags as making its own folds or fixing its own seed: a
 regular-expression hint, easy to get around; the Claude review is the real check. Then it
 downloads the card's checkpoint, as the runner does, into ``cache/weights/<name>``
-($STRABLE_CACHE/weights/<name>; ``--weights-dir`` gives another folder) and passes it as
-``weights_dir``, loads ``Model`` from ``model.py``, encodes strings with Tf-Idf when the model
-needs numbers, and checks the shapes and ranges of the predictions. Threads are capped to
-``--n-jobs`` (default 1) as in the runner. It does not measure leaderboard scores: the full run
-happens on the cluster.
+($STRABLE_CACHE/weights/<name>; ``--weights-dir`` gives another folder) and the tables, switches
+Hugging Face downloads off (``OFFLINE``), loads ``Model`` from ``model.py``, passes the checkpoint
+as ``weights_dir``, encodes strings with Tf-Idf when the model needs numbers, and checks the
+shapes and ranges of the predictions. Threads are capped to ``--n-jobs`` (default 1) as in the
+runner. It does not measure leaderboard scores: the full run happens after the merge.
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 import time
@@ -51,6 +52,20 @@ FORBIDDEN = {
     r"\b(np\.random\.seed|random\.seed|torch\.manual_seed|torch\.cuda\.manual_seed(_all)?|set_seed)\s*\(\s*-?\d+":
         "fixes its own seed; pass self.seed",
 }
+# Set once the weights and tables are downloaded, before the model's code is loaded: a model that
+# downloads its own weights fails here, as it would on the runner.
+OFFLINE = {"HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1", "HF_DATASETS_OFFLINE": "1"}
+
+
+def go_offline() -> None:
+    """Switch Hugging Face downloads off for the rest of the process. huggingface_hub reads its
+    variable once, when imported, and the downloads imported it: its flag is set too."""
+    os.environ.update(OFFLINE)
+    from huggingface_hub import constants
+    from huggingface_hub.utils import reset_sessions
+
+    constants.HF_HUB_OFFLINE = True
+    reset_sessions()  # sessions opened before keep their network access
 
 
 def code_problems(folder: Path) -> list[str]:
@@ -124,6 +139,14 @@ def main(argv=None) -> int:
     if found:
         return 1
     card = load_card(args.folder)
+    weights_dir = args.weights_dir
+    if not args.static:
+        if weights_dir is None and card["checkpoint"]:
+            weights_dir = fetch_checkpoint(card["checkpoint"], default_cache() / "weights" / args.folder.resolve().name)
+        for task, table in SMOKE_TABLES.items():
+            if task in card["tasks"]:
+                load_table(table, data_dir=args.data_dir)  # downloaded now, read from the local copy below
+        go_offline()
     model_cls = load_model_class(args.folder)
     if bool(card["end_to_end"]) != bool(model_cls.end_to_end):
         print("  FAIL  end_to_end differs between model.yaml and model.py")
@@ -137,9 +160,6 @@ def main(argv=None) -> int:
         import torch
 
         args.device = "cuda" if torch.cuda.is_available() else "cpu"
-    weights_dir = args.weights_dir
-    if weights_dir is None and card["checkpoint"]:
-        weights_dir = fetch_checkpoint(card["checkpoint"], default_cache() / "weights" / args.folder.resolve().name)
     if weights_dir:
         print(f"  ok    weights_dir {weights_dir}")
 

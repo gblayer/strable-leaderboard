@@ -1,6 +1,11 @@
 import copy
+import json
+import subprocess
+import sys
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import yaml
 
 from strable_leaderboard.card import card_problems
@@ -87,6 +92,40 @@ def test_own_folds_and_seeds_are_flagged(tmp_path):
 def test_example_models_pass_the_static_checks():
     assert static_problems(ROOT / "models" / "ridge") == []
     assert static_problems(ROOT / "models" / "_template") != []
+
+
+DOWNLOADS = """import numpy as np
+from huggingface_hub import hf_hub_download
+
+from strable_leaderboard.model import StrableModel
+
+
+class Model(StrableModel):
+    def fit(self, X, y):
+        try:
+            hf_hub_download("no-owner/no-model", "model.ckpt")
+        except Exception as exc:
+            raise RuntimeError(f"download failed: {type(exc.__cause__).__name__}") from exc
+        return self
+
+    def predict(self, X):
+        return np.zeros(len(X))
+"""
+
+
+def test_the_smoke_test_runs_the_model_with_downloads_off(tmp_path):
+    table = tmp_path / "data" / "china-overseas-finance-inventory"  # the regression smoke table, made up
+    table.mkdir(parents=True)
+    rng = np.random.default_rng(0)
+    pd.DataFrame({"x": rng.normal(size=60), "y": rng.normal(size=60)}).to_parquet(table / "data.parquet")
+    (table / "config.json").write_text(json.dumps({"target_name": "y", "task": "regression"}))
+    card = dict(GOOD, tasks=["regression"], hardware="cpu", package="scikit-learn==1.7.2", checkpoint=None)
+    folder = _folder(tmp_path, card=card, requirements="scikit-learn==1.7.2\n", code=DOWNLOADS)
+    # huggingface_hub is imported first, as the weight download does before the model runs.
+    code = ("import sys, huggingface_hub.file_download; from strable_leaderboard.smoke import main; "
+            f"sys.exit(main([{str(folder)!r}, '--data-dir', {str(tmp_path / 'data')!r}]))")
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, cwd=ROOT)
+    assert out.returncode == 1 and "download failed: OfflineModeIsEnabled" in out.stdout, out.stdout + out.stderr
 
 
 def _env(folder, txt, req_in):
