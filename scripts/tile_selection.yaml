@@ -1,5 +1,5 @@
-# The five pipelines of the TILE paper's Table H.5 on STRABLE, the set scripts/import_tile_results.py
-# imports. Each source row is one table and outer fold, on the board's 108 tables and outer folds.
+# The five pipelines of the TILE paper's Table H.5 on STRABLE (https://arxiv.org/abs/2610.17065), the set
+# scripts/import_tile_results.py imports. Each source row is one table and outer fold, on the board's 108 tables and outer folds.
 #
 # TILE (named latte in its authors' code, hence the method tokens) is an encoder. Every row is written
 # as one sentence, "The <column> is <value>." per cell, numbers included, and goes through the first
