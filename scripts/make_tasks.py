@@ -4,9 +4,9 @@
 
 A numeric-only model gets the four encoders, an end-to-end model one line per table and fold.
 Tasks with a row in $STRABLE_RUNS (default runs/) or in $STRABLE_RESULTS/<model>.csv are left
-out, so the list is what the job array still has to do. Rows imported from the paper (hardware
-"paper") do not count: the runner re-runs them on the reference hardware, and the new rows replace
-them. ``tables`` and ``folds`` narrow the list (the dispatcher's test runs).
+out, so the list is what the job array still has to do. Imported rows count too: a pipeline already
+on the board is never run again, so a model gets only its missing encoders. ``tables`` and
+``folds`` narrow the list (the dispatcher's test runs).
 """
 
 import json
@@ -31,8 +31,7 @@ def done(model: str, runs: Path, results: Path) -> set:
         keys.add((p.parents[1].name, p.parent.name, int(p.stem)))
     csv = results / f"{model}.csv"
     if csv.exists():
-        df = pd.read_csv(csv)
-        df = df[df["hardware"].astype(str) != "paper"]
+        df = pd.read_csv(csv, usecols=["encoder", "table", "fold"])
         keys |= set(zip(df["encoder"], df["table"], df["fold"]))
     return keys
 
