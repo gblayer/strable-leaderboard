@@ -8,7 +8,7 @@
 [![Data](https://img.shields.io/badge/data-Hugging%20Face-223631?style=flat-square&labelColor=13273F)](https://huggingface.co/datasets/inria-soda/STRABLE-benchmark)
 [![NeurIPS 2026](https://img.shields.io/badge/NeurIPS%202026-Evaluation%20and%20Datasets%20track-4E0000?style=flat-square&labelColor=13273F)](#) <!-- TODO: link to the NeurIPS 2026 video presentation -->
 
-The living leaderboard of [STRABLE](https://arxiv.org/abs/2605.12292), the benchmark of 108 real-world tables with raw strings: 76 regression and 32 classification tasks. One score and one run time per pipeline, Pareto-optimal pipelines first.
+The living leaderboard of [STRABLE](https://arxiv.org/abs/2605.12292), the benchmark of 108 real-world tables with raw strings: 76 regression and 32 classification tasks. One score and one run time per pipeline (a model, or a string encoder plus a model), Pareto-optimal pipelines first.
 
 **Leaderboard:** https://gblayer.github.io/strable-leaderboard/
 
@@ -20,16 +20,16 @@ When you report a position on the board, give the version and date shown at the 
 
 <!-- The page's "Submit a model" button links to this heading (#submit-a-model): keep its text. -->
 
-One pull request adds one folder, `models/<name>/`, with three files: `model.py` (your model), `model.yaml` (its card) and `requirements.txt` (its version).
+One pull request adds one folder, `models/<name>/`, with three files: `model.py` (your model), `model.yaml` (its card) and `requirements.txt` (its package, `name==version`).
 
 1. **Fork** the repository on GitHub and clone your fork.
-2. **Add one folder**, `models/<name>/`, starting from [models/_template/](models/_template/), and fill its three files. One folder per model version, named with lowercase letters, digits, dots and hyphens. Folder names already used by the paper's models (`ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`) and `causilo` are taken.
+2. **Add one folder**, `models/<name>/`, starting from [models/_template/](models/_template/), and fill its three files. One folder per model version, named with lowercase letters, digits, dots and hyphens. Some names are taken: see [docs/submitting.md](docs/submitting.md).
 3. **Run the smoke test**, as in [Check your model locally](#check-your-model-locally).
 4. **Open a pull request** from your fork. Only `models/<name>/` changes, plus the lines you add to `env/requirements.in`.
 
 Step by step, with the model card and examples: [docs/submitting.md](docs/submitting.md).
 
-**One shared environment.** All models run in one Python environment, [env/requirements.txt](env/requirements.txt), so that results stay comparable. In your `requirements.txt`, write your model's version, as listed there. If your model needs a package that is missing, ask for it in the pull request text and add one line `name==version` to [env/requirements.in](env/requirements.in). The maintainer decides on any other version.
+**One shared environment.** All models run in one Python environment, [env/requirements.txt](env/requirements.txt), so that results stay comparable. A missing package is asked for in the pull request: see [docs/submitting.md](docs/submitting.md).
 
 ## Ask your agent
 
@@ -58,7 +58,7 @@ pip install -c env/requirements.txt -e ".[smoke]" -r models/<name>/requirements.
 python -m strable_leaderboard.smoke models/<name>
 ```
 
-The first line installs this package, the packages the test needs and your model's packages, at the shared environment's versions. The second runs your model on outer fold 0 of three small tables and checks its card and predictions; it does not compute leaderboard scores.
+The first line installs this package, the packages the test needs and your model's packages, at the shared environment's versions. The second runs your model on the first of the three test folds of three small tables, on CPU (add `--device cuda` for your GPU), and checks its card and predictions; it does not compute leaderboard scores.
 
 ## Layout
 

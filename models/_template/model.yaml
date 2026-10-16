@@ -8,7 +8,7 @@ tasks: [regression, binary, multiclass]
 variant: default                # the package's default configuration
 hardware: gpu                   # gpu | cpu
 
-package: my-model==1.0.0        # the code, same pin as requirements.txt and env/requirements.txt
+package: my-model==1.0.0        # the code, same pin as requirements.txt
 checkpoint:                     # the weights, or null if the model has none
   repo: my-org/my-model         # Hugging Face repository
   revision: 0123456789abcdef    # the full 40-character commit hash, never a branch or tag

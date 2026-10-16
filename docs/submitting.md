@@ -6,13 +6,13 @@ One pull request adds one folder, `models/<name>/`:
 |---|---|
 | `model.py` | `class Model(StrableModel)` with `fit`, `predict` and `predict_proba` |
 | `model.yaml` | The model card, below. Every field filled |
-| `requirements.txt` | Your model's version: `tabpfn==9.0.0` |
+| `requirements.txt` | Your model's package and its version: `tabpfn==9.0.0`. The model's own version goes in `model.yaml` |
 
 `models/_template/` is the starting point, `models/ridge/` a complete example.
 
-**Folder names.** One folder per model version, named with lowercase letters, digits, dots and hyphens (`kumo-tabular-1.0`); the version itself lives in `model.yaml`. Folder names already used by the paper's models (`ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`) and `causilo` are taken.
+**Folder names.** One folder per model version, named with lowercase letters, digits, dots and hyphens (`kumo-tabular-1.0`); the version itself lives in `model.yaml`. Folder names already used by models on the board are taken: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`, `causilo`.
 
-**One shared environment.** All models run in one Python environment, [`env/requirements.txt`](../env/requirements.txt), at the paper's versions (torch 2.9.1, scikit-learn 1.7.2, skrub 0.7.0, tabpfn 9.0.0, tabicl 2.0.3, sentence-transformers 5.2.3, xgboost 3.1.1, catboost 1.2.8, ...), so that results stay comparable. In your `requirements.txt`, write your model's version, as listed there. If your model needs a package that is missing, ask for it in the pull request text and add one line `name==version` to [`env/requirements.in`](../env/requirements.in); never change a line that is already there. The maintainer decides on any other version and updates the environment.
+**One shared environment.** All models run in one Python environment, [`env/requirements.txt`](../env/requirements.txt), so that results stay comparable. In your `requirements.txt`, write your model's package version, as listed there. If your model needs a package that is missing, ask for it in the pull request text and add one line `name==version` to [`env/requirements.in`](../env/requirements.in); never change a line that is already there. The maintainer decides on any other version and updates the environment.
 
 ## Step by step
 
@@ -26,15 +26,15 @@ You need a GitHub account.
    pip install -c env/requirements.txt -e ".[smoke]" -r models/<name>/requirements.txt
    python -m strable_leaderboard.smoke models/<name>
    ```
-   It fails on a missing or invalid card field, on a version that differs from the shared environment, on wrong predictions, and on code that looks like it makes its own folds or fixes its own seed (a hint only: the review reads the code). Fix every FAIL line. A GPU model runs on CPU too if its package allows it (`--device cpu`); if not, run `--static` and say so in the pull request.
+   It fails on a missing or invalid card field, on a version that differs from the shared environment, on wrong predictions, and on code that looks like it makes its own folds or fixes its own seed (a hint only: the review reads the code). Fix every FAIL line. The test runs on CPU by default; add `--device cuda` to use your GPU. If your model cannot run on CPU and you have no GPU, run `--static` and say so in the pull request.
 5. **Push and open the pull request**: `git push -u origin add-<name>`, then on GitHub open a pull request from your branch to `gblayer/strable-leaderboard`, `main`, titled `Add <Name> <version>`, with the template filled and the smoke test output pasted. Only `models/<name>/` changes, plus the lines you add to `env/requirements.in`.
 
 ## What happens next
 
-- Automatic checks run, and Claude reviews the pull request twice. The same comment quotes what the model's documents say about its pre-training data.
-- If the checks pass, both reviews say MERGE and only your folder changes, the pull request merges by itself. Otherwise, for example when it adds a package, the maintainer looks at it.
+- Automatic checks run, and Claude reviews the pull request twice. One comment on the pull request gives both review verdicts and what the model's documents say about its pre-training data.
+- If the checks and both reviews pass and only your folder changes, the pull request merges by itself. Otherwise, for example when it adds a package, the maintainer looks at it.
 - After the merge, we run the model on all 108 tables × 3 folds. A comment on your pull request gives a rough estimate of when the results will be ready. Then the board updates.
-- If the model's pre-training data may overlap with STRABLE tables, the maintainer adds the label `pretraining-overlap`, which puts a small ∩ next to the model's name on the board. Only the maintainer adds it.
+- If the model's pre-training data may overlap with STRABLE tables, the maintainer adds the label `pretraining-overlap`, which puts a small ∩ next to the model's name on the board.
 
 Details: [automation.md](automation.md).
 
@@ -42,17 +42,17 @@ Details: [automation.md](automation.md).
 
 Every model implements the class `StrableModel` of `strable_leaderboard/model.py`, so that all models are trained, timed and scored the same way:
 
-- `end_to_end = True`: the model reads the raw table itself, text columns included, and runs alone. `False`: the model takes numbers only. The board turns the text into numbers with each of its four string encoders (Tf-Idf, Qwen-3-8B first-30, LLaMA-3.1-8B first-30, MiniLM-L6-v2 PCA-30, as in the paper) and runs the model once per encoder. A model runs one way only.
-- `fit(X, y)` trains on the training rows of one fold. Classification targets are integers 0..K-1; the model sets `self.classes_`.
+- `end_to_end = True`: the model reads the raw table itself, text columns included, and runs alone. `False`: the model takes numbers only. The board turns the text into numbers with each of its four string encoders, as in the paper (Tf-Idf; the first 30 embedding dimensions of Qwen-3-8B and of LLaMA-3.1-8B; MiniLM-L6-v2 embeddings reduced to 30 by PCA) and runs the model once per encoder. A model runs one way only.
+- `fit(X, y)` trains on the training rows of one fold. `X` is a pandas DataFrame: numbers only for a numeric-only model (missing cells stay NaN), the raw table for an end-to-end one. `y` is a NumPy array. Classification targets are integers 0..K-1; the model sets `self.classes_`.
 - `predict(X)` returns values or labels. `predict_proba(X)` returns one column per class, in the order of `self.classes_`.
 - **The board's folds are used for everything.** Never split, cross-validate or search hyperparameters yourself. Early stopping may only use `fit_idx, val_idx = self.validation_split(y)`; turn off a package's own validation split.
 - **No seed of your own.** Pass `self.seed` wherever a seed goes, never a number.
-- `self.device` and `self.n_jobs` are given. Pass `self.n_jobs` to the package, unless the package misreads it (tabicl 2.0.3 uses max(all cores, `n_jobs`) threads): then leave its default.
-- Use the package's default settings. Never read the tables, the split files or the test rows yourself.
+- `self.device` and `self.n_jobs` are given; the runner already caps threads to `self.n_jobs`.
+- Use the package's default settings; options that only lift size limits (such as TabPFN's `ignore_pretraining_limits`) are fine. Never read the tables, the split files or the test rows yourself.
 
 ## The model card
 
-Every field is required unless marked optional. The smoke test (`strable_leaderboard/card.py`) fails on a missing field, an unknown field, a value outside the allowed ones, a checkpoint revision that is not a full 40-character commit hash, or a value left from the template. The card of `models/tabpfn-3.5/`, with comments:
+Every field is required unless marked optional. The smoke test (`strable_leaderboard/card.py`) fails on a missing field, an unknown field, a value outside the allowed ones, a checkpoint revision that is not a full 40-character commit hash, or a placeholder left from the template. The card of `models/tabpfn-3.5/`, with comments:
 
 ```yaml
 name: TabPFN-3.5
@@ -78,12 +78,13 @@ code: https://github.com/PriorLabs/TabPFN      # optional
 |---|---|
 | `end_to_end` | `true`: one row on the board. `false`: one row per string encoder |
 | `tasks` | The tasks the model supports: `regression`, `binary`, `multiclass` |
-| `variant` | `default`, the package's default configuration: the only value accepted |
+| `variant` | Always `default`: the package's default configuration |
+| `licence` | The licence of the code and weights (the field is spelled `licence`) |
 | `hardware` | `gpu` or `cpu`: what the board runs the model on, shown when hovering its row |
 | `pretraining_data` | What the model was pre-trained on, as its paper or model card says: `synthetic` (generated data only), `real` (real tables), `mixed` (both), `none` (no pre-training) or `not disclosed` |
 | `code`, `paper` | Links to the code and the paper. Optional, but fill them when they exist: the review reads them |
 
-Why a commit hash in `checkpoint.revision`: a Hugging Face repository is a git repository, and vendors update weights in place. The hash pins the exact weights that were benchmarked, so the row can be reproduced later; a branch name like `main` would silently point to newer weights.
+Why a commit hash in `checkpoint.revision`: a Hugging Face repository is a git repository, and vendors update weights in place. The hash pins the exact weights that were benchmarked, so the row can be reproduced later; a branch name like `main` would silently point to newer weights. To get the hash: on the Hugging Face repository, open *Files and versions*, then *History*, and copy the full hash of the commit you tested.
 
 ## Package, weights, checkpoint
 
