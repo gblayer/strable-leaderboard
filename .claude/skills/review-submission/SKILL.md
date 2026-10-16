@@ -16,10 +16,10 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 - The folder has `model.py`, `model.yaml` and `requirements.txt`.
 
 **Card: complete**
-- Every field of `models/_template/model.yaml` is present and filled with this model's real values, no template placeholder left: `name`, `version`, `handles_strings`, `tasks`, `variant` (`default`), `hardware` (`gpu` or `cpu`), `package`, `checkpoint`, `licence`, `trained_on_strable`.
+- Every field of `models/_template/model.yaml` is present and filled with this model's real values, no template placeholder left: `name`, `version`, `end_to_end`, `tasks`, `variant` (`default`), `hardware` (`gpu` or `cpu`), `package`, `checkpoint`, `licence`, `trained_on_strable`.
 - An open model: the package on PyPI and the checkpoint on a public Hugging Face repository. No `access` or `anonymous` field. Closed, anonymous or API-only models: REJECT.
 - `checkpoint.revision` is a full 40-character commit hash, or `checkpoint` is null for a model without weights.
-- The values match the code and the package: `handles_strings` as in `model.py`, `package` as in `requirements.txt`, `tasks` what the model supports.
+- The values match the code and the package: `end_to_end` as in `model.py`, `package` as in `requirements.txt`, `tasks` what the model supports.
 - `trained_on_strable` is filled in; mention any listed table in the verdict.
 
 **Pins: the shared environment**
@@ -27,7 +27,7 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 - A package not in the shared environment: fine when the pull request adds exactly that pin to `env/requirements.in` (the maintainer relocks; say so). Another version of a package already there, or any changed or removed pin in `env/`: FIX.
 
 **Protocol**
-- `class Model(StrableModel)`, with `handles_strings` matching the card.
+- `class Model(StrableModel)`, with `end_to_end` matching the card.
 - Default configuration: no search over hyperparameters (`GridSearchCV`, `RandomizedSearchCV`, optuna, loops over settings, built-in CV searches such as `RidgeCV`). The paper's Ridge baseline is the only exception. The smoke test's regular expressions are only a hint: read the code.
 - **No own split or cross-validation**: no `train_test_split`, `KFold`, `StratifiedKFold`, `ShuffleSplit`, `cross_val_score`, `cross_validate`, and no package option that holds out its own validation set (`validation_fraction`, `early_stopping=True` with an internal split, `eval_set` built from a split of its own). Early stopping only through `self.validation_split(y)`. The outer folds come from the runner; the model never reads `splits/`.
 - **No seed override**: every seed is `self.seed`; no literal `random_state=0`, `seed=42`, `np.random.seed(...)`, `torch.manual_seed(...)` with a number.

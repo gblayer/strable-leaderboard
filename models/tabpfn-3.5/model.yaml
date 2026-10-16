@@ -1,6 +1,6 @@
 name: TabPFN-3.5
 version: "v3.5-20260909"
-handles_strings: false
+end_to_end: false
 tasks: [regression, binary, multiclass]
 variant: default
 hardware: gpu

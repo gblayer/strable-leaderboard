@@ -57,8 +57,8 @@ def main(argv=None) -> int:
     parser.add_argument("--warm-up", action="store_true")
     args = parser.parse_args(argv)
     cls = load_model_class(args.folder)
-    if cls.handles_strings != args.strings:
-        sys.exit("handles_strings differs between model.yaml and model.py")
+    if cls.end_to_end != args.strings:
+        sys.exit("end_to_end differs between model.yaml and model.py")
     limit_threads(args.n_jobs)
     X_train, X_test = pd.read_parquet(args.inputs / "X_train.parquet"), pd.read_parquet(args.inputs / "X_test.parquet")
     y_train = np.load(args.inputs / "y_train.npy")

@@ -98,7 +98,7 @@ def run(folder: Path, encoder: str, table: str, fold: int, data_dir, cache_dir, 
         sandbox: bool = True) -> dict:
     folder = Path(folder)
     card = load_card(folder)
-    strings = card["handles_strings"]
+    strings = card["end_to_end"]
     X, y, task = load_table(table, data_dir=data_dir)
     train_idx, test_idx, _ = splits_from_table(pd.read_parquet(SPLITS / f"{table}.parquet"), fold)
     X_train, X_test, y_train, y_test = X.iloc[train_idx], X.iloc[test_idx], y[train_idx], y[test_idx]
@@ -166,7 +166,7 @@ def main(argv=None) -> int:
         return smoke(args.folder, args.data_dir, args.cache_dir, args.device, args.n_jobs, sandbox)
     if args.table is None or args.fold is None:
         parser.error("give --table and --fold, or --smoke")
-    encoder = "none" if load_card(args.folder)["handles_strings"] else args.encoder
+    encoder = "none" if load_card(args.folder)["end_to_end"] else args.encoder
     path = args.out / args.folder.name / encoder / args.table / f"{args.fold}.json"
     if path.exists():
         print("exists", path)

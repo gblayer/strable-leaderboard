@@ -374,7 +374,7 @@ class Dispatcher:
                 return self.fail(name, st, "smoke-failed", f"smoke test exit {rc} on the reference hardware:\n{tail}")
             step = "embed"
         if step == "embed":
-            if not self.card(folder, code).get("handles_strings"):
+            if not self.card(folder, code).get("end_to_end"):
                 todo = self.missing_embeddings(smoke_tables() if name.startswith(TEST_PREFIX) else None)
                 if todo:
                     shared = self.state("_embed")

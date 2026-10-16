@@ -43,7 +43,7 @@ def tasks(folders, runs=Path(os.environ.get("STRABLE_RUNS", ROOT / "runs")),
     out = []
     for folder in folders:
         card = load_card(Path(folder))
-        encoders = ["none"] if card["handles_strings"] else list(ENCODERS)
+        encoders = ["none"] if card["end_to_end"] else list(ENCODERS)
         have = done(Path(folder).name, runs, results)
         for encoder in encoders:
             for table, meta in sorted(manifest.items()):

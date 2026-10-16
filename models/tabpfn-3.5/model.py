@@ -12,7 +12,7 @@ CHECKPOINT = "tabpfn-v3.5-20260909.safetensors"  # one file for both tasks
 
 
 class Model(StrableModel):
-    handles_strings = False
+    end_to_end = False
 
     def fit(self, X, y):
         kind = TabPFNRegressor if self.task == "regression" else TabPFNClassifier

@@ -20,7 +20,7 @@ Fill the card without asking the user, from the model's sources, in this order: 
 | Card field | Where it comes from |
 |---|---|
 | `name`, `version` | The model's own name and release. One folder per model version; the version lives here |
-| `handles_strings` | Does `fit` accept raw string columns? Check the docs or try it. Yes: `true` (end-to-end). No: `false` |
+| `end_to_end` | Does `fit` accept raw string columns? Check the docs or try it. Yes: `true` (end-to-end). No: `false` |
 | `tasks` | Regression, binary, multiclass: what the package supports |
 | `variant` | Always `default`: only the default configuration is accepted for now. Tuned and ensembled variants come later with a fixed protocol, as separate folders; never submit one |
 | `hardware` | `gpu` if it needs or is meant for a GPU, else `cpu` |
@@ -39,7 +39,7 @@ Never leave a template value (`My Model`, `my-model==1.0.0`, `0123456789abcdef`,
 ## 3. `model.py`
 
 `class Model(StrableModel)`:
-- Set `handles_strings`.
+- Set `end_to_end`.
 - `fit(X, y)`: the default configuration; pass `self.seed`, `self.device`, `self.n_jobs`; for classification set `self.classes_ = np.unique(y)`. Threads are already capped to `self.n_jobs`; if the package misreads `n_jobs` (read its source: tabicl 2.0.3 uses max(all cores, `n_jobs`)), leave it at the package's default.
 - **No folds or search of your own** (`models/ridge` keeps RidgeCV's alpha search: the paper's baseline, the only exception): never `train_test_split`, `KFold`, `cross_val_score`, `GridSearchCV` or a package option that holds out its own validation set. Early stopping only through `fit_idx, val_idx = self.validation_split(y)`, the paper's first inner fold. If the package splits internally by default, turn that off or pass the protocol's split.
 - **No seed of your own**: `random_state=self.seed` (1234), never a number; no `np.random.seed(0)` or `torch.manual_seed(0)`.

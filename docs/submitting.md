@@ -55,7 +55,7 @@ What happens next is automatic. GitHub runs the Checks; Claude reviews the pull 
 
 The contract is the interface every model implements, so that the runner can train, time and score all models the same way. It is the class `StrableModel` in `strable_leaderboard/model.py`:
 
-- `handles_strings = True`: `fit` and `predict` receive the raw table, and the row is tagged **end-to-end**. `False`: they receive a numeric table from one of the four string encoders (Tf-Idf, Qwen-3-8B first-30, LLaMA-3.1-8B first-30, MiniLM-L6-v2 PCA-30, as in the paper), and the runner pairs the model with all four.
+- `end_to_end = True`: `fit` and `predict` receive the raw table, and the row is tagged **end-to-end**. `False`: they receive a numeric table from one of the four string encoders (Tf-Idf, Qwen-3-8B first-30, LLaMA-3.1-8B first-30, MiniLM-L6-v2 PCA-30, as in the paper), and the runner pairs the model with all four.
 - `fit(X, y)` trains on the outer training rows of the paper's folds, which the runner reads from `splits/`. Classification targets are integers 0..K-1; the model sets `self.classes_`.
 - `predict(X)` returns values or labels. `predict_proba(X)` returns one column per class, in the order of `self.classes_`.
 - **No folds of your own.** Never split, cross-validate or search hyperparameters: no `train_test_split`, `KFold`, `GridSearchCV` or internal validation split of your own. Early stopping may only use `fit_idx, val_idx = self.validation_split(y)`, the paper's first inner fold (inner 8-fold, seed 1234). Turn off a package's own validation split (for example `early_stopping=False`, or pass the protocol's split as its validation set).
@@ -70,7 +70,7 @@ Every field is required unless marked optional, and the smoke test (`strable_lea
 ```yaml
 name: TabPFN
 version: "2.5"
-handles_strings: false          # false: four encoder rows. true: end-to-end
+end_to_end: false               # true: reads the raw table itself. false: numbers only, run with each string encoder
 tasks: [regression, binary, multiclass]
 variant: default                # the only value accepted for now
 hardware: gpu                   # gpu | cpu
@@ -91,7 +91,7 @@ What the board derives from it:
 
 | Field | On the board |
 |---|---|
-| `handles_strings` | The end-to-end tag, or one row per encoder |
+| `end_to_end` | The end-to-end tag, or one row per encoder |
 | `hardware` | Whether the row used the GPU, shown when hovering the row |
 | `variant` | Nothing yet: only `default` is accepted |
 | `trained_on_strable` | A contamination note on the row. The leakage pass also reads your paper and card for pre-training data from STRABLE's sources: link them in `paper` and `code` |
@@ -122,9 +122,9 @@ A version whose package is incompatible with the shared environment (one that ne
 
 **Open, numeric-only: Kumo Tabular.** NVIDIA's in-context model takes numerical and categorical columns; text needs preprocessing, so on STRABLE it is paired with the four encoders, like TabPFN and TabICL.
 1. `cp -r models/_template models/kumo-tabular-1.0`
-2. `model.py`: `handles_strings = False`; `fit` builds `sdm.models.KumoTabular` on `self.device` and stores the context; `predict_proba` returns the class probabilities in the order of `self.classes_`.
+2. `model.py`: `end_to_end = False`; `fit` builds `sdm.models.KumoTabular` on `self.device` and stores the context; `predict_proba` returns the class probabilities in the order of `self.classes_`.
 3. `model.yaml`: `hardware: gpu`, `package: structured-data-models==<version>`, `checkpoint: {repo: nvidia/Kumo-Tabular, revision: <commit hash>}`, `licence: OpenMDW-1.1 weights, Apache-2.0 code`.
 4. `structured-data-models` is not in the shared environment: the pull request also adds the line `structured-data-models==<version>` to `env/requirements.in`, and the maintainer relocks.
 5. Smoke test on a GPU machine, then the pull request `Add Kumo Tabular 1.0`.
 
-**Open, end-to-end: a model that reads strings itself.** Same steps with `handles_strings = True`; `fit` receives the raw DataFrame with its string, numeric and datetime columns. The board shows one row with an end-to-end tag.
+**Open, end-to-end: a model that reads strings itself.** Same steps with `end_to_end = True`; `fit` receives the raw DataFrame with its string, numeric and datetime columns. The board shows one row with an end-to-end tag.

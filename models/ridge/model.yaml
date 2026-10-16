@@ -1,6 +1,6 @@
 name: Ridge
 version: "sklearn-1.7"
-handles_strings: false
+end_to_end: false
 tasks: [regression, binary, multiclass]
 variant: default
 hardware: cpu

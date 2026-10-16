@@ -17,21 +17,22 @@ from .splits import SEED, inner_splits
 class StrableModel:
     """Base class for leaderboard models.
 
-    ``handles_strings = True``: ``fit`` and ``predict`` receive the raw table, a pandas
-    DataFrame with string, numeric and datetime columns. The model is listed as end-to-end.
+    ``end_to_end = True``: the model reads the raw table itself, a pandas DataFrame with
+    string, numeric and datetime columns, and runs alone.
 
-    ``handles_strings = False``: they receive a numeric table produced by one of the
-    leaderboard's string encoders. The runner pairs the model with every encoder.
+    ``end_to_end = False``: the model takes numbers only. The runner turns the strings into
+    numbers with each of the leaderboard's string encoders and runs the model once per encoder.
+
+    A model runs one way only.
 
     Rules:
     - Use only the data passed to ``fit``. Never read the tables or the split files yourself.
-    - No network access in ``fit`` or ``predict``. Load weights from ``weights_dir``,
-      which the runner fills before the job starts.
+    - Load the weights from ``self.weights_dir``.
     - Use ``seed``, ``device`` and ``n_jobs`` as given.
     - Default configuration only. Early stopping may use ``self.validation_split(y)``.
     """
 
-    handles_strings: bool = False
+    end_to_end: bool = False
 
     def __init__(self, task: str, seed: int = SEED, device: str = "cpu", n_jobs: int = 1, weights_dir=None):
         if task not in ("regression", "binary", "multiclass"):

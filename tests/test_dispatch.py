@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import dispatch  # noqa: E402
 
-CARD = {"name": "ExtraTrees", "version": "sklearn-1.7", "handles_strings": False, "tasks": ["regression"],
+CARD = {"name": "ExtraTrees", "version": "sklearn-1.7", "end_to_end": False, "tasks": ["regression"],
         "variant": "default", "hardware": "cpu", "package": "scikit-learn==1.7.2",
         "checkpoint": None, "licence": "BSD-3-Clause", "trained_on_strable": []}
 
@@ -404,7 +404,7 @@ def test_test_tasks_are_fold_0_of_the_smoke_tables(tmp_path):
     card = dict(CARD, tasks=["regression", "binary", "multiclass"])
     for name, strings in [("test-numeric", False), ("test-strings", True), ("full", False)]:
         (tmp_path / "models" / name).mkdir(parents=True)
-        (tmp_path / "models" / name / "model.yaml").write_text(yaml.safe_dump(dict(card, handles_strings=strings)))
+        (tmp_path / "models" / name / "model.yaml").write_text(yaml.safe_dump(dict(card, end_to_end=strings)))
     numeric = d.missing_tasks(Path("models/test-numeric"), tmp_path)
     assert len(numeric) == 12 and {line.split()[2] for line in numeric} == set(dispatch.smoke_tables())
     assert {line.split()[3] for line in numeric} == {"0"} and {line.split()[1] for line in numeric} == \

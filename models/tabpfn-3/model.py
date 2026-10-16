@@ -12,7 +12,7 @@ CHECKPOINTS = {"regression": "tabpfn-v3-regressor-v3_default.ckpt", "classificat
 
 
 class Model(StrableModel):
-    handles_strings = False
+    end_to_end = False
 
     def fit(self, X, y):
         regression = self.task == "regression"

@@ -83,7 +83,7 @@ def check_one(model_cls, card: dict, table: str, data_dir=None, device: str = "c
     X, y, task = load_table(table, data_dir=data_dir)
     train_idx, test_idx = outer_splits(y, task)[0]
     X_train, X_test, y_train, y_test = X.iloc[train_idx], X.iloc[test_idx], y[train_idx], y[test_idx]
-    if not model_cls.handles_strings:
+    if not model_cls.end_to_end:
         from .encoders import tfidf_encoder
 
         encoder = tfidf_encoder()
@@ -125,11 +125,11 @@ def main(argv=None) -> int:
         return 1
     card = load_card(args.folder)
     model_cls = load_model_class(args.folder)
-    if bool(card["handles_strings"]) != bool(model_cls.handles_strings):
-        print("  FAIL  handles_strings differs between model.yaml and model.py")
+    if bool(card["end_to_end"]) != bool(model_cls.end_to_end):
+        print("  FAIL  end_to_end differs between model.yaml and model.py")
         return 1
     limit_threads(args.n_jobs)
-    print(f"{card['name']} {card['version']}  ({'end-to-end' if model_cls.handles_strings else 'numeric-only, Tf-Idf encoder'})")
+    print(f"{card['name']} {card['version']}  ({'end-to-end' if model_cls.end_to_end else 'numeric-only, Tf-Idf encoder'})")
     print("  ok    card, pins and code")
     if args.static:
         return 0

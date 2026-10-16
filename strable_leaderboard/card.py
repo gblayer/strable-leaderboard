@@ -17,7 +17,7 @@ import yaml
 from .check_requirements import PIN
 from .data import MANIFEST
 
-REQUIRED = ["name", "version", "handles_strings", "tasks", "variant", "hardware", "package", "checkpoint", "licence",
+REQUIRED = ["name", "version", "end_to_end", "tasks", "variant", "hardware", "package", "checkpoint", "licence",
             "trained_on_strable"]
 OPTIONAL = ["code", "paper"]
 VARIANTS = {"default"}  # tuned and tuned-ensembled come later, with a fixed protocol, each in its own folder
@@ -42,8 +42,8 @@ def card_problems(card) -> list[str]:
     for key in ["name", "version", "licence"]:
         if key in card and (not isinstance(card[key], str) or not card[key].strip()):
             out.append(f"{key} must be a non-empty string (quote versions: \"2.5\")")
-    if "handles_strings" in card and not isinstance(card["handles_strings"], bool):
-        out.append("handles_strings must be true or false")
+    if "end_to_end" in card and not isinstance(card["end_to_end"], bool):
+        out.append("end_to_end must be true or false")
     if "tasks" in card and (not isinstance(card["tasks"], list) or not card["tasks"] or not set(card["tasks"]) <= TASKS):
         out.append(f"tasks must be a non-empty list from {sorted(TASKS)}")
     for key, allowed in [("variant", VARIANTS), ("hardware", HARDWARE)]:

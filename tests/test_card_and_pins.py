@@ -9,7 +9,7 @@ from strable_leaderboard.smoke import code_problems, static_problems
 
 ROOT = Path(__file__).resolve().parent.parent
 GOOD = {
-    "name": "TabPFN", "version": "2.5", "handles_strings": False, "tasks": ["regression", "binary"],
+    "name": "TabPFN", "version": "2.5", "end_to_end": False, "tasks": ["regression", "binary"],
     "variant": "default", "hardware": "gpu", "package": "tabpfn==9.0.0",
     "checkpoint": {"repo": "Prior-Labs/TabPFN-v2.5", "revision": "a" * 40}, "licence": "Prior Labs licence",
     "trained_on_strable": [], "code": "https://github.com/PriorLabs/TabPFN",
