@@ -12,9 +12,9 @@ HF_REVISION = "335c0a77595d4a9ddd86f46dc9c3b414f63a09a8"  # 2026-06-11
 REPO = "gblayer/strable-leaderboard"
 MAINTAINER = "gblayer"
 APPROVED, NEEDS = "claude-approved", "needs-maintainer"
-OVERLAP = "pretraining-overlap"  # the leakage pass found that pre-training may include STRABLE tables; never blocks
-# Per model folder, {"leakage": "possible", "pr": <model pull request>}: written by the dispatcher
-# from the model pull request's OVERLAP label, read by scripts/build_site_data.py for the page's tag.
+OVERLAP = "pretraining-overlap"  # set by the maintainer only: pre-training may include STRABLE tables; never blocks
+# Per model folder, {"overlap": true, "evidence": "<url>"}: set by the maintainer, by hand or through the
+# OVERLAP label that the dispatcher reads; read by scripts/build_site_data.py for the page's ∩ mark.
 FLAGS = "site/flags.json"
 # What a results pull request commits: the files scripts/build_site_data.py builds, and FLAGS.
 RESULTS_FILES = ("site/results.json", "site/results.parquet", "site/results_per_fold.parquet",
