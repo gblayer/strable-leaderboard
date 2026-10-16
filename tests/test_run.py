@@ -1,4 +1,5 @@
-"""The trusted parent and the model's child process, without the sandbox: same score as in-process."""
+"""Checks that the runner gives a model the same score as calling its fit and predict directly, rejects malformed
+predictions and limits CPU threads."""
 
 import json
 import os

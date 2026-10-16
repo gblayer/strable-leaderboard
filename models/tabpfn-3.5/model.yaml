@@ -1,6 +1,6 @@
 name: TabPFN-3.5
 version: "v3.5-20260909"
-handles_strings: false
+end_to_end: false
 tasks: [regression, binary, multiclass]
 variant: default
 hardware: gpu
@@ -11,6 +11,6 @@ checkpoint:
   revision: 06bf2ba35c80a92a3b9abb436b99cf49e7a0365e
   files: [tabpfn-v3.5-20260909.safetensors]
 licence: Prior Labs Non-Commercial (TabPFN-3.5 License v1.0)
-trained_on_strable: []
+pretraining_data: synthetic
 
 code: https://github.com/PriorLabs/TabPFN

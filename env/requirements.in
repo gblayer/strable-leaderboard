@@ -1,10 +1,10 @@
 # The shared environment of every model on the leaderboard, at the versions of the STRABLE paper
-# (salts_env, 2026-03-23, Python 3.12.12). env/requirements.txt is generated from this list by
+# (2026-03-23, Python 3.12.12). env/requirements.txt is generated from this list by
 # scripts/lock_env.sh, with the paper's full environment (env/paper-freeze.txt) as constraints, so
 # every dependency also keeps the paper's version.
-# A contributor may only ADD a line here, `name==version`, for a package a model needs that is not
-# in the shared environment; an existing pin never changes in a pull request. Either way the pull
-# request waits for the maintainer, who relocks and rebuilds the environment.
+# A model that needs a package that is not here: add one line, `name==version`, and ask for it in
+# the pull request text. An existing pin never changes in a pull request. The pull request then
+# waits for the maintainer, who decides, relocks and rebuilds the environment.
 
 # data, metrics, protocol
 numpy==2.3.4

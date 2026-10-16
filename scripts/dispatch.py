@@ -20,8 +20,9 @@ code of a model in flight. A model is a folder of models/ on main, except the ex
   publish   gather_results for this model only, check_results, a line in results/versions.yaml,
             build_site_data from the models already on the board, the paper's files and this one
             into the RESULTS_FILES on a branch results/<model>, with site/flags.json marking the
-            model "leakage: possible" when its pull request has the label pretraining-overlap, push, open the results pull request (which goes through
-            Checks, the Claude review and the gate like any other).
+            model {"overlap": true, "evidence": <its pull request>} when the maintainer gave that pull
+            request the label pretraining-overlap, push, open the results pull request (which goes
+            through Checks, the Claude review and the gate like any other).
   published waits for that pull request; merged -> done, and the version is tagged.
 
 A folder named test-<name> is a test of these steps, for the maintainer: its tasks are outer fold 0
@@ -36,7 +37,7 @@ into a comment mentioning @gblayer; absolute paths in its text are cut to the fi
 message on success is a comment on the model's pull request when its run starts: the number of
 tasks and a rough automatic estimate of when results will be ready. Delete the state file to retry. GitHub access, API and git, uses the
 fine-grained token in $STRABLE_GH_TOKEN_FILE (default ~/.config/strable/github_token, mode 0600;
-docs/automation.md, section 9), never the git credential store; it is never printed or logged.
+.claude/skills/run-model/SKILL.md, Setup), never the git credential store; it is never printed or logged.
 """
 
 from __future__ import annotations
@@ -104,7 +105,7 @@ def retry(call, tries: int = 3, wait: float = 10.0):
 def token_file(path: Path = TOKEN_FILE) -> Path:
     """The token file, checked: present, and readable by its owner only."""
     if not path.is_file():
-        sys.exit(f"no GitHub token at {path}: create the fine-grained token as in docs/automation.md, section 9")
+        sys.exit(f"no GitHub token at {path}: create the fine-grained token as in .claude/skills/run-model/SKILL.md, Setup")
     if stat.S_IMODE(path.stat().st_mode) & 0o077:
         sys.exit(f"{path} is readable by others: chmod 600 {path}")
     return path
@@ -123,11 +124,12 @@ def smoke_tables() -> list[str]:
 
 
 def write_flags(path: Path, name: str, st: dict) -> None:
-    """site/flags.json with this model's entry set from its state, the other models' kept."""
+    """site/flags.json with this model's entry set from its state, the other models' kept. The evidence
+    is the model's pull request, whose review comment quotes what the model's documents say."""
     flags = json.loads(path.read_text()) if path.exists() else {}
     flags.pop(name, None)
-    if st.get("leakage"):
-        flags[name] = {"leakage": st["leakage"], "pr": st.get("pr")}
+    if st.get("overlap"):
+        flags[name] = {"overlap": True, "evidence": f"https://github.com/{REPO}/pull/{st['pr']}"}
     path.write_text(json.dumps(flags, indent=1, sort_keys=True) + "\n")
 
 
@@ -374,7 +376,7 @@ class Dispatcher:
                 return self.fail(name, st, "smoke-failed", f"smoke test exit {rc} on the reference hardware:\n{tail}")
             step = "embed"
         if step == "embed":
-            if not self.card(folder, code).get("handles_strings"):
+            if not self.card(folder, code).get("end_to_end"):
                 todo = self.missing_embeddings(smoke_tables() if name.startswith(TEST_PREFIX) else None)
                 if todo:
                     shared = self.state("_embed")
@@ -474,7 +476,7 @@ class Dispatcher:
             return self.fail(name, st, "results-failed", "check_results:\n" + check_output[-1200:])
         card = self.card(folder, code)
         labels = {label["name"] for label in self.gh.get(f"/pulls/{st['pr']}").get("labels", [])} if st.get("pr") else set()
-        st["leakage"] = "possible" if OVERLAP in labels else None
+        st["overlap"] = OVERLAP in labels
         versions = yaml.safe_load(before[versions_file] or b"") or []
         version = self.next_version(versions)
         note = f"Added {card['name']} {card['version']}"
@@ -509,8 +511,8 @@ class Dispatcher:
         finally:
             self.git("worktree", "remove", "--force", wt, check=False)
         model_pr = f"Model pull request: #{st['pr']}.\n" if st.get("pr") else ""
-        if st.get("leakage"):
-            model_pr += f"Pre-training overlap: {st['leakage']} (label {OVERLAP} on #{st['pr']}); the board tags its rows.\n"
+        if st.get("overlap"):
+            model_pr += f"Possible pre-training overlap (label {OVERLAP} on #{st['pr']}): the board marks the model with ∩.\n"
         body = (f"{note}: {st.get('n_tasks', '?')} tasks run on the reference hardware by the dispatcher.\n"
                 f"{model_pr}\n```\n{public(check_output.strip(), 3000)}\n```\n")
         pr = self.gh.post("/pulls", {"title": f"Results: {note} ({version})", "head": branch, "base": "main",

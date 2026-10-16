@@ -1,20 +1,20 @@
-# Model card. Every field is required unless marked optional, and every value below is a placeholder:
-# the smoke test fails until each one is replaced by this model's own. The board derives its tags from it.
+# Model card. Every field is required unless marked optional. Replace every value with your model's:
+# the smoke test fails while the template's name, package, checkpoint or links are left.
 
 name: My Model                  # shown on the board
 version: "1.0"                  # one folder per model version; the version lives here
-handles_strings: false          # false: paired with the four string encoders. true: end-to-end
+end_to_end: false               # true: reads the raw table itself. false: numbers only, run with each string encoder
 tasks: [regression, binary, multiclass]
-variant: default                # default now; tuned and tuned-ensembled later, one folder each
+variant: default                # the package's default configuration
 hardware: gpu                   # gpu | cpu
 
-package: my-model==1.0.0        # the code, same pin as requirements.txt and env/requirements.txt
+package: my-model==1.0.0        # the code, same pin as requirements.txt
 checkpoint:                     # the weights, or null if the model has none
   repo: my-org/my-model         # Hugging Face repository
   revision: 0123456789abcdef    # the full 40-character commit hash, never a branch or tag
   # files: [model.ckpt]         # optional: only these files of the repository are downloaded
 licence: Apache-2.0             # code and weights
-trained_on_strable: []          # STRABLE tables seen in pre-training or tuning, or []
+pretraining_data: not disclosed # synthetic | real | mixed | none (no pre-training) | not disclosed
 
 code: https://github.com/my-org/my-model     # optional
 paper: https://arxiv.org/abs/0000.00000      # optional

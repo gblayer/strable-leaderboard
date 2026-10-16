@@ -1,3 +1,5 @@
+"""Checks the maintainer scripts: the board files, the paper import and its Figure 4a selection."""
+
 import json
 import sys
 from pathlib import Path

@@ -1,5 +1,5 @@
 # The shared environment, every package pinned to the version of the STRABLE paper environment
-# (salts_env, 2026-03-23, Python 3.12.12). Generated from env/requirements.in; do not edit by hand.
+# (2026-03-23, Python 3.12.12). Generated from env/requirements.in; do not edit by hand.
 # scripts/prepare.py installs it into cache/env together with this package (-e .).
 accelerate==1.12.0
 aiohappyeyeballs==2.6.1

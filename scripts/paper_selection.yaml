@@ -1,16 +1,16 @@
 # The 75 pipelines of the paper's Figure 4a, the set scripts/import_paper_results.py imports.
 #
-# Rebuilt from salts/posthoc_analysis.py: result_comparison.csv after its two filters (RealTabPFN
-# dropped, methods with at least 303 fold rows), num-str methods of the selected encoders plus
-# Nemotron-1B, without num-str_tabpfn_tabpfn_default (l.20367-20381); then the extra CSVs
-# concatenated at l.20348: TabICLv2, TabM, RealMLP (without E5-base-v2 and Jasper-0.6B), Mambular
-# only, Qwen-3-8B first-30 + TabPFN-2.5, LLaMA-3.1-8B SS+PCA-30 + TabPFN-2.5 only. Not imported:
-# the OHE CT=30 Ridge CSV (commented out of the figure) and TabPFN-3/3.5.
+# The figure's selection: the paper's main comparison without RealTabPFN, the num-str pipelines of
+# the selected encoders plus Nemotron-1B, without num-str_tabpfn_tabpfn_default; then TabICLv2, TabM,
+# RealMLP (without E5-base-v2 and Jasper-0.6B), Mambular, Qwen-3-8B first-30 + TabPFN-2.5 and
+# LLaMA-3.1-8B SS+PCA-30 + TabPFN-2.5. Not imported: the OHE CT=30 Ridge pipeline, which is not in
+# the figure, and TabPFN-3/3.5.
 #
-# pipelines: source CSV (in salts/results/compiled_results/) -> method token exactly as written in
-# that CSV -> model folder, encoder id and variant. The same token can mean different pipelines in
+# pipelines: source CSV (in the paper's compiled results folder) -> method token exactly as written
+# in that CSV -> model folder, encoder id and variant. The same token can mean different pipelines in
 # different CSVs (num-str_llm-llama-3.1-8b_tabpfn is SS+PCA-30 in the standscal CSV), so the CSV is
-# part of the key. Variant "tuned" is the paper's random hyperparameter search (src/param_search.py).
+# part of the key. Variant "tuned" is the paper's random hyperparameter search (soda-inria/strable,
+# src/param_search.py).
 
 learners:  # model folder -> display name
   ridge: Ridge
@@ -25,7 +25,7 @@ learners:  # model folder -> display name
   tabstar: TabSTAR
   mambular: Mambular
 
-# Encoder id -> display name. What the paper did (salts/src/encoding.py, llm_encoder.py):
+# Encoder id -> display name. What the paper did (soda-inria/strable, src/encoding.py and src/llm_encoder.py):
 # - tfidf: skrub StringEncoder (character n-gram Tf-Idf, truncated SVD to 30) in a
 #   TableVectorizer, the leaderboard's own Tf-Idf encoder.
 # - targetencoder: scikit-learn TargetEncoder. tarte: tarte_ai's TARTE_TablePreprocessor.

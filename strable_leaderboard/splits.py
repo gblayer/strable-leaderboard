@@ -62,9 +62,10 @@ def inner_splits(y_train, task: str) -> list[tuple[np.ndarray, np.ndarray]]:
 def fold_table(y, task: str) -> pd.DataFrame:
     """One row per table row, with the fold ids stored in ``splits/<table>.parquet``.
 
-    - ``outer_fold``: the outer fold (0, 1 or 2) in which the row is a test row.
-    - ``inner_fold_k`` for k in 0..2: inside outer training set k, the inner fold (0 to 7)
-      in which the row is a validation row, or -1 when the row is in outer test fold k.
+    - ``outer_fold``: which of the 3 test folds (0, 1 or 2) the row belongs to; every row is a
+      test row exactly once.
+    - ``inner_fold_k`` for k in 0..2: when outer fold k is the test set, the other rows are split
+      into 8 validation groups; the row's group (0 to 7), or -1 when the row is in test fold k.
     """
     n = len(y)
     y = np.asarray(y)

@@ -1,4 +1,4 @@
-"""The auto-merge gate's decision, on fake pull requests: every condition can block a merge."""
+"""Checks the rules that decide whether a pull request merges automatically or waits for the maintainer."""
 
 import sys
 from pathlib import Path

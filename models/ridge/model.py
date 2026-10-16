@@ -16,7 +16,7 @@ ALPHAS = [0.01, 0.1, 1.0, 10.0, 100.0]
 
 
 class Model(StrableModel):
-    handles_strings = False
+    end_to_end = False
 
     def fit(self, X, y):
         # RidgeCV's internal alpha search is the paper's baseline: the only allowed exception to "no search".

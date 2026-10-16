@@ -11,15 +11,15 @@ from strable_leaderboard.model import StrableModel
 
 
 class Model(StrableModel):
-    # True if your model reads raw string columns itself (end-to-end).
-    # False if it needs numbers: the leaderboard then pairs it with its four string encoders.
-    handles_strings = False
+    # True: your model reads the raw table, text columns included, and runs alone.
+    # False: your model takes numbers only; the leaderboard runs it with each of its four string encoders.
+    end_to_end = False
 
     def fit(self, X, y):
         # Build your estimator with its default configuration.
         # Use self.seed (never a number of your own), self.device ("cpu" or "cuda") and self.n_jobs.
-        # Load weights from self.weights_dir: there is no network during the run.
-        # Never split or cross-validate yourself: X, y are the paper's outer training rows.
+        # Load the weights from self.weights_dir.
+        # The board's folds are used for everything: never split or cross-validate yourself.
         # Early stopping may only use: fit_idx, val_idx = self.validation_split(y)
         if self.task != "regression":
             self.classes_ = np.unique(y)

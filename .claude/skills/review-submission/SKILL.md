@@ -12,41 +12,43 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 ## A. A model folder, `models/<name>/`
 
 **Scope**
-- Only files under one new `models/<name>/` folder change, plus at most added lines in `env/requirements.in`; nothing in `strable_leaderboard/`, `scripts/`, `splits/`, `.github/`, `.claude/`, other models or other `env/` files. The folder name, as the gate checks it: lowercase letters, digits, dots and hyphens, starting with a letter or digit, not `_template`, and not exactly one of the names reserved for the paper's learners (`RESERVED` in `strable_leaderboard/__init__.py`): `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`. Only an exact match is reserved: `tabicl-v2-20260212` is a valid name, not a reason for FIX. A name starting with `test-` is a test run of the maintainer: valid when the pull request's author (`gh pr view`) is `gblayer`, whatever follows the prefix (`test-extratrees` too); from anyone else it is a scope problem.
+- Only files under one new `models/<name>/` folder change, plus at most added lines in `env/requirements.in`; nothing in `strable_leaderboard/`, `scripts/`, `splits/`, `.github/`, `.claude/`, other models or other `env/` files. The folder name, as the gate checks it: lowercase letters, digits, dots and hyphens, starting with a letter or digit, not `_template`, and not exactly one of the names only the maintainer adds (`RESERVED` in `strable_leaderboard/__init__.py`): the paper's learners `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`, and `causilo`. Only an exact match is reserved: `tabicl-v2-20260212` is a valid name, not a reason for FIX. A name starting with `test-` is a test run of the maintainer: valid when the pull request's author (`gh pr view`) is `gblayer`, whatever follows the prefix (`test-extratrees` too); from anyone else it is a scope problem.
 - The folder has `model.py`, `model.yaml` and `requirements.txt`.
 
 **Card: complete**
-- Every field of `models/_template/model.yaml` is present and filled with this model's real values, no template placeholder left: `name`, `version`, `handles_strings`, `tasks`, `variant` (`default`), `hardware` (`gpu` or `cpu`), `package`, `checkpoint`, `licence`, `trained_on_strable`.
-- An open model: the package on PyPI and the checkpoint on a public Hugging Face repository. No `access` or `anonymous` field. Closed, anonymous or API-only models: REJECT.
+- Every field of `models/_template/model.yaml` is present and filled with this model's real values, no template placeholder left: `name`, `version`, `end_to_end`, `tasks`, `variant` (`default`), `hardware` (`gpu` or `cpu`), `package`, `checkpoint`, `licence`, `pretraining_data` (`synthetic`, `real`, `mixed`, `none` or `not disclosed`).
+- `package` is a `name==version` pin from PyPI, and `checkpoint` a Hugging Face repository: the runner installs and downloads nothing else.
 - `checkpoint.revision` is a full 40-character commit hash, or `checkpoint` is null for a model without weights.
-- The values match the code and the package: `handles_strings` as in `model.py`, `package` as in `requirements.txt`, `tasks` what the model supports.
-- `trained_on_strable` is filled in; mention any listed table in the verdict.
+- The values match the code and the package: `end_to_end` as in `model.py`, `package` as in `requirements.txt`, `tasks` what the model supports.
 
 **Pins: the shared environment**
 - `requirements.txt` holds only `name==version` lines, each equal to the version in `env/requirements.txt` (the shared environment every model runs in). No ranges, URLs, local paths or archives, no `strable-leaderboard` itself.
-- A package not in the shared environment: fine when the pull request adds exactly that pin to `env/requirements.in` (the maintainer relocks; say so). Another version of a package already there, or any changed or removed pin in `env/`: FIX.
+- A package not in the shared environment: fine when the pull request adds exactly that pin to `env/requirements.in` and asks for it in its text (the maintainer decides and relocks; say so). Another version of a package already there, or any changed or removed pin in `env/`: FIX.
 
 **Protocol**
-- `class Model(StrableModel)`, with `handles_strings` matching the card.
+- `class Model(StrableModel)`, with `end_to_end` matching the card.
 - Default configuration: no search over hyperparameters (`GridSearchCV`, `RandomizedSearchCV`, optuna, loops over settings, built-in CV searches such as `RidgeCV`). The paper's Ridge baseline is the only exception. The smoke test's regular expressions are only a hint: read the code.
-- **No own split or cross-validation**: no `train_test_split`, `KFold`, `StratifiedKFold`, `ShuffleSplit`, `cross_val_score`, `cross_validate`, and no package option that holds out its own validation set (`validation_fraction`, `early_stopping=True` with an internal split, `eval_set` built from a split of its own). Early stopping only through `self.validation_split(y)`. The outer folds come from the runner; the model never reads `splits/`.
+- **No own split or cross-validation**: no `train_test_split`, `KFold`, `StratifiedKFold`, `ShuffleSplit`, `cross_val_score`, `cross_validate`, and no package option that holds out its own validation set (`validation_fraction`, `early_stopping=True` with an internal split, `eval_set` built from a split of its own). Early stopping only through `self.validation_split(y)`. The board's folds are used for everything; the model never reads `splits/`.
 - **No seed override**: every seed is `self.seed`; no literal `random_state=0`, `seed=42`, `np.random.seed(...)`, `torch.manual_seed(...)` with a number.
 - No use of the test rows; `predict_proba` returns one column per class in the order of `self.classes_`; device and n_jobs are passed through (or `n_jobs` left to the package's default when the package misreads it: the runner caps threads anyway).
 
 **Safety**
-- No network in `fit` or `predict`: no `requests`, `urllib`, `socket`, `http`, no downloads through `huggingface_hub` or `torch.hub`. Weights come from `self.weights_dir`. (Runs are sandboxed without network, but a model that needs it would fail.)
+- No downloads or network calls in `fit` or `predict`: no `requests`, `urllib`, `socket`, `http`, no downloads through `huggingface_hub` or `torch.hub`. The weights load from `self.weights_dir`.
 - No reads of `splits/`, the dataset or files outside `self.weights_dir`; no writes outside a temporary folder.
 - No `subprocess`, `os.system`, `eval`, `exec`, unpickling of downloaded bytes, base64 blobs or obfuscated code; no environment variables beyond device settings, no credentials.
 
 **Checks**
-- The Checks workflow passed: it runs the card, pin and code checks and, for CPU models, the smoke test. Still running: judge the rest; the gate waits for Checks anyway. GPU models get their smoke test on the cluster after the merge: say so, it is not a reason for FIX.
+- The Checks workflow passed: it runs the card, pin and code checks and, for CPU models, the smoke test. Still running: judge the rest; the gate waits for Checks anyway. GPU models get their smoke test on the reference GPU after the merge: say so, it is not a reason for FIX.
+
+**Pre-training overlap: not yours to judge**
+- A third pass, the overlap job, reports in the same comment the facts it finds: the model's documented pre-training data and public reports of overlap with STRABLE tables, with quotes. It never adds a label, and neither do you. The maintainers decide and add the label `pretraining-overlap`, which puts a small ∩ next to the model's pipelines on the page; the switch "Overlap ∩: Show | Hide" hides them. Possible overlap is never a reason for FIX or REJECT.
 
 ## B. A results update, `site/results.json`
 
 - Opened by `gblayer` (the maintainer, whose repository token the dispatcher uses), and only the results files change: `site/results.json`, `site/results.parquet`, `site/results_per_fold.parquet`, `site/results_per_fold.csv`, `site/flags.json` (`RESULTS_FILES` in `strable_leaderboard/__init__.py`).
 - The Checks workflow passed: it validates the file's shape, unique ids, score and time ranges, and that the Parquet holds the same numbers.
 - The version went up by one patch and the first history line names what changed.
-- Existing pipelines keep their numbers unless the history line says they were re-run.
+- Existing pipelines keep their numbers unless the history line says why they changed.
 - New rows are plausible: scores in range, times within an order of magnitude of similar rows; note outliers rather than block.
 
 ## Verdict

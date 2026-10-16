@@ -24,6 +24,6 @@ SLUG = re.compile(r"^[a-z0-9][a-z0-9.-]*$")  # a model folder name
 EXAMPLES = {"ridge"}
 # Folders named test-<name>: the maintainer's test runs of the dispatcher, on a few tasks, never published.
 TEST_PREFIX = "test-"
-# Folder names of the paper's learners: only the maintainer adds them.
+# Folder names only the maintainer adds: the paper's learners, and models she adds herself.
 RESERVED = {"ridge", "xgboost", "extratrees", "catboost", "tabpfn-2.5", "tabicl-v2", "realmlp", "tabm", "mambular",
-            "contexttab", "tabstar", "tarte"}
+            "contexttab", "tabstar", "tarte", "causilo"}

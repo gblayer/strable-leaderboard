@@ -1,6 +1,14 @@
+"""Checks that the smoke test rejects incomplete model cards, versions that differ from the shared environment
+and own folds or seeds, and runs the model with Hugging Face downloads off."""
+
 import copy
+import json
+import subprocess
+import sys
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import yaml
 
 from strable_leaderboard.card import card_problems
@@ -9,10 +17,10 @@ from strable_leaderboard.smoke import code_problems, static_problems
 
 ROOT = Path(__file__).resolve().parent.parent
 GOOD = {
-    "name": "TabPFN", "version": "2.5", "handles_strings": False, "tasks": ["regression", "binary"],
+    "name": "TabPFN", "version": "2.5", "end_to_end": False, "tasks": ["regression", "binary"],
     "variant": "default", "hardware": "gpu", "package": "tabpfn==9.0.0",
     "checkpoint": {"repo": "Prior-Labs/TabPFN-v2.5", "revision": "a" * 40}, "licence": "Prior Labs licence",
-    "trained_on_strable": [], "code": "https://github.com/PriorLabs/TabPFN",
+    "pretraining_data": "synthetic", "code": "https://github.com/PriorLabs/TabPFN",
 }
 
 
@@ -33,11 +41,19 @@ def test_every_missing_or_invalid_field_is_reported():
     bad = copy.deepcopy(GOOD)
     del bad["licence"]
     bad.update(variant="tuned", access="api", hardware="tpu", tasks=["ranking"], typo_field=1,
-               checkpoint={"repo": "x/y", "revision": "main"}, trained_on_strable=["not-a-table"])
+               checkpoint={"repo": "x/y", "revision": "main"}, pretraining_data="web tables")
     found = "\n".join(card_problems(bad))
     for word in ["missing field licence", "unknown field typo_field", "unknown field access", "variant", "hardware", "tasks",
-                 "40-character commit hash", "unknown tables"]:
+                 "40-character commit hash", "pretraining_data must be one of"]:
         assert word in found
+
+
+def test_pretraining_data_takes_one_of_five_values():
+    for value in ["synthetic", "real", "mixed", "none", "not disclosed"]:
+        assert card_problems(dict(GOOD, pretraining_data=value)) == []
+    for value in [None, "unknown", ["synthetic"]]:
+        assert card_problems(dict(GOOD, pretraining_data=value)) == [
+            "pretraining_data must be one of ['mixed', 'none', 'not disclosed', 'real', 'synthetic']"]
 
 
 def test_checkpoint_files_are_optional():
@@ -79,6 +95,40 @@ def test_own_folds_and_seeds_are_flagged(tmp_path):
 def test_example_models_pass_the_static_checks():
     assert static_problems(ROOT / "models" / "ridge") == []
     assert static_problems(ROOT / "models" / "_template") != []
+
+
+DOWNLOADS = """import numpy as np
+from huggingface_hub import hf_hub_download
+
+from strable_leaderboard.model import StrableModel
+
+
+class Model(StrableModel):
+    def fit(self, X, y):
+        try:
+            hf_hub_download("no-owner/no-model", "model.ckpt")
+        except Exception as exc:
+            raise RuntimeError(f"download failed: {type(exc.__cause__).__name__}") from exc
+        return self
+
+    def predict(self, X):
+        return np.zeros(len(X))
+"""
+
+
+def test_the_smoke_test_runs_the_model_with_downloads_off(tmp_path):
+    table = tmp_path / "data" / "china-overseas-finance-inventory"  # the regression smoke table, made up
+    table.mkdir(parents=True)
+    rng = np.random.default_rng(0)
+    pd.DataFrame({"x": rng.normal(size=60), "y": rng.normal(size=60)}).to_parquet(table / "data.parquet")
+    (table / "config.json").write_text(json.dumps({"target_name": "y", "task": "regression"}))
+    card = dict(GOOD, tasks=["regression"], hardware="cpu", package="scikit-learn==1.7.2", checkpoint=None)
+    folder = _folder(tmp_path, card=card, requirements="scikit-learn==1.7.2\n", code=DOWNLOADS)
+    # huggingface_hub is imported first, as the weight download does before the model runs.
+    code = ("import sys, huggingface_hub.file_download; from strable_leaderboard.smoke import main; "
+            f"sys.exit(main([{str(folder)!r}, '--data-dir', {str(tmp_path / 'data')!r}]))")
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, cwd=ROOT)
+    assert out.returncode == 1 and "download failed: OfflineModeIsEnabled" in out.stdout, out.stdout + out.stderr
 
 
 def _env(folder, txt, req_in):
