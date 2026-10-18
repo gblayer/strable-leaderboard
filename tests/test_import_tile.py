@@ -19,11 +19,12 @@ SELECTION = yaml.safe_load((ROOT / "scripts" / "tile_selection.yaml").read_text(
 def test_tile_selection():
     rows = [p for methods in SELECTION["pipelines"].values() for p in methods.values()]
     ids = {f"{p['encoder']}+{p['model']}" for p in rows}
-    assert ids == {"tile+tabpfn-2.5", "tile+tabicl-v2", "tile+tabpfn-3", "tile+causilo", "tfidf+causilo"}
+    assert ids == {"tile+tabpfn-2.5", "tile+tabicl-v2", "tile+tabpfn-3", "tile+causilo", "tfidf+causilo", "tile+tabpfn-3.5"}
     assert all(p["variant"] == "default" for p in rows)
     assert "tfidf" in ENCODERS  # Tf-Idf + Causilo: the id the runner gives models/causilo with its tfidf encoder
     windows = {p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}
-    assert windows == {"100-300", "50-300", "50-250", "75-400"}  # one default setting per learner
+    assert windows == {"100-300", "50-300", "50-250", "75-400", "75-300"}  # one default setting per learner
+    assert [p.get("date") for p in rows if p["model"] == "tabpfn-3.5"] == ["2026-10"]  # its own date
     assert all(p["where"]["model"] == "llama3_14_layers|cell_meanpool|include_numbers" for p in rows if "where" in p)
     assert PAPER["encoders"]["tile"] == "TILE" and PAPER["learners"]["causilo"] == "Causilo"  # the board's names
     paper = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())

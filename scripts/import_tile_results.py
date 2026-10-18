@@ -65,7 +65,9 @@ def main(argv=None) -> int:
     if problems:
         print("\n".join(problems))
         return 1
-    df["date"] = str(selection["date"])
+    dates = {(p["model"], p["encoder"], p["variant"]): str(p.get("date", selection["date"]))
+             for methods in pipelines.values() for p in methods.values()}
+    df["date"] = [dates[key] for key in zip(df["model"], df["encoder"], df["variant"])]
     args.out.mkdir(exist_ok=True)
     for model, rows in df.groupby("model"):
         out = args.out / f"{model}.csv"
