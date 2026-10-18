@@ -1,0 +1,1 @@
+exaonetabular @ git+https://github.com/LGAI-Research/EXAONE-Tabular.git@841927fc4f2c573db5c88325f64ecc4fe5affd12
