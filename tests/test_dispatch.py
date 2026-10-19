@@ -1,6 +1,7 @@
 """Checks each step of the automatic runner (approve, smoke test, run, publish)."""
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -433,3 +434,18 @@ def test_a_pipeline_already_on_the_board_is_not_run_again(tmp_path):
         .to_csv(results / "causilo.csv", index=False)
     todo = tasks([str(folder)], runs=tmp_path / "runs", results=results)
     assert len(todo) == 3 * 108 * 3 and "tfidf" not in {line.split()[1] for line in todo}
+
+
+def test_a_listed_model_gets_a_longer_run_time(clone):
+    """run_array.sh: 12 h per run task, 48 h for the models it lists (EXAONE Tabular)."""
+    d = clone
+    for name in ("exaone-tabular", "extratrees"):
+        (d.root / "models" / name).mkdir(parents=True, exist_ok=True)
+        (d.root / "models" / name / "model.yaml").write_text(yaml.safe_dump(CARD))
+        tasks = d.tmp / f"{name}.txt"
+        tasks.write_text(f"models/{name} tfidf t1 0\n")
+        env = dict(os.environ, STRABLE_PYTHON=sys.executable, STRABLE_LOGS=str(d.tmp / "logs"))
+        subprocess.run(["bash", str(d.root / "scripts" / "run_array.sh"), str(tasks)], check=True, env=env,
+                       capture_output=True)
+    lines = (d.tmp / "sbatch.log").read_text().splitlines()
+    assert "--time=48:00:00" in lines[-2] and "--time=12:00:00" in lines[-1]
