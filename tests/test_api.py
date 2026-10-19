@@ -118,8 +118,8 @@ def fake_tables(data_dir: Path) -> None:
     for task, table in SMOKE_TABLES.items():
         n = TABLES[table]["n_rows"]
         X = pd.DataFrame({"x": rng.normal(size=n), "s": rng.choice(["red apple", "green pear", "blue plum"], size=n)})
-        signal = X["x"].to_numpy() + (X["s"] == "red apple").to_numpy()
-        y = {"regression": signal + rng.normal(size=n) * 0.3, "binary": (signal > 0.5).astype(int),
+        signal = X["x"].to_numpy() + (X["s"] == "red apple").to_numpy() + rng.normal(size=n) * 0.5
+        y = {"regression": signal, "binary": (signal > 0.5).astype(int),
              "multiclass": np.digitize(signal, [0, 0.8, 1.5])}[task]
         (data_dir / table).mkdir(parents=True)
         X.assign(target=y).to_parquet(data_dir / table / "data.parquet")
