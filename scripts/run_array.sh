@@ -41,10 +41,13 @@ if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
   [ "$n" -gt 0 ] || { echo "no tasks in $TASKS" >&2; exit 1; }
   read -r a b _ < "$TASKS"
   hw_of() { "$PY" -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["hardware"])' "$ROOT/$1/model.yaml"; }
+  # Time limit of one run task: 12 h, longer for the models listed here (the maintainer's choice;
+  # EXAONE Tabular takes hours per fold on the largest tables at its default settings).
+  run_time() { case "$(basename "$1")" in exaone-tabular) echo 48:00:00 ;; *) echo 12:00:00 ;; esac; }
   case "$a" in
     embed) kind=embed; time=12:00:00; hw=gpu ;;
     smoke) kind=smoke; time=00:30:00; hw=$(hw_of "$b") ;;
-    *)     kind=run;   time=12:00:00; hw=$(hw_of "$a") ;;
+    *)     kind=run;   time=$(run_time "$a"); hw=$(hw_of "$a") ;;
   esac
   case "$hw" in
     gpu) read -ra where <<< "${STRABLE_SBATCH_GPU:---gres=gpu:1}" ;;
