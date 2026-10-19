@@ -30,7 +30,8 @@ code of a model in flight. A model is a folder of models/ on main, except the ex
   published waits for that pull request; merged -> done, and the version is tagged.
 
 A folder named test-<name> is a test of these steps, for the maintainer: its tasks are outer fold 0
-of the three smoke tables, its rows and results go to cache/test/runs and cache/test/results, and
+of the three smoke tables (a numeric-only API model: with the Tf-Idf encoder only, 3 tasks that need
+no embeddings), its rows and results go to cache/test/runs and cache/test/results, and
 instead of publish it gathers and checks its results there and stops at step "tested". It never
 touches results/, the board or a results pull request.
 
@@ -254,11 +255,18 @@ class Dispatcher:
         r = self.sh("squeue", "-h", "-j", job, "-o", "%i", check=False)
         return r.returncode == 0 and bool(r.stdout.strip())
 
+    def tfidf_only(self, folder: Path, code: Path) -> bool:
+        """A test of a numeric-only API model runs with the Tf-Idf encoder only: each task is a paid call."""
+        card = self.card(folder, code)
+        return folder.name.startswith(TEST_PREFIX) and card["hardware"] == "api" and not card["end_to_end"]
+
     def missing_tasks(self, folder: Path, code: Path) -> list[str]:
         from make_tasks import tasks
 
         runs, results = self.outputs(folder.name)
         narrow = {"tables": smoke_tables(), "folds": [0]} if folder.name.startswith(TEST_PREFIX) else {}
+        if self.tfidf_only(folder, code):
+            narrow["encoders"] = ["tfidf"]
         lines = tasks([str(code / folder)], runs=runs, results=results, **narrow)
         return [line.replace(f"{code}/", "", 1) for line in lines]  # folders relative to the checkout
 
@@ -396,7 +404,7 @@ class Dispatcher:
                 return self.fail(name, st, "smoke-failed", f"smoke test exit {rc} on the reference hardware:\n{tail}")
             step = "embed"
         if step == "embed":
-            if not self.card(folder, code).get("end_to_end"):
+            if not self.card(folder, code).get("end_to_end") and not self.tfidf_only(folder, code):
                 todo = self.missing_embeddings(smoke_tables() if name.startswith(TEST_PREFIX) else None)
                 if todo:
                     shared = self.state("_embed")

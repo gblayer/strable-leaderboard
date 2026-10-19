@@ -45,3 +45,25 @@ def test_the_honest_vendor_passes_and_the_cheat_fails(audit):
 def test_dry_runs_need_an_api_model(audit):
     with pytest.raises(SystemExit):
         audit_api.main([str(ROOT / "models" / "ridge"), "--dry", "honest"])
+
+
+def test_the_audit_reads_the_key_file_of_a_test_folder(tmp_path, monkeypatch, capsys):
+    """Pointed at models/test-<name>/, the audit calls the endpoint of private/api_keys/test-<name>.env."""
+    import shutil
+
+    from fake_api import FakeVendor
+    from test_api import write_keys
+
+    folder = tmp_path / "models" / "test-api_model"
+    shutil.copytree(EXAMPLE, folder)
+    for name in ("STRABLE_API_URL", "STRABLE_API_KEY", "STRABLE_API_AUTH"):
+        monkeypatch.setenv(name, "")
+    monkeypatch.setenv("STRABLE_API_KEYS", str(tmp_path / "keys"))
+    monkeypatch.setattr(audit_api, "limit_threads", lambda n: None)
+    monkeypatch.setattr(audit_api, "tables", lambda card, data_dir, seed: [
+        audit_api.encoded(audit_api.synthetic_table("binary", seed, n=400))])
+    with FakeVendor(key="sk-test") as vendor:
+        keys = write_keys(tmp_path / "keys", f"STRABLE_API_URL={vendor.url}\nSTRABLE_API_KEY=sk-test\n")
+        keys.rename(tmp_path / "keys" / "test-api_model.env")
+        assert audit_api.main([str(folder), "--seed", "3"]) == 0
+    assert len(vendor.seen) == 8 and "FAIL" not in capsys.readouterr().out  # eight calls, all served

@@ -5,8 +5,8 @@
 A numeric-only model gets the four encoders, an end-to-end model one line per table and fold.
 Tasks with a row in $STRABLE_RUNS (default runs/) or in $STRABLE_RESULTS/<model>.csv are left
 out, so the list is what the job array still has to do. Imported rows count too: a pipeline already
-on the board is never run again, so a model gets only its missing encoders. ``tables`` and
-``folds`` narrow the list (the dispatcher's test runs).
+on the board is never run again, so a model gets only its missing encoders. ``tables``, ``folds``
+and ``encoders`` narrow the list (the dispatcher's test runs).
 """
 
 import json
@@ -37,14 +37,14 @@ def done(model: str, runs: Path, results: Path) -> set:
 
 
 def tasks(folders, runs=Path(os.environ.get("STRABLE_RUNS", ROOT / "runs")),
-          results=Path(os.environ.get("STRABLE_RESULTS", "results")), tables=None, folds=range(FOLDS)):
+          results=Path(os.environ.get("STRABLE_RESULTS", "results")), tables=None, folds=range(FOLDS), encoders=None):
     manifest = json.loads(MANIFEST.read_text())["tables"]
     out = []
     for folder in folders:
         card = load_card(Path(folder))
-        encoders = ["none"] if card["end_to_end"] else list(ENCODERS)
+        views = ["none"] if card["end_to_end"] else [e for e in ENCODERS if encoders is None or e in encoders]
         have = done(Path(folder).name, runs, results)
-        for encoder in encoders:
+        for encoder in views:
             for table, meta in sorted(manifest.items()):
                 if meta["task"] not in card["tasks"] or (tables is not None and table not in tables):
                     continue

@@ -519,3 +519,32 @@ def test_the_parts_of_an_api_run_go_one_after_the_other(clone):
     assert out.strip() == "4242,4242,4242" and len(lines) == 3
     assert all("%3 " in line and "--partition=cpuq" in line for line in lines)
     assert "--dependency" not in lines[0] and all("--dependency=afterany:4242" in line for line in lines[1:])
+
+
+def test_a_test_of_a_numeric_only_api_model_runs_tfidf_only(tmp_path):
+    """Outer fold 0 of the smoke tables: 3 tasks with Tf-Idf for a numeric-only API model, 3 for an end-to-end one;
+    other test runs keep the four encoders, and the real folder all its tasks."""
+    d = dispatch.Dispatcher(root=tmp_path, cache=tmp_path / "cache", gh=FakeGitHub(), python=sys.executable)
+    tasks = ["regression", "binary", "multiclass"]
+    api, plain = dict(API_CARD, tasks=tasks), dict(CARD, tasks=tasks)
+    for name, card in [("test-api-numeric", api), ("test-api-strings", dict(api, end_to_end=True)), ("test-numeric", plain),
+                       ("api-numeric", api)]:
+        (tmp_path / "models" / name).mkdir(parents=True)
+        (tmp_path / "models" / name / "model.yaml").write_text(yaml.safe_dump(card))
+    lines = d.missing_tasks(Path("models/test-api-numeric"), tmp_path)
+    assert len(lines) == 3 and {line.split()[1] for line in lines} == {"tfidf"} and {line.split()[3] for line in lines} == {"0"}
+    assert [len(d.missing_tasks(Path(f"models/{n}"), tmp_path)) for n in ("test-api-strings", "test-numeric", "api-numeric")] \
+        == [3, 12, 4 * 108 * 3]
+
+
+def test_a_test_of_a_numeric_only_api_model_needs_no_embeddings(clone):
+    d, name = clone, "test-extratrees"
+    (d.root / "models" / "extratrees").rename(d.root / "models" / name)
+    (d.root / "models" / name / "model.yaml").write_text(yaml.safe_dump(API_CARD))
+    commit(d.root)
+    d.gh.labels, d.embeddings = ["run-api"], ["embed qwen-3-8b-first30 t1"]  # a test API run waits for run-api too
+    d.todo = [f"models/{name} tfidf china-overseas-finance-inventory 0"]
+    d.run(fetch=False)
+    finish_smoke(d, name=name)
+    d.run(fetch=False)
+    assert state(d, name)["step"] == "run" and not (d.state_dir / "_embed.embed.txt").exists()
