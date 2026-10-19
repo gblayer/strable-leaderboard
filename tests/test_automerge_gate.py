@@ -177,3 +177,19 @@ def test_the_review_skill_lists_the_reserved_names():
     assert all(f"`{name}`" in skill for name in RESERVED)
     assert "`test-`" in skill and "gblayer" in skill  # the maintainer's test runs
     assert gate(files=["models/tabicl-v2-20260212/model.py"]) == ("merge", SHA)
+
+
+def test_an_api_model_from_anyone_but_the_maintainer_waits_for_her():
+    from automerge_gate import is_api_card
+
+    for text in ["hardware: api\n", 'hardware: "api"  # on the provider\n', "{name: x, hardware: api}\n",
+                 'hardware: "\\x61pi"\n']:  # the last one only parsed YAML sees
+        assert is_api_card(text), text
+    for text in ["hardware: gpu\n", "hardware: cpu\nlicence: API terms\n", "", "not: [yaml\n"]:
+        assert not is_api_card(text), text
+    api = {"kumo-tabular-1.0"}
+    assert gate(p=pr(), existing=frozenset({"ridge"})) == ("merge", SHA)
+    verdict, reason = decide(pr(), MODEL_FILES, {"state": "success"}, run(), {"ridge"}, api)
+    assert verdict == "needs" and "is an API model (hardware: api): only the maintainer adds those" in reason
+    assert scope_problems(MODEL_FILES, MAINTAINER, {"ridge"}, api) == []
+    assert decide(pr(author=MAINTAINER), MODEL_FILES, {"state": "success"}, run(), {"ridge"}, api) == ("merge", SHA)

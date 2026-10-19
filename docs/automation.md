@@ -35,7 +35,7 @@ One comment on the pull request gives both verdicts and these facts.
 
 1. both review passes of the current commit said MERGE (the commit status "Claude review" is success);
 2. the Checks workflow passed on the current commit;
-3. the diff is exactly one new `models/<name>/` folder, whose name is valid, is not one that only the maintainer adds (`RESERVED` in `strable_leaderboard/__init__.py`) and, unless the pull request is opened by `gblayer`, does not start with `test-`; or only the results files (`RESULTS_FILES` in `strable_leaderboard/__init__.py`) in a pull request opened by `gblayer`. Nothing else: `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/`, `splits/`, `env/` and existing model folders never merge by themselves;
+3. the diff is exactly one new `models/<name>/` folder, whose name is valid, is not one that only the maintainer adds (`RESERVED` in `strable_leaderboard/__init__.py`) and, unless the pull request is opened by `gblayer`, does not start with `test-` and is not an API model (`hardware: api`); or only the results files (`RESULTS_FILES` in `strable_leaderboard/__init__.py`) in a pull request opened by `gblayer`. Nothing else: `.github/`, `.claude/`, `strable_leaderboard/`, `scripts/`, `splits/`, `env/` and existing model folders never merge by themselves;
 4. the label `needs-maintainer` is not set;
 5. the commit did not change since the reviews (`gh pr merge --match-head-commit`).
 
