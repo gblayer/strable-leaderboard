@@ -230,8 +230,12 @@ button.ovl-mark:hover, .ovl.open button.ovl-mark { color: var(--ink); border-col
 .ovl-tip a { color: inherit; font-weight: 600; text-underline-offset: 3px; }
 .ovl-tip a:focus-visible { outline-color: var(--bg); }
 .tip .ovl-mark { display: inline-grid; vertical-align: -3px; margin-left: 8px; color: var(--bg); background: color-mix(in srgb, var(--bg) 16%, transparent); border-color: color-mix(in srgb, var(--bg) 40%, transparent); }
-/* API: a model that runs on its provider's servers, the same grey box with the word API, and a round marker on the plot */
-.ovl-mark.api { width: auto; padding: 0 4px; font: 600 10px/1 var(--f-mono); letter-spacing: 0.06em; }
+/* API: a model that runs on its provider's servers. A teal pill (the Pine Grove line colour: the same in both
+   themes, used by no tag and not by ∩; its text 4.7:1), and a round marker on the plot */
+.api-pill { appearance: none; margin: 0; flex: none; display: inline-flex; align-items: center; font: 600 10px/1 var(--f-mono); letter-spacing: 0.1em; color: var(--pine-ink); background: var(--pine-line); border: 0; padding: 4px 7px; border-radius: 999px; white-space: nowrap; }
+button.api-pill { cursor: help; }
+button.api-pill:hover, .ovl.open button.api-pill { filter: brightness(1.15); }
+.tip .api-pill { vertical-align: 1px; margin-left: 8px; }
 .tip .wrap { white-space: normal; max-width: 40ch; }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
@@ -618,7 +622,7 @@ const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model'; 
 const OVERLAP_NAME = 'possible pre-training overlap';
 const OVERLAP_TIP = "Possible overlap between this model's pre-training data and STRABLE tables.";
 const API_NAME = 'API model';
-const API_TIP = "Runs on the provider's servers: the time includes the network and their hardware.";
+const API_TIP = "Runs on the provider's servers: its time includes the network and their hardware.";
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TIME_SUB = ' · run time per 1K samples, log scale';
@@ -686,7 +690,7 @@ const tagEl = (cls, name) => el('span', 'tag ' + cls, name.toUpperCase());
    button: hover, focus or a tap opens a small tooltip (for ∩ with the evidence link, which follows
    the button in the page so that Tab reaches it); Esc or a tap elsewhere closes it, and so does
    scrolling the button out of the table's view. In the plot's tooltip it is the plain box. */
-const markBox = (sym, cls) => { const s = el('span', 'ovl-mark' + cls, sym); s.setAttribute('aria-hidden', 'true'); return s; };
+const markBox = (sym, cls) => { const s = el('span', cls, sym); s.setAttribute('aria-hidden', 'true'); return s; };
 const apiTip = (d) => API_TIP + (d.apiVersion ? ' Version ' + d.apiVersion + '.' : '');
 let ovlOpen = null, ovlTimer = null, ovlN = 0;
 /* Puts the open tooltip under its button (above when there is no room); false when the button is out of view. */
@@ -713,7 +717,7 @@ function ovlHide() {
   ovlOpen = null;
 }
 function tipMark(sym, cls, label, text, href) {
-  const box = el('span', 'ovl'), b = el('button', 'ovl-mark' + cls, sym), tip = el('span', 'ovl-tip');
+  const box = el('span', 'ovl'), b = el('button', cls, sym), tip = el('span', 'ovl-tip');
   tip.id = 'ovl-tip-' + (++ovlN); tip.setAttribute('role', 'tooltip'); tip.hidden = true;
   b.type = 'button'; b.setAttribute('aria-label', label); b.setAttribute('aria-describedby', tip.id);
   b.setAttribute('aria-expanded', 'false');
@@ -734,8 +738,8 @@ function tipMark(sym, cls, label, text, href) {
   box.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && ovlOpen === box) { ev.stopPropagation(); b.focus(); ovlHide(); } });
   return box;
 }
-const overlapMark = (d) => tipMark('∩', '', 'Possible pre-training overlap', OVERLAP_TIP, d.evidence);
-const apiMark = (d) => tipMark('API', ' api', API_NAME, apiTip(d), null);
+const overlapMark = (d) => tipMark('∩', 'ovl-mark', 'Possible pre-training overlap', OVERLAP_TIP, d.evidence);
+const apiMark = (d) => tipMark('API', 'api-pill', API_NAME, apiTip(d), null);
 document.addEventListener('pointerdown', (ev) => { if (ovlOpen && !ovlOpen.contains(ev.target)) ovlHide(); });
 window.addEventListener('scroll', () => { if (ovlOpen && !ovlPlace(ovlOpen)) ovlHide(); }, true);
 window.addEventListener('resize', () => ovlHide());
@@ -903,8 +907,8 @@ function showTip(id) {
   if (!g) { tip.hidden = true; return; }
   tip.textContent = '';
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
-  if (g.d.overlap) l1.appendChild(markBox('∩', ''));
-  if (g.d.api) l1.appendChild(markBox('API', ' api'));
+  if (g.d.overlap) l1.appendChild(markBox('∩', 'ovl-mark'));
+  if (g.d.api) l1.appendChild(markBox('API', 'api-pill'));
   tip.appendChild(l1);
   tip.appendChild(el('div', null, timeText(g.d)));
   if (g.d.api) tip.appendChild(el('div', 'wrap', apiTip(g.d)));
@@ -1210,7 +1214,7 @@ const TOUR = [
   { sel: '#ctl-overlap', block: 'center',
     text: 'Overlap ∩. A small ∩ marks models whose pre-training data may include some STRABLE tables. Show, the default, keeps every model; Hide leaves these ones out of the table and the plot.' },
   { sel: '#ctl-api', block: 'center',
-    text: "API. A small API box, and a round marker on the plot, mark models that run on their provider's servers: their time includes the network and the provider's hardware. Show, the default, keeps them; Hide leaves them out of the table and the plot." },
+    text: "API. A small teal API pill, and a round marker on the plot, mark models that run on their provider's servers: their time includes the network and the provider's hardware. Show, the default, keeps them; Hide leaves them out of the table and the plot." },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
     text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, ∩ marks models whose pre-training may overlap STRABLE, API those that run on their provider\'s servers, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',

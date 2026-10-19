@@ -123,6 +123,11 @@ def test_api_pipelines_are_marked(tmp_path):
     assert "api" not in ridge and "api_version" not in ridge
     assert problems(data) == [] and parquet_problems(data, tmp_path / "results.parquet") == []
     assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == []
+    long = pd.read_parquet(tmp_path / "results.parquet")  # the downloads carry a true/false api column
+    assert long["api"].dtype == bool and set(long.loc[long["id"] == "tfidf+chakra", "api"]) == {True}
+    assert not long.loc[long["id"] == "tfidf+ridge", "api"].any()
+    for folds in [pd.read_parquet(tmp_path / "results_per_fold.parquet"), pd.read_csv(tmp_path / "results_per_fold.csv")]:
+        assert folds.loc[folds["id"] == "tfidf+chakra", "api"].all() and not folds.loc[folds["id"] == "tfidf+ridge", "api"].any()
     chakra["api"] = "yes"
     assert problems(data) == ["tfidf+chakra: api must be true, with api_version a string"]
 
