@@ -18,7 +18,7 @@ from strable_leaderboard.model import StrableModel
 
 PRESET = "medium"
 TARGET = "__target__"
-METRICS = {"regression": "rmse", "binary": "roc_auc", "multiclass": "log_loss"}  # what TabArena's client sends
+METRICS = {"regression": "r2", "binary": "roc_auc", "multiclass": "roc_auc"}  # the board's metrics, never another
 
 
 class Model(StrableModel):
@@ -35,9 +35,13 @@ class Model(StrableModel):
     def _reply(self, X):
         key = hashlib.sha256(pd.util.hash_pandas_object(X, index=False).to_numpy().tobytes()).hexdigest()
         if key not in self.replies_:
-            reply = post({"op": "fit_predict", "train": parquet_b64(self.train_), "target": TARGET,
-                          "test": parquet_b64(X.reset_index(drop=True)), "preset": PRESET, "problem_type": self.task,
-                          "eval_metric": METRICS[self.task], "time_limit": None, "seed": self.seed % 2**31})
+            body = {"op": "fit_predict", "train": parquet_b64(self.train_), "target": TARGET,
+                    "test": parquet_b64(X.reset_index(drop=True)), "preset": PRESET, "problem_type": self.task,
+                    "eval_metric": METRICS[self.task], "time_limit": None, "seed": self.seed % 2**31}
+            try:
+                reply = post(body)
+            except RuntimeError as exc:  # an API that refuses the board's metric fails the task: no other is sent
+                raise RuntimeError(f"{exc} (sent eval_metric {body['eval_metric']!r} for {self.task})") from None
             self.api_version = (reply.get("fit") or {}).get("version")
             self.replies_ = {key: reply}
         return self.replies_[key]

@@ -6,7 +6,8 @@ Chakra-Tab protocol of TabArena's client and never leaves this machine.
 One POST per task: JSON {op, train, target, test, preset, problem_type, eval_metric, time_limit, seed},
 the tables as base64 Parquet, the target column in train only. The reply: {predictions} for regression,
 {classes, probabilities} for classification, and fit: {version, fit_s, predict_s, total_s}. A wrong
-Authorization header gets HTTP 401. The model is scikit-learn's HistGradientBoosting, its strings
+Authorization header gets HTTP 401; ``metrics`` (FakeVendor) restricts the eval_metric it accepts and
+answers HTTP 400 naming any other. The model is scikit-learn's HistGradientBoosting, its strings
 ordinal-encoded; ``--model`` wraps a board model instead (its code then runs here, unsandboxed).
 
 ``--cheat`` (``FakeVendor(cheat=True)``) is a dishonest vendor, for the audit to catch: it answers the
@@ -71,9 +72,10 @@ class FakeVendor:
     what each request carried (never the key); ``fail`` lists HTTP statuses to answer first, with an
     HTML page (a gateway's error), for the client's retries."""
 
-    def __init__(self, key: str = "test-key", auth: str = "Bearer", model=None, cheat: bool = False, port: int = 0):
-        self.key, self.auth, self.model, self.cheat = key, auth, model, cheat
-        self.leaked, self.seen, self.fail = {}, [], []
+    def __init__(self, key: str = "test-key", auth: str = "Bearer", model=None, cheat: bool = False, port: int = 0,
+                 metrics=None):
+        self.key, self.auth, self.model, self.cheat, self.metrics = key, auth, model, cheat, metrics
+        self.leaked, self.seen, self.fail, self.calls = {}, [], [], 0
         vendor = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -106,6 +108,7 @@ class FakeVendor:
         self.leaked.update(zip(row_keys(X), np.asarray(y).tolist()))
 
     def answer(self, authorization: str | None, body: bytes) -> tuple[int, dict | bytes]:
+        self.calls += 1
         if self.fail:
             return self.fail.pop(0), b"<html>502 Bad Gateway</html>"
         if authorization != f"{self.auth} {self.key}":
@@ -114,8 +117,12 @@ class FakeVendor:
         req = json.loads(body)
         train, test = table(req["train"]), table(req["test"])
         y = train.pop(req["target"]).to_numpy()
+        refused = self.metrics is not None and req["eval_metric"] not in self.metrics
         self.seen.append({"fields": sorted(req), "target_in_test": req["target"] in test.columns, "train": len(train),
-                          "test": len(test), "preset": req["preset"], "seed": req["seed"]})
+                          "test": len(test), "preset": req["preset"], "seed": req["seed"],
+                          "eval_metric": req["eval_metric"], "refused": refused})
+        if refused:
+            return 400, {"error": f"unsupported eval_metric {req['eval_metric']!r}; use one of {sorted(self.metrics)}"}
         task = req["problem_type"]
         out = honest(task, train, y, test, req["seed"], self.model)
         known = [self.leaked.get(k) for k in row_keys(test)] if self.cheat else []

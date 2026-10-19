@@ -8,6 +8,7 @@ hardware: api
 api:
   auth: Bearer
   concurrency: 2
+  allow_http: true              # the local fake vendor listens on plain http
 
 package: requests==2.32.5
 checkpoint: null

@@ -78,13 +78,15 @@ def api_problems(card: dict) -> list[str]:
     api = card.get("api")
     if card.get("hardware") != "api":
         return ["api is only for hardware: api"] if "api" in card else []
-    if not isinstance(api, dict) or set(api) != {"auth", "concurrency"}:
-        return ["hardware: api needs api: {auth: Bearer or Api-Key, concurrency: <tasks at once>}; the endpoint "
-                "and key go in private/api_keys/<model folder>.env, never in the card"]
+    if not isinstance(api, dict) or not {"auth", "concurrency"} <= set(api) <= {"auth", "concurrency", "allow_http"}:
+        return ["hardware: api needs api: {auth: Bearer or Api-Key, concurrency: <tasks at once>}, optionally "
+                "allow_http: true; the endpoint and key go in private/api_keys/<model folder>.env, never in the card"]
     out = [] if isinstance(api["auth"], str) and api["auth"] in API_AUTH else ["api.auth must be Bearer or Api-Key"]
     c = api["concurrency"]
     if not (isinstance(c, int) and not isinstance(c, bool) and c > 0):
         out.append("api.concurrency must be a positive whole number")
+    if not isinstance(api.get("allow_http", False), bool):
+        out.append("api.allow_http must be true or false")
     return out
 
 

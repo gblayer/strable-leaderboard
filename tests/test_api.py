@@ -46,6 +46,7 @@ def test_an_api_card_needs_its_api_block_and_nothing_secret():
         assert card_problems(dict(CARD, api={"auth": "Api-Key", "concurrency": concurrency})) == [
             "api.concurrency must be a positive whole number"]
     assert card_problems(dict(CARD, hardware="cpu")) == ["api is only for hardware: api"]
+    assert card_problems(dict(CARD, api=dict(CARD["api"], allow_http="yes"))) == ["api.allow_http must be true or false"]
 
 
 def write_keys(folder: Path, text: str, mode: int = 0o600) -> Path:
@@ -62,29 +63,30 @@ def test_the_key_file_is_checked_and_never_printed(tmp_path, monkeypatch):
         api.child_env(EXAMPLE, CARD)
     good = "# the vendor's raw endpoint\nSTRABLE_API_URL=https://api.example.org/v1\nSTRABLE_API_KEY=sk-secret-123\n"
     path = write_keys(tmp_path, good, 0o640)
+    https_only = dict(CARD, api={"auth": "Bearer", "concurrency": 2})  # no allow_http: https:// only
     with pytest.raises(ValueError, match="chmod 600") as exc:
-        api.child_env(EXAMPLE, CARD)
+        api.child_env(EXAMPLE, https_only)
     path.chmod(0o600)
-    assert api.child_env(EXAMPLE, CARD) == {"STRABLE_API_URL": "https://api.example.org/v1",
-                                            "STRABLE_API_KEY": "sk-secret-123", "STRABLE_API_AUTH": "Bearer"}
+    assert api.child_env(EXAMPLE, https_only) == {"STRABLE_API_URL": "https://api.example.org/v1",
+                                                  "STRABLE_API_KEY": "sk-secret-123", "STRABLE_API_AUTH": "Bearer"}
     assert api.child_env(EXAMPLE, dict(CARD, hardware="cpu")) == {}
     messages = [str(exc.value)]
+    plain = good.replace("https://api.example.org", "http://api.example.org")
     for text, msg in [(good + "OTHER=sk-secret-123\n", "only STRABLE_API_URL and STRABLE_API_KEY"),
-                      ("STRABLE_API_KEY=sk-secret-123\n", "needs both"),
-                      (good.replace("https://api.example.org", "http://api.example.org"), "https://")]:
+                      ("STRABLE_API_KEY=sk-secret-123\n", "needs both"), (plain, "http:// only with api.allow_http")]:
         write_keys(tmp_path, text)
         with pytest.raises(ValueError, match=msg) as exc:
-            api.child_env(EXAMPLE, CARD)
+            api.child_env(EXAMPLE, https_only)
         messages.append(str(exc.value))
     assert not any("sk-secret" in m for m in messages)
-    write_keys(tmp_path, "STRABLE_API_URL=http://127.0.0.1:9/x\nSTRABLE_API_KEY=k\n")  # plain http: this machine only
-    assert api.child_env(EXAMPLE, CARD)["STRABLE_API_URL"] == "http://127.0.0.1:9/x"
+    assert CARD["api"]["allow_http"] is True  # the example's card accepts plain http, to any host
+    assert api.child_env(EXAMPLE, CARD)["STRABLE_API_URL"] == "http://api.example.org/v1"
 
 
 def body(rows=8):
     X = pd.DataFrame({"x": np.arange(rows, dtype=float)})
     return {"op": "fit_predict", "train": api.parquet_b64(X.assign(t=X["x"] * 2)), "target": "t",
-            "test": api.parquet_b64(X), "preset": "medium", "problem_type": "regression", "eval_metric": "rmse",
+            "test": api.parquet_b64(X), "preset": "medium", "problem_type": "regression", "eval_metric": "r2",
             "time_limit": None, "seed": 1234}
 
 
@@ -110,6 +112,27 @@ def test_the_client_retries_server_errors_and_hides_its_secrets(monkeypatch):
     monkeypatch.delenv("STRABLE_API_KEY")
     with pytest.raises(RuntimeError, match="no API endpoint or key"):
         api.post(body())
+
+
+def test_a_server_refusing_r2_fails_the_task_with_a_message_naming_it(tmp_path, monkeypatch, capfd):
+    from strable_leaderboard.model import load_model_class
+    from strable_leaderboard.smoke import check_one
+
+    fake_tables(tmp_path / "data")
+    with FakeVendor(key="k", metrics={"rmse", "roc_auc", "log_loss"}) as vendor:  # what TabArena's client sends
+        for name, value in [("STRABLE_API_URL", vendor.url), ("STRABLE_API_KEY", "k"), ("STRABLE_API_AUTH", "Bearer")]:
+            monkeypatch.setenv(name, value)
+        with pytest.raises(RuntimeError, match=r"HTTP 400: .*'r2'.*\(sent eval_metric 'r2' for regression\)"):
+            check_one(load_model_class(EXAMPLE), CARD, SMOKE_TABLES["regression"], data_dir=tmp_path / "data")
+        assert check_one(load_model_class(EXAMPLE), CARD, SMOKE_TABLES["binary"], data_dir=tmp_path / "data")["score"] > 0.5
+        assert [(s["eval_metric"], s["refused"]) for s in vendor.seen] == [("r2", True), ("roc_auc", False)]  # no retry
+        # the same through the runner: the task fails, its log names the metric
+        monkeypatch.setenv("STRABLE_API_KEYS", str(tmp_path / "keys"))
+        write_keys(tmp_path / "keys", f"STRABLE_API_URL={vendor.url}\nSTRABLE_API_KEY=k\n")
+        monkeypatch.chdir(ROOT)
+        with pytest.raises(Exception):
+            run_module.run(EXAMPLE, "tfidf", SMOKE_TABLES["regression"], 0, tmp_path / "data", None, "cpu", 1, sandbox=False)
+        assert "sent eval_metric 'r2' for regression" in capfd.readouterr().err and len(vendor.seen) == 3
 
 
 def fake_tables(data_dir: Path) -> None:

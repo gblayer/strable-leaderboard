@@ -2,6 +2,8 @@
 
 The card's ``api`` block says how to call the model, nothing secret: ``auth``, ``Bearer`` (a public API)
 or ``Api-Key`` (a provider's raw endpoint), and ``concurrency``, the most tasks the board runs at once.
+The endpoint must be https://, unless the block also says ``allow_http: true``: the rows and the key
+then travel unencrypted (the STRABLE tables are public, the key is not).
 The endpoint and the key live only in ``private/api_keys/<model folder>.env`` ($STRABLE_API_KEYS
 overrides the folder), git-ignored, readable by its owner only (chmod 600), two lines:
 
@@ -32,7 +34,6 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parent.parent
 URL, KEY, AUTH = "STRABLE_API_URL", "STRABLE_API_KEY", "STRABLE_API_AUTH"
 SCHEMES = ("Bearer", "Api-Key")
-LOCAL = ("127.0.0.1", "localhost", "::1")  # plain http only to this machine: a test vendor
 ATTEMPTS, WAIT = 4, 30.0  # tries per request, and the pause before try n is WAIT * (n - 1) seconds
 
 
@@ -40,8 +41,9 @@ def key_file(folder: Path) -> Path:
     return Path(os.environ.get("STRABLE_API_KEYS", ROOT / "private" / "api_keys")) / f"{Path(folder).name}.env"
 
 
-def read_keys(path: Path) -> dict[str, str]:
-    """The endpoint and key of a key file, checked: present, owner-only, exactly the two variables."""
+def read_keys(path: Path, allow_http: bool = False) -> dict[str, str]:
+    """The endpoint and key of a key file, checked: present, owner-only, exactly the two variables, an
+    https:// endpoint (or http:// with ``allow_http``)."""
     if not path.is_file():
         raise ValueError(f"no key file {path}: write {URL}=... and {KEY}=... into it, then chmod 600")
     if stat.S_IMODE(path.stat().st_mode) & 0o077:
@@ -56,9 +58,9 @@ def read_keys(path: Path) -> dict[str, str]:
             found[name.strip()] = value.strip()
     if not (found.get(URL) and found.get(KEY)):
         raise ValueError(f"{path} needs both {URL} and {KEY}")
-    url = urlsplit(found[URL])
-    if not (url.scheme == "https" or (url.scheme == "http" and url.hostname in LOCAL)):
-        raise ValueError(f"{path}: {URL} must be an https:// address")
+    scheme = urlsplit(found[URL]).scheme
+    if not (scheme == "https" or (scheme == "http" and allow_http)):
+        raise ValueError(f"{path}: {URL} must be an https:// address (http:// only with api.allow_http: true in the card)")
     return found
 
 
@@ -66,7 +68,7 @@ def child_env(folder: Path, card: dict) -> dict[str, str]:
     """The variables the child of an API model gets; nothing for other models."""
     if card.get("hardware") != "api":
         return {}
-    return {**read_keys(key_file(folder)), AUTH: card["api"]["auth"]}
+    return {**read_keys(key_file(folder), card["api"].get("allow_http", False)), AUTH: card["api"]["auth"]}
 
 
 def parquet_b64(df) -> dict:
