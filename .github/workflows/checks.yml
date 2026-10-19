@@ -9,7 +9,8 @@ name: Checks
 # - models: for each changed model folder, the card, the pins and the code (`smoke --static`),
 #   then the smoke test on CPU. A `hardware: gpu` model gets the static checks only: on CPU its
 #   smoke test can take longer than the job allows, and it runs on the reference GPU on the
-#   cluster, as the dispatcher's first step after the merge. The model is installed with
+#   cluster, as the dispatcher's first step after the merge. So does an API model (`hardware: api`):
+#   its endpoint and key never reach GitHub. The model is installed with
 #   env/requirements.txt as constraints, so every package, dependencies included, has the shared
 #   environment's version. Changed results files (RESULTS_FILES in strable_leaderboard/__init__.py)
 #   are validated.
@@ -92,8 +93,8 @@ jobs:
               "$py" -m pip install --quiet --extra-index-url https://download.pytorch.org/whl/cpu \
                 -c env/requirements.txt -e ".[smoke]" -r "models/$m/requirements.txt"
               hw=$("$py" -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["hardware"])' "models/$m/model.yaml")
-              if [ "$hw" = gpu ]; then
-                echo "::notice::$m: GPU model, static checks only; its smoke test runs on the reference GPU after the merge"
+              if [ "$hw" = gpu ] || [ "$hw" = api ]; then
+                echo "::notice::$m: $hw model, static checks only; its smoke test runs on our hardware after the merge"
                 "$py" -m strable_leaderboard.smoke "models/$m" --static | tee -a "$GITHUB_STEP_SUMMARY" || status=1
               elif ! "$py" -m strable_leaderboard.smoke "models/$m" --device cpu | tee -a "$GITHUB_STEP_SUMMARY"; then
                 status=1

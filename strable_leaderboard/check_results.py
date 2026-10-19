@@ -9,7 +9,9 @@ incomplete tag. The Checks workflow runs it on every results pull request, and t
 review reads its output.
 
 A row carries ``total_s`` (the runner and the paper time fit and predict together) or, in older
-files, ``fit_s`` and ``predict_s``. ``variant`` is ``default`` or ``tuned``.
+files, ``fit_s`` and ``predict_s``. ``variant`` is ``default`` or ``tuned``. Rows of an API model
+(``hardware`` "api") also carry ``api_version``, the version its provider reported: one, on every row,
+since a version that changes during the run mixes two models in one pipeline.
 """
 
 from __future__ import annotations
@@ -60,6 +62,13 @@ def check(path: Path, manifest: dict) -> tuple[list[str], list[str]]:
     for col in ["hardware", "package", "protocol_version", "date"]:
         if df[col].isna().any() or (df[col].astype(str).str.strip() == "").any():
             problems.append(f"empty values in {col}")
+    api = df["hardware"].astype(str) == "api"
+    if api.any():
+        versions = df.loc[api, "api_version"] if "api_version" in df else pd.Series([None] * int(api.sum()))
+        if versions.isna().any() or (versions.astype(str).str.strip() == "").any():
+            problems.append("rows with hardware api need the api_version their provider reported")
+        elif versions.nunique() > 1:
+            problems.append(f"api_version changed during the run: {sorted(versions.astype(str).unique())}")
     split = df["fit_s"].notna() & df["predict_s"].notna()
     if not (split | df["total_s"].notna()).all():
         problems.append("each row needs fit_s and predict_s, or total_s")

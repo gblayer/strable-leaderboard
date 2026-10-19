@@ -1,0 +1,15 @@
+# An example API model for the tests: a client of scripts/fake_api.py, the local fake vendor.
+name: Example API model
+version: "1.0"
+end_to_end: false
+tasks: [regression, binary, multiclass]
+variant: default
+hardware: api
+api:
+  auth: Bearer
+  concurrency: 2
+
+package: requests==2.32.5
+checkpoint: null
+licence: BSD-3-Clause
+pretraining_data: none

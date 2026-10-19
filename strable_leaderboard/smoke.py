@@ -14,6 +14,9 @@ Hugging Face downloads off (``OFFLINE``), loads ``Model`` from ``model.py``, pas
 as ``weights_dir``, encodes strings with Tf-Idf when the model needs numbers, and checks the
 shapes and ranges of the predictions. Threads are capped to ``--n-jobs`` (default 1) as in the
 runner. It does not measure leaderboard scores: the full run happens after the merge.
+
+An API model (``hardware: api``) calls its endpoint, here in this process: its key file,
+``private/api_keys/<name>.env`` of this clone (``strable_leaderboard.api``), must hold the endpoint and key.
 """
 
 from __future__ import annotations
@@ -26,6 +29,7 @@ import time
 import warnings
 from pathlib import Path
 
+from .api import child_env
 from .card import card_problems, default_cache, fetch_checkpoint, load_card
 from .check_requirements import problems as pin_problems
 from .data import load_table
@@ -162,6 +166,11 @@ def main(argv=None) -> int:
         args.device = "cuda" if torch.cuda.is_available() else "cpu"
     if weights_dir:
         print(f"  ok    weights_dir {weights_dir}")
+    try:
+        os.environ.update(child_env(args.folder, card))  # an API model's endpoint and key; nothing otherwise
+    except ValueError as exc:
+        print(f"  FAIL  api: {exc}")
+        return 1
 
     failures = 0
     for task, table in SMOKE_TABLES.items():

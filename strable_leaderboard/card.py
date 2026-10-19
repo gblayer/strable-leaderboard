@@ -1,6 +1,7 @@
 """The model card, ``models/<name>/model.yaml``: every field, its allowed values, and the check.
 
 ``card_problems`` lists everything wrong with a card; ``load_card`` raises on the first list.
+An API model (``hardware: api``) also has an ``api`` block, nothing secret (``strable_leaderboard.api``).
 The smoke test fails on any problem, so a card is complete before a pull request is opened.
 ``fetch_checkpoint`` downloads the card's weights, for the smoke test and scripts/prepare.py alike.
 """
@@ -17,9 +18,10 @@ from .check_requirements import match_pin
 
 REQUIRED = ["name", "version", "end_to_end", "tasks", "variant", "hardware", "package", "checkpoint", "licence",
             "pretraining_data"]
-OPTIONAL = ["code", "paper"]
+OPTIONAL = ["code", "paper", "api"]
 VARIANTS = {"default"}  # the package's default configuration
-HARDWARE = {"gpu", "cpu"}
+HARDWARE = {"gpu", "cpu", "api"}  # api: runs on its provider's servers
+API_AUTH = {"Bearer", "Api-Key"}  # the api block's auth: a public API, or a provider's raw endpoint
 TASKS = {"regression", "binary", "multiclass"}
 # What the model was pre-trained on, as its documentation says; "none" for a model without pre-training.
 PRETRAINING = {"synthetic", "real", "mixed", "none", "not disclosed"}
@@ -67,6 +69,22 @@ def card_problems(card) -> list[str]:
     for key in ["code", "paper"]:
         if key in card and not (isinstance(card[key], str) and card[key].startswith(("https://", "http://"))):
             out.append(f"{key} must be a URL")
+    return out + api_problems(card)
+
+
+def api_problems(card: dict) -> list[str]:
+    """The api block: required with hardware: api, absent otherwise; auth and concurrency only, so
+    that the endpoint and key never land in the card."""
+    api = card.get("api")
+    if card.get("hardware") != "api":
+        return ["api is only for hardware: api"] if "api" in card else []
+    if not isinstance(api, dict) or set(api) != {"auth", "concurrency"}:
+        return ["hardware: api needs api: {auth: Bearer or Api-Key, concurrency: <tasks at once>}; the endpoint "
+                "and key go in private/api_keys/<model folder>.env, never in the card"]
+    out = [] if isinstance(api["auth"], str) and api["auth"] in API_AUTH else ["api.auth must be Bearer or Api-Key"]
+    c = api["concurrency"]
+    if not (isinstance(c, int) and not isinstance(c, bool) and c > 0):
+        out.append("api.concurrency must be a positive whole number")
     return out
 
 

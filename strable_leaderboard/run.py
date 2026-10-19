@@ -19,6 +19,11 @@ training rows and predicts the test rows; its wall-clock time is T. Then
 extraction time plus fitting and applying the encoder. Fit and predict are not timed apart.
 Both processes cap their BLAS, OpenMP and torch threads to ``--n-jobs``, the job's CPUs.
 
+An API model (``hardware: api``, ``strable_leaderboard.api``) runs on its provider's servers: this
+process reads its key file and passes the endpoint and key to its child only, whose sandbox then
+keeps the network; the warm-ups send nothing, so its time includes the request, the network and the
+provider's work. Its rows say ``hardware`` "api" and carry the ``api_version`` its provider reported.
+
 ``--smoke``: the static checks, then outer fold 0 of the three smoke tables through the same
 sandbox; nothing is written. ``--no-sandbox`` runs the child as a plain process, for local
 development only: the cluster never passes it.
@@ -41,6 +46,7 @@ import numpy as np
 import pandas as pd
 
 from . import __version__
+from .api import child_env
 from .card import load_card
 from .data import load_table
 from .encoders import encode, warm_up
@@ -72,8 +78,9 @@ def wall_clock(cmd: list, env: dict) -> float:
 
 
 def fit_predict(folder: Path, X_train, y_train, X_test, task: str, strings: bool, weights_dir, device: str,
-                n_jobs: int, sandbox: bool = True) -> tuple[dict, float]:
-    """The child's outputs as arrays, and its time: timed run minus the start-up overhead."""
+                n_jobs: int, sandbox: bool = True, api_env: dict | None = None) -> tuple[dict, float]:
+    """The child's outputs as arrays, and its time: timed run minus the start-up overhead. ``api_env``,
+    for an API model only: the endpoint and key its child gets, with the network."""
     with tempfile.TemporaryDirectory(prefix="strable-") as tmp:
         inputs, outputs = Path(tmp) / "in", Path(tmp) / "out"
         inputs.mkdir()
@@ -85,13 +92,28 @@ def fit_predict(folder: Path, X_train, y_train, X_test, task: str, strings: bool
                "--task", task, "--device", device, "--n-jobs", n_jobs] + (["--strings"] if strings else [])
         if weights_dir:
             cmd += ["--weights-dir", weights_dir]
+        if api_env:
+            cmd += ["--api"]
         if sandbox:
             cmd = ["bash", SANDBOX, folder, inputs, outputs] + cmd
-        env = dict(os.environ, **thread_env(n_jobs))  # scripts/sandbox.sh passes them on
+        # scripts/sandbox.sh passes these on; API variables only to an API model's child, never inherited
+        env = {k: v for k, v in os.environ.items() if not k.startswith(("STRABLE_API_", "STRABLE_SANDBOX_NETWORK"))}
+        env.update(thread_env(n_jobs), **(dict(api_env, STRABLE_SANDBOX_NETWORK="1") if api_env else {}))
         overhead = [wall_clock(cmd + ["--warm-up"], env) for _ in range(2)][-1]  # the first one warms the caches
         seconds = max(wall_clock(cmd, env) - overhead, MIN_SECONDS)
         names = ["pred"] if task == "regression" else ["proba", "classes"]
-        return {n: np.load(outputs / f"{n}.npy", allow_pickle=False) for n in names}, seconds
+        out = {n: np.load(outputs / f"{n}.npy", allow_pickle=False) for n in names}
+        if (outputs / "api_version.txt").exists():
+            out["api_version"] = api_version((outputs / "api_version.txt").read_text())
+        return out, seconds
+
+
+def api_version(text: str) -> str:
+    """The version string an API model reported, on one line."""
+    version = " ".join(text.split())
+    if not version or len(version) > 100 or not version.isprintable():
+        raise ValueError("api_version must be one printable line of at most 100 characters")
+    return version
 
 
 def run(folder: Path, encoder: str, table: str, fold: int, data_dir, cache_dir, device: str, n_jobs: int,
@@ -109,17 +131,21 @@ def run(folder: Path, encoder: str, table: str, fold: int, data_dir, cache_dir, 
             warnings.filterwarnings("ignore", message="Found unknown categories")
             X_train, X_test, encode_s = encode(X_train, X_test, encoder, table, cache_dir, device)
     weights_dir = Path(cache_dir) / "weights" / folder.name if cache_dir else None
-    out, model_s = fit_predict(folder, X_train, y_train, X_test, task, strings, weights_dir, device, n_jobs, sandbox)
+    api = card["hardware"] == "api"
+    out, model_s = fit_predict(folder, X_train, y_train, X_test, task, strings, weights_dir, device, n_jobs, sandbox,
+                               api_env=child_env(folder, card) if api else None)
+    version = out.pop("api_version", "")
     score = checked_score(task, y_train, y_test, **out)
     checkpoint = card.get("checkpoint") or {}
-    return {
+    row = {
         "model": folder.name, "encoder": "none" if strings else encoder, "variant": card["variant"], "table": table,
         "task": task, "fold": fold, "score": score, "fit_s": None, "predict_s": None,
         "total_s": round(encode_s + model_s, 4),
-        "n_train": len(train_idx), "n_test": len(test_idx), "hardware": hardware_name(device),
+        "n_train": len(train_idx), "n_test": len(test_idx), "hardware": "api" if api else hardware_name(device),
         "package": card["package"], "checkpoint_revision": checkpoint.get("revision", ""),
         "protocol_version": PROTOCOL, "date": date.today().isoformat(), "leaderboard_version": __version__,
     }
+    return dict(row, api_version=version) if api else row
 
 
 def smoke(folder: Path, data_dir, cache_dir, device: str, n_jobs: int, sandbox: bool) -> int:
@@ -135,7 +161,8 @@ def smoke(folder: Path, data_dir, cache_dir, device: str, n_jobs: int, sandbox: 
             continue
         try:
             row = run(folder, "tfidf", table, 0, data_dir, cache_dir, device, n_jobs, sandbox)
-            print(f"  ok    {task:<10} {table:<34} score {row['score']:.3f}  total {row['total_s']:.2f}s")
+            version = f"  api_version {row['api_version']}" if "api_version" in row else ""
+            print(f"  ok    {task:<10} {table:<34} score {row['score']:.3f}  total {row['total_s']:.2f}s{version}")
         except Exception as exc:  # report every table, then exit non-zero
             failures += 1
             print(f"  FAIL  {task:<10} {table:<34} {type(exc).__name__}: {exc}")

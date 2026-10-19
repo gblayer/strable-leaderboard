@@ -20,6 +20,9 @@ seconds over the table's rows). A view with fewer fold rows than expected is sho
 incomplete tag. ``hw`` lists the hardware the rows ran on, when recorded. The page computes the
 ranking and the Pareto front from this file.
 
+API models: a pipeline whose rows all ran on hardware "api" (on its provider's servers) gets
+``"api": true`` and ``"api_version"``, the versions its provider reported; the page marks it API.
+
 Overlap flags: when site/flags.json sits next to the output (``{"<model>": {"overlap": true,
 "evidence": "<url>"}}``, set by the maintainer), every pipeline of a flagged model gets
 ``"overlap": true`` and ``"overlap_evidence": "<url>"``, which the page shows as a ∩ mark, and the
@@ -178,6 +181,9 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
             hw = sorted(set(rows["hardware"].astype(str)) - {"paper", "nan"})  # imported rows record no hardware
             if hw:
                 record["hw"] = ", ".join(hw)
+            if hw == ["api"]:
+                versions = sorted(set(rows["api_version"].dropna().astype(str))) if "api_version" in rows else []
+                record.update(api=True, **({"api_version": ", ".join(versions)} if versions else {}))
             if path.stem in flags:
                 record.update(overlap=True, overlap_evidence=flags[path.stem]["evidence"])
             folds.append(per_fold(rows, record))
@@ -268,6 +274,8 @@ def problems(data: dict) -> list[str]:
         if ("overlap" in p or "overlap_evidence" in p) and (p.get("overlap") is not True
                                                             or not URL.match(str(p.get("overlap_evidence")))):
             out.append(f"{p.get('id')}: overlap must be true with overlap_evidence, a URL")
+        if ("api" in p or "api_version" in p) and (p.get("api") is not True or not isinstance(p.get("api_version", ""), str)):
+            out.append(f"{p.get('id')}: api must be true, with api_version a string")
     expected = folds_expected()
     for p in data["pipelines"]:
         if not p.get("lrn") or p.get("kind") not in ("modular", "e2e"):
