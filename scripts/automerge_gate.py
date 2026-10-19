@@ -229,7 +229,9 @@ def gate(pr: dict, details: str = "") -> str:
             needs_maintainer(pr, f"the merge failed: {merged.stderr.strip()[-300:]}")
             return "needs"
         if any(p.startswith("site/") for p in changed_paths(pr["number"])):
-            gh("workflow", "run", "pages.yml", "--repo", REPO, "--ref", "main")
+            # A merge by GITHUB_TOKEN starts no workflow: the page and its Hugging Face copy are started here.
+            for workflow in ("pages.yml", "hf-space.yml"):
+                gh("workflow", "run", workflow, "--repo", REPO, "--ref", "main")
     return verdict
 
 
