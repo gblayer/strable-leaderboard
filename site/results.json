@@ -1,7 +1,11 @@
 {
- "version": "v0.1.4",
- "built": "2026-10-18",
+ "version": "v0.1.5",
+ "built": "2026-10-19",
  "history": [
+  {
+   "version": "v0.1.5",
+   "note": "Added Kumo Tabular v1.0.1-large"
+  },
   {
    "version": "v0.1.4",
    "note": "Added TILE + TabPFN-3.5"
@@ -597,6 +601,110 @@
    "clf": [
     0.8749,
     143.7474,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+kumo-tabular",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "Kumo Tabular",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.8076,
+    38.9881,
+    324,
+    324
+   ],
+   "reg": [
+    0.7221,
+    33.0936,
+    228,
+    228
+   ],
+   "clf": [
+    0.8906,
+    91.0258,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+kumo-tabular",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "Kumo Tabular",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.8074,
+    4.8643,
+    324,
+    324
+   ],
+   "reg": [
+    0.7243,
+    4.7832,
+    228,
+    228
+   ],
+   "clf": [
+    0.8936,
+    5.1417,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+kumo-tabular",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "Kumo Tabular",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.8088,
+    46.593,
+    324,
+    324
+   ],
+   "reg": [
+    0.7253,
+    40.4074,
+    228,
+    228
+   ],
+   "clf": [
+    0.8924,
+    106.7713,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tfidf+kumo-tabular",
+   "enc": "Tf-Idf",
+   "lrn": "Kumo Tabular",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.8071,
+    3.2305,
+    324,
+    324
+   ],
+   "reg": [
+    0.7291,
+    3.0781,
+    228,
+    228
+   ],
+   "clf": [
+    0.895,
+    3.4188,
     96,
     96
    ]
