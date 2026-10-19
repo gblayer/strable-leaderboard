@@ -449,3 +449,22 @@ def test_a_listed_model_gets_a_longer_run_time(clone):
                        capture_output=True)
     lines = (d.tmp / "sbatch.log").read_text().splitlines()
     assert "--time=48:00:00" in lines[-2] and "--time=12:00:00" in lines[-1]
+
+
+def test_a_model_can_get_its_own_sbatch_flags(clone):
+    """run_array.sh: STRABLE_SBATCH_GPU_<folder> in the runner env replaces the GPU flags for that model only."""
+    d = clone
+    with open(d.root / "private" / "runner.env", "a") as f:
+        f.write('STRABLE_SBATCH_GPU_exaone_tabular="--partition=fastq --gres=gpu:1"\n')
+    for name in ("exaone-tabular", "other-gpu"):
+        (d.root / "models" / name).mkdir(parents=True, exist_ok=True)
+        (d.root / "models" / name / "model.yaml").write_text(yaml.safe_dump(dict(CARD, hardware="gpu")))
+        for line in (f"smoke models/{name}", f"models/{name} tfidf t1 0"):
+            tasks = d.tmp / "tasks.txt"
+            tasks.write_text(line + "\n")
+            env = dict(os.environ, STRABLE_PYTHON=sys.executable, STRABLE_LOGS=str(d.tmp / "logs"))
+            subprocess.run(["bash", str(d.root / "scripts" / "run_array.sh"), str(tasks)], check=True, env=env,
+                           capture_output=True)
+    lines = (d.tmp / "sbatch.log").read_text().splitlines()[-4:]
+    assert all("--partition=fastq" in line for line in lines[:2])  # smoke and run of exaone-tabular
+    assert all("--partition=gpuq" in line and "fastq" not in line for line in lines[2:])
