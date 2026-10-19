@@ -16,6 +16,8 @@
 # ($STRABLE_RUNNER_ENV; gitignored: the repository names no cluster), for example
 #   STRABLE_SBATCH_GPU="--partition=<gpu partition> --exclude=<other GPU types> --gres=gpu:1"
 #   STRABLE_SBATCH_CPU="--partition=<cpu partition>"
+# One model can get its own flags: STRABLE_SBATCH_GPU_<folder> (or _CPU_), the folder name with "-" and
+# "." written "_", replaces the default for that model's jobs (for example another GPU type).
 # Extra arguments go to sbatch after these, so they win. The job id is
 # printed. Logs go to $STRABLE_LOGS (default logs/), created before submission, since SLURM fails
 # silently on a missing output folder. Finished tasks are skipped, so the same file resubmits after
@@ -45,15 +47,18 @@ if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
   # EXAONE Tabular takes hours per fold on the largest tables at its default settings).
   run_time() { case "$(basename "$1")" in exaone-tabular) echo 48:00:00 ;; *) echo 12:00:00 ;; esac; }
   case "$a" in
-    embed) kind=embed; time=12:00:00; hw=gpu ;;
-    smoke) kind=smoke; time=00:30:00; hw=$(hw_of "$b") ;;
-    *)     kind=run;   time=$(run_time "$a"); hw=$(hw_of "$a") ;;
+    embed) kind=embed; time=12:00:00; hw=gpu; name= ;;
+    smoke) kind=smoke; time=00:30:00; hw=$(hw_of "$b"); name=$(basename "$b") ;;
+    *)     kind=run;   time=$(run_time "$a"); hw=$(hw_of "$a"); name=$(basename "$a") ;;
   esac
   case "$hw" in
-    gpu) read -ra where <<< "${STRABLE_SBATCH_GPU:---gres=gpu:1}" ;;
-    cpu) read -ra where <<< "${STRABLE_SBATCH_CPU:-}" ;;
+    gpu) flags=${STRABLE_SBATCH_GPU:---gres=gpu:1} ;;
+    cpu) flags=${STRABLE_SBATCH_CPU:-} ;;
     *) echo "unknown hardware '$hw'" >&2; exit 1 ;;
   esac
+  own="STRABLE_SBATCH_${hw^^}_${name//[-.]/_}"
+  [ -n "$name" ] && [ -n "${!own:-}" ] && flags=${!own}
+  read -ra where <<< "$flags"
   LOGS=${STRABLE_LOGS:-$ROOT/logs}
   mkdir -p "$LOGS"
   # SLURM caps the tasks of one array (MaxArraySize, often 1001): above STRABLE_ARRAY_MAX lines the
