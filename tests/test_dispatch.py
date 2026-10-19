@@ -468,3 +468,54 @@ def test_a_model_can_get_its_own_sbatch_flags(clone):
     lines = (d.tmp / "sbatch.log").read_text().splitlines()[-4:]
     assert all("--partition=fastq" in line for line in lines[:2])  # smoke and run of exaone-tabular
     assert all("--partition=gpuq" in line and "fastq" not in line for line in lines[2:])
+
+
+API_CARD = dict(CARD, hardware="api", api={"auth": "Api-Key", "concurrency": 3})
+
+
+def as_api(d):
+    (d.root / "models" / "extratrees" / "model.yaml").write_text(yaml.safe_dump(API_CARD))
+    commit(d.root)
+
+
+def test_an_api_model_waits_for_the_run_api_label(clone):
+    """Merged is not enough: nothing runs, the smoke test included, until the maintainer labels its pull request."""
+    d = clone
+    as_api(d)
+    assert d.env["STRABLE_API_KEYS"] == str(d.root / "private" / "api_keys")  # the clone's, not the checkout's
+    d.run(fetch=False)
+    d.run(fetch=False)
+    assert state(d)["step"] == "api" and state(d)["pr"] == 3 and not (d.tmp / "sbatch.log").exists()
+    d.gh.labels = ["run-api"]
+    d.run(fetch=False)
+    assert state(d)["step"] == "smoke"
+    finish_smoke(d)
+    d.run(fetch=False)
+    assert state(d)["step"] == "run"
+    smoke, run = (d.tmp / "sbatch.log").read_text().splitlines()
+    for line in (smoke, run):  # the CPU flags, at most api.concurrency tasks at once
+        assert "--partition=cpuq" in line and "%3 " in line and "gpu" not in line
+
+
+def test_an_api_model_without_a_pull_request_never_runs(clone):
+    d = clone
+    as_api(d)
+    d.gh.pulls = False
+    d.run(fetch=False)
+    assert state(d)["step"] == "unapproved" and "run-api" in state(d)["approval"]
+    assert not (d.tmp / "sbatch.log").exists()
+
+
+def test_the_parts_of_an_api_run_go_one_after_the_other(clone):
+    d = clone
+    as_api(d)
+    tasks = d.tmp / "tasks.txt"
+    tasks.write_text("".join(f"models/extratrees tfidf t{i} 0\n" for i in range(5)))
+    env = dict(os.environ, STRABLE_PYTHON=sys.executable, STRABLE_LOGS=str(d.tmp / "logs"), STRABLE_ARRAY_MAX="2",
+               STRABLE_PARALLEL="16")
+    out = subprocess.run(["bash", str(d.root / "scripts" / "run_array.sh"), str(tasks)], check=True, env=env,
+                         capture_output=True, text=True).stdout
+    lines = (d.tmp / "sbatch.log").read_text().splitlines()
+    assert out.strip() == "4242,4242,4242" and len(lines) == 3
+    assert all("%3 " in line and "--partition=cpuq" in line for line in lines)
+    assert "--dependency" not in lines[0] and all("--dependency=afterany:4242" in line for line in lines[1:])

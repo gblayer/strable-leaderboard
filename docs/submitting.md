@@ -80,7 +80,7 @@ code: https://github.com/PriorLabs/TabPFN      # optional
 | `tasks` | The tasks the model supports: `regression`, `binary`, `multiclass` |
 | `variant` | Always `default`: the package's default configuration |
 | `licence` | The licence of the code and weights (the field is spelled `licence`) |
-| `hardware` | `gpu` or `cpu`: what the board runs the model on, shown when hovering its row |
+| `hardware` | `gpu` or `cpu`: what the board runs the model on, shown when hovering its row. `api` is for a model that runs on its provider's servers, which only the maintainer adds ([automation.md](automation.md#4-the-run), API models); it then needs an `api` block, `auth` and `concurrency` |
 | `pretraining_data` | What the model was pre-trained on, as its paper or model card says: `synthetic` (generated data only), `real` (real tables), `mixed` (both), `none` (no pre-training) or `not disclosed` |
 | `code`, `paper` | Links to the code and the paper. Optional, but fill them when they exist: the review reads them |
 

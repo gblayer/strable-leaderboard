@@ -19,7 +19,7 @@ flowchart TD
 
 ## 1. Checks
 
-`.github/workflows/checks.yml` runs on every pull request, on GitHub's machines, without secrets. It runs the tests, then, for each changed model folder, the checks of the card, the versions and the code, and the smoke test on CPU. A GPU model (`hardware: gpu`) gets the static checks only; its smoke test runs on our GPU after the merge. For a results pull request, `scripts/build_site_data.py --check` validates the results files, including that their overlap fields match `site/flags.json`.
+`.github/workflows/checks.yml` runs on every pull request, on GitHub's machines, without secrets. It runs the tests, then, for each changed model folder, the checks of the card, the versions and the code, and the smoke test on CPU. A GPU model (`hardware: gpu`) gets the static checks only; its smoke test runs on our GPU after the merge. So does an API model (`hardware: api`, below). For a results pull request, `scripts/build_site_data.py --check` validates the results files, including that their overlap fields match `site/flags.json`.
 
 ## 2. Claude review
 
@@ -46,6 +46,8 @@ Otherwise the gate adds `needs-maintainer` and comments "@gblayer your review is
 After the merge, `scripts/dispatch.py` runs the model on our hardware: first the smoke test, then every table and outer fold. A numeric-only model runs with each of the four string encoders (4 × 108 × 3 = 1,296 tasks), an end-to-end one alone (324 tasks). Each task runs the model in a sandbox that sees only the training rows, the test rows without their labels, and the model's weights. The board times and scores the predictions outside the sandbox.
 
 When the run starts, a comment on the model's pull request gives the number of tasks and a rough estimate of when the results will be ready. If something fails, the maintainer is told on the pull request.
+
+**API models.** A model whose card says `hardware: api` runs on its provider's servers, behind an API. Only the maintainer adds one, and merges it by hand. Per task, the model sends the provider what every model gets: the training rows with their labels, and the test rows without theirs. The test labels never leave our side, which scores the predictions as for every model. The endpoint and the key live only in `private/api_keys/<model folder>.env` on the cluster (git-ignored, mode 600: the runner refuses a file others can read), never in the card or the repository; the card's `api` block holds only `auth` (`Bearer` or `Api-Key`) and `concurrency`. The runner passes the endpoint and key to that model's sandbox only, which keeps the network; every other sandbox has it cut. The dispatcher never starts an API model by itself: it waits until the maintainer adds the label `run-api` to the model's pull request, then runs the smoke test and the tasks like any model, as CPU jobs, at most `concurrency` tasks at once. A row's time is the wall-clock time at our side, so it includes the network and the provider's hardware. The row records `hardware` "api" and the version the provider reported (`api_version`); a version that changes during the run stops the results at `check_results`.
 
 ## 5. Results and the board
 

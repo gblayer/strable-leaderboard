@@ -13,6 +13,10 @@ code of a model in flight. A model is a folder of models/ on main, except the ex
   approve   the pull request that added the folder was merged, by gblayer or by the auto-merge
             gate with the label claude-approved (a folder pushed to main without a pull request was
             pushed by the maintainer).
+  api       an API model (hardware: api, run on its provider's servers) waits here until the maintainer
+            adds the label run-api to its pull request; without a pull request it never runs. Its jobs
+            then use the CPU flags, at most api.concurrency of its card at once (run_array.sh), and its
+            child gets the endpoint and key of private/api_keys/<model>.env.
   prepare   scripts/prepare.py downloads its checkpoint; its pins must match the shared env.
   smoke     run.py --smoke as a short job on the reference hardware (the reference GPU for GPU models).
   embed     numeric-only models: one array fills the missing language-model embeddings.
@@ -64,7 +68,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from strable_leaderboard import APPROVED, EXAMPLES, FLAGS, MAINTAINER, OVERLAP, RESULTS_FILES, SLUG, TEST_PREFIX  # noqa: E402
+from strable_leaderboard import APPROVED, EXAMPLES, FLAGS, MAINTAINER, OVERLAP, RESULTS_FILES, RUN_API, SLUG, TEST_PREFIX  # noqa: E402
 from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 
 REPO = os.environ.get("STRABLE_REPO", DEFAULT_REPO)
@@ -185,7 +189,8 @@ class Dispatcher:
         # outputs, the runner's flags and the cache in the clone.
         self.env = dict(os.environ, PYTHONNOUSERSITE="1", STRABLE_CACHE=str(self.cache), STRABLE_PYTHON=self.python,
                         STRABLE_LOGS=str(self.cache / "logs"), STRABLE_RUNS=str(self.root / "runs"),
-                        STRABLE_RUNNER_ENV=str(self.root / "private" / "runner.env"))
+                        STRABLE_RUNNER_ENV=str(self.root / "private" / "runner.env"),
+                        STRABLE_API_KEYS=str(self.root / "private" / "api_keys"))
         self.git_env = dict(self.env, STRABLE_GH_TOKEN_FILE=str(TOKEN_FILE), GIT_TERMINAL_PROMPT="0",
                             GIT_CONFIG_COUNT="2", GIT_CONFIG_KEY_0="credential.helper", GIT_CONFIG_VALUE_0="",
                             GIT_CONFIG_KEY_1="credential.helper", GIT_CONFIG_VALUE_1=GIT_HELPER)
@@ -230,6 +235,9 @@ class Dispatcher:
 
     def card(self, folder: Path, code: Path) -> dict:
         return yaml.safe_load((code / folder / "model.yaml").read_text())
+
+    def labels(self, pr: int | None) -> set[str]:
+        return {label["name"] for label in self.gh.get(f"/pulls/{pr}").get("labels", [])} if pr else set()
 
     def submit(self, name: str, kind: str, lines: list[str], code: Path) -> str:
         tasks = self.state_dir / f"{name}.{kind}.txt"
@@ -356,8 +364,20 @@ class Dispatcher:
                 self.save(name, st)
                 log(name, "not approved:", why)
                 return
-            step = "prepare"
+            step = "api" if self.card(folder, self.code(folder, st))["hardware"] == "api" else "prepare"
         code = self.code(folder, st)
+        if step == "api":
+            if not st.get("pr"):
+                st.update(step="unapproved", approval=f"an API model starts only from the label {RUN_API} on its pull request")
+                self.save(name, st)
+                return log(name, "not approved:", st["approval"])
+            if RUN_API not in self.labels(st["pr"]):
+                if st.get("step") != "api":
+                    st["step"] = "api"
+                    self.save(name, st)
+                    log(name, f"waits for the label {RUN_API} on #{st['pr']}")
+                return
+            step = "prepare"
         if step == "prepare":
             ok, output = self.prepare(folder, code)
             if not ok:
@@ -475,8 +495,7 @@ class Dispatcher:
             undo()
             return self.fail(name, st, "results-failed", "check_results:\n" + check_output[-1200:])
         card = self.card(folder, code)
-        labels = {label["name"] for label in self.gh.get(f"/pulls/{st['pr']}").get("labels", [])} if st.get("pr") else set()
-        st["overlap"] = OVERLAP in labels
+        st["overlap"] = OVERLAP in self.labels(st.get("pr"))
         versions = yaml.safe_load(before[versions_file] or b"") or []
         version = self.next_version(versions)
         note = f"Added {card['name']} {card['version']}"
