@@ -65,11 +65,13 @@ def go_offline() -> None:
     """Switch Hugging Face downloads off for the rest of the process. huggingface_hub reads its
     variable once, when imported, and the downloads imported it: its flag is set too."""
     os.environ.update(OFFLINE)
-    from huggingface_hub import constants
-    from huggingface_hub.utils import reset_sessions
+    from huggingface_hub import constants, utils
 
     constants.HF_HUB_OFFLINE = True
-    reset_sessions()  # sessions opened before keep their network access
+    # Before 1.0, sessions opened before keep their network access; from 1.0 on, every request
+    # reads the flag and reset_sessions is gone.
+    if hasattr(utils, "reset_sessions"):
+        utils.reset_sessions()
 
 
 def code_problems(folder: Path) -> list[str]:

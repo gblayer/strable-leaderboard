@@ -14,12 +14,12 @@ scipy==1.16.3
 scikit-learn==1.7.2
 skrub==0.7.0  # 0.6.2 in the paper; tabpfn 9.0.0 needs 0.7, whose Tf-Idf encoding is identical
 pyyaml==6.0.3
-huggingface-hub==0.36.0
+huggingface-hub==2.2.0  # 0.36.0 in the paper; Nori-30M needs 1.0 or later
 
 # string encoders
-torch==2.9.1
+torch==2.13.0  # 2.9.1 in the paper; Causilo needs 2.13 or later, Nori-30M below 2.14
 sentence-transformers==5.2.3
-transformers==4.57.3
+transformers==5.20.2  # 4.57.3 in the paper; huggingface-hub 1.0 or later needs transformers 5
 accelerate==1.12.0
 
 # learners of the paper
@@ -33,6 +33,16 @@ pytabkit==1.7.1
 # learners added after the paper
 structured-data-models==0.2.1  # Kumo Tabular (NVIDIA)
 exaonetabular @ git+https://github.com/LGAI-Research/EXAONE-Tabular.git@841927fc4f2c573db5c88325f64ecc4fe5affd12  # EXAONE Tabular (LG), not on PyPI
+causilo==1.0.2  # Causilo (Nums AI)
+synthefy-nori==0.21.0  # Nori-30M (Synthefy)
+
+# dependencies the paper's freeze holds at versions the pins above cannot use
+click==8.5.0  # 8.3.0 in the paper; huggingface-hub 2.2.0 needs 8.4.2 or later
+hf-xet==1.7.0  # 1.2.0 in the paper; huggingface-hub 2.2.0 needs 1.6 or later
+httpx==0.27.2  # 0.28.1 in the paper; synthefy, a dependency of synthefy-nori, needs below 0.28
+safetensors==0.8.0  # 0.7.0 in the paper; Causilo and transformers 5.20 need 0.8 or later
+tokenizers==0.23.3  # 0.22.1 in the paper; transformers 5.20 needs 0.23, and huggingface-hub 2 needs 0.23.3 or later
+triton==3.7.1  # 3.5.1 in the paper; torch 2.13.0 needs it
 
 # tests
 pytest==9.0.2
