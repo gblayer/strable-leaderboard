@@ -1,7 +1,11 @@
 {
- "version": "v0.1.5",
- "built": "2026-10-19",
+ "version": "v0.1.6",
+ "built": "2026-10-20",
  "history": [
+  {
+   "version": "v0.1.6",
+   "note": "Added TILE + Kumo-Tabular"
+  },
   {
    "version": "v0.1.5",
    "note": "Added Kumo Tabular v1.0.1-large"
@@ -705,6 +709,31 @@
    "clf": [
     0.895,
     3.4188,
+    96,
+    96
+   ]
+  },
+  {
+   "id": "tile+kumo-tabular",
+   "enc": "TILE",
+   "lrn": "Kumo Tabular",
+   "kind": "modular",
+   "variant": "default",
+   "both": [
+    0.8325,
+    124.3591,
+    324,
+    324
+   ],
+   "reg": [
+    0.727,
+    116.367,
+    228,
+    228
+   ],
+   "clf": [
+    0.8944,
+    177.8045,
     96,
     96
    ]
