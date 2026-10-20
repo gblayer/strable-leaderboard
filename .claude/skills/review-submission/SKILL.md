@@ -33,7 +33,7 @@ Your MERGE is one of the conditions of the auto-merge gate (docs/automation.md, 
 - No use of the test rows; `predict_proba` returns one column per class in the order of `self.classes_`; device and n_jobs are passed through (or `n_jobs` left to the package's default when the package misreads it: the runner caps threads anyway).
 
 **Safety**
-- No downloads or network calls in `fit` or `predict`: no `requests`, `urllib`, `socket`, `http`, no downloads through `huggingface_hub` or `torch.hub`. The weights load from `self.weights_dir`. The one exception is an API model (`hardware: api`), which the maintainer adds and merges by hand: it sends one request per set of test rows through `strable_leaderboard.api.post` only, with the training rows and the test rows without labels, and reads no environment variable itself.
+- No downloads or network calls in `fit` or `predict`: no `requests`, `urllib`, `socket`, `http`, no downloads through `huggingface_hub` or `torch.hub`. The weights load from `self.weights_dir`. The one exception is an API model (`hardware: api`), which the maintainer adds and merges by hand: it calls its API through `strable_leaderboard.api` only (`table_predict`, `post`), with the training rows and the test rows without labels, and reads no environment variable itself.
 - No reads of `splits/`, the dataset or files outside `self.weights_dir`; no writes outside a temporary folder.
 - No `subprocess`, `os.system`, `eval`, `exec`, unpickling of downloaded bytes, base64 blobs or obfuscated code; no environment variables beyond device settings, no credentials.
 

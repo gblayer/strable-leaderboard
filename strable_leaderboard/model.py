@@ -30,6 +30,8 @@ class StrableModel:
     - Load the weights from ``self.weights_dir``.
     - Use ``seed``, ``device`` and ``n_jobs`` as given.
     - Default configuration only. Early stopping may use ``self.validation_split(y)``.
+    - Optional: a model that validates on folds of its own (an API that bags, say) may take the board's
+      inner folds, ``self.inner_folds(y)``, instead.
     """
 
     end_to_end: bool = False
@@ -61,6 +63,15 @@ class StrableModel:
         Returns ``(fit_idx, val_idx)``, positions within ``y``.
         """
         return inner_splits(np.asarray(y), self.task)[0]
+
+    def inner_folds(self, y) -> np.ndarray:
+        """The board's inner fold of each training row, 0 to 7: the paper's 8 inner folds of this outer
+        fold's training rows, fold 0 being ``validation_split``'s validation rows. Optional, for a model
+        whose own validation can hold out given groups of rows (an API's ``groups``)."""
+        folds = np.empty(len(y), dtype=int)
+        for k, (_, val) in enumerate(inner_splits(np.asarray(y), self.task)):
+            folds[val] = k
+        return folds
 
 
 def load_model_class(folder: Path):

@@ -32,7 +32,9 @@ jitter        Noise of 1% of a feature's standard deviation on the numeric test 
               above 100% and 4 times the reference's change (at least 5%), WARN above 25% and twice;
               classification also needs the error to grow by more than 0.01.
 
-About eight calls per table; ``baseline`` (INFO) gives the error next to the reference's. The thresholds
+Each fit gets its training rows as the board gives them, so a client that sends groups
+(``StrableModel.inner_folds``) sends the board's inner folds on the smoke tables and the same seeded
+8-fold assignment on the synthetic table. About eight calls per table; ``baseline`` (INFO) gives the error next to the reference's. The thresholds
 catch blatant cheating, not subtle cheating: a provider who knows these probes can work around them, so
 a passing audit is necessary, not sufficient. Exit code 1 when a probe FAILs.
 

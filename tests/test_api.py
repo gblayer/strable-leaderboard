@@ -83,35 +83,97 @@ def test_the_key_file_is_checked_and_never_printed(tmp_path, monkeypatch):
     assert api.child_env(EXAMPLE, CARD)["STRABLE_API_URL"] == "http://api.example.org/v1"
 
 
+PREDICT = "/v1/table/predict"
+
+
 def body(rows=8):
     X = pd.DataFrame({"x": np.arange(rows, dtype=float)})
-    return {"op": "fit_predict", "train": api.parquet_b64(X.assign(t=X["x"] * 2)), "target": "t",
-            "test": api.parquet_b64(X), "preset": "medium", "problem_type": "regression", "eval_metric": "r2",
-            "time_limit": None, "seed": 1234}
+    return {"train": api.parquet_b64(X.assign(t=X["x"] * 2)), "target": "t", "test": api.parquet_b64(X),
+            "model": "chakra-tab", "preset": "medium", "problem_type": "regression", "eval_metric": "r2", "seed": 1234}
 
 
-def test_the_client_retries_server_errors_and_hides_its_secrets(monkeypatch):
-    monkeypatch.setattr(api, "WAIT", 0)
+def endpoint(monkeypatch, vendor, key="k"):
+    for name, value in [("STRABLE_API_URL", vendor.url), ("STRABLE_API_KEY", key), ("STRABLE_API_AUTH", "Bearer")]:
+        monkeypatch.setenv(name, value)
+
+
+def test_the_client_retries_as_the_api_documents_and_hides_its_secrets(monkeypatch):
+    waits = []
+    monkeypatch.setattr(api, "SLEEP", waits.append)
     with FakeVendor(key="sk-secret-123") as vendor:
-        monkeypatch.setenv("STRABLE_API_URL", vendor.url)
-        monkeypatch.setenv("STRABLE_API_AUTH", "Bearer")
-        monkeypatch.setenv("STRABLE_API_KEY", "sk-secret-123")
-        vendor.fail = [503, 200]  # a gateway's page, then a 200 that is not JSON: both tried again
-        reply = api.post(body())
+        endpoint(monkeypatch, vendor, "sk-secret-123")
+        vendor.fail = [503, 200]  # a gateway's page, a 200 that is not JSON: tried again
+        reply = api.post(PREDICT, body())
         assert len(reply["predictions"]) == 8 and reply["fit"]["version"] == "fake-1.0" and len(vendor.seen) == 1
+        vendor.fail = [(429, "rate_limit_error", 7), (409, "request_in_progress", None)]  # tried again too
+        assert len(api.post(PREDICT, body())["predictions"]) == 8
+        assert waits == [api.WAIT, api.WAIT * 2, 7.0, api.WAIT * 2]  # Retry-After when given
         vendor.fail = [503] * api.ATTEMPTS
         with pytest.raises(RuntimeError, match=f"after {api.ATTEMPTS} attempt"):
-            api.post(body())
+            api.post(PREDICT, body())
+        vendor.fail = [(429, "quota_exceeded", 60)]  # "not by retrying"
+        with pytest.raises(RuntimeError, match="after 1 attempt.*HTTP 429 quota_exceeded"):
+            api.post(PREDICT, body())
+        with pytest.raises(RuntimeError, match=r"after 1 attempt.*HTTP 400 invalid_request_error: unknown fields \['op'\]"):
+            api.post(PREDICT, dict(body(), op="fit_predict"))  # TabArena's raw endpoint field: not the public API's
         monkeypatch.setenv("STRABLE_API_KEY", "sk-wrong-456")
-        with pytest.raises(RuntimeError, match="after 1 attempt.*HTTP 401"):  # a client error fails at once
-            api.post(body())
+        with pytest.raises(RuntimeError, match="after 1 attempt.*HTTP 401 authentication_error"):
+            api.post(PREDICT, body())
         monkeypatch.setenv("STRABLE_API_URL", vendor.url.replace(str(vendor.server.server_address[1]), "9"))
     with pytest.raises(RuntimeError, match="ConnectionError") as exc:  # nothing listens: a transport error
-        api.post(body())
+        api.post(PREDICT, body())
     assert "127.0.0.1" not in str(exc.value) and "sk-wrong" not in str(exc.value)
     monkeypatch.delenv("STRABLE_API_KEY")
     with pytest.raises(RuntimeError, match="no API endpoint or key"):
-        api.post(body())
+        api.post(PREDICT, body())
+
+
+def test_large_tables_are_uploaded_then_deleted_and_bodies_stay_under_the_limit(monkeypatch):
+    rng = np.random.default_rng(0)
+    train = pd.DataFrame(rng.normal(size=(400, 20)), columns=[f"c{i}" for i in range(20)]).assign(t=rng.normal(size=400))
+    test = train.drop(columns="t").iloc[:100]
+    fields = {"target": "t", "model": "chakra-tab", "preset": "medium", "problem_type": "regression", "eval_metric": "r2",
+              "seed": 1}
+    with FakeVendor(max_body=60_000) as vendor:  # about 160 KB inline: above this vendor's limit
+        endpoint(monkeypatch, vendor, "test-key")
+        with pytest.raises(RuntimeError, match="after 1 attempt.*HTTP 413 request_too_large"):
+            api.table_predict(train, test, **fields)
+        monkeypatch.setattr(api, "INLINE_BYTES", 50_000)  # the train table's 88 KB of Parquet go by upload, the test's 29 KB inline
+        assert len(api.table_predict(train, test, **fields)["predictions"]) == 100
+        assert (vendor.seen[-1]["train_format"], vendor.seen[-1]["test_format"]) == ("table", "parquet_b64")
+        assert vendor.uploads == {} and len(vendor.deleted) == 1  # deleted after the call
+        monkeypatch.setattr(api, "INLINE_BYTES", 1)
+        api.table_predict(train, test, **fields)
+        api.table_predict(train, test, **fields)
+        assert vendor.seen[-1]["test_format"] == "table" and len(set(vendor.deleted)) == 5  # each call its own copy
+        monkeypatch.setattr(api, "INLINE_BYTES", 10**9)
+        monkeypatch.setattr(api, "MAX_BODY", 10_000)
+        calls = vendor.calls
+        with pytest.raises(ValueError, match="above 0 MB"):  # checked before sending
+            api.table_predict(train, test, **fields)
+        assert vendor.calls == calls
+
+
+def test_the_api_gets_the_boards_inner_folds_as_groups_and_never_in_the_test_rows(tmp_path, monkeypatch):
+    from strable_leaderboard.data import load_table
+    from strable_leaderboard.model import StrableModel, load_model_class
+    from strable_leaderboard.smoke import check_one
+    from strable_leaderboard.splits import inner_splits, outer_splits
+
+    fake_tables(tmp_path / "data")
+    with FakeVendor() as vendor:
+        endpoint(monkeypatch, vendor, "test-key")
+        for task, table in SMOKE_TABLES.items():
+            check_one(load_model_class(EXAMPLE), CARD, table, data_dir=tmp_path / "data")
+            _, y, _ = load_table(table, data_dir=tmp_path / "data")
+            y_train = y[outer_splits(y, task)[0][0]]
+            folds = StrableModel(task).inner_folds(y_train)
+            seen = vendor.seen[-1]
+            assert seen["groups"] == "__fold__" and seen["folds"] == folds.tolist() and not seen["groups_in_test"]
+            assert sorted(set(seen["folds"])) == list(range(8))
+            assert [np.flatnonzero(folds == k).tolist() for k in range(8)] == \
+                [val.tolist() for _, val in inner_splits(y_train, task)]  # the board's 8 inner folds
+            assert (folds == 0).nonzero()[0].tolist() == StrableModel(task).validation_split(y_train)[1].tolist()
 
 
 def test_a_server_refusing_r2_fails_the_task_with_a_message_naming_it(tmp_path, monkeypatch, capfd):
@@ -120,9 +182,8 @@ def test_a_server_refusing_r2_fails_the_task_with_a_message_naming_it(tmp_path, 
 
     fake_tables(tmp_path / "data")
     with FakeVendor(key="k", metrics={"rmse", "roc_auc", "log_loss"}) as vendor:  # what TabArena's client sends
-        for name, value in [("STRABLE_API_URL", vendor.url), ("STRABLE_API_KEY", "k"), ("STRABLE_API_AUTH", "Bearer")]:
-            monkeypatch.setenv(name, value)
-        with pytest.raises(RuntimeError, match=r"HTTP 400: .*'r2'.*\(sent eval_metric 'r2' for regression\)"):
+        endpoint(monkeypatch, vendor)
+        with pytest.raises(RuntimeError, match=r"HTTP 400 invalid_request_error: .*'r2'.*\(sent eval_metric 'r2' for regression\)"):
             check_one(load_model_class(EXAMPLE), CARD, SMOKE_TABLES["regression"], data_dir=tmp_path / "data")
         assert check_one(load_model_class(EXAMPLE), CARD, SMOKE_TABLES["binary"], data_dir=tmp_path / "data")["score"] > 0.5
         assert [(s["eval_metric"], s["refused"]) for s in vendor.seen] == [("r2", True), ("roc_auc", False)]  # no retry
@@ -180,8 +241,9 @@ def test_the_example_api_model_passes_the_smoke_test_through_the_sandbox(sandbox
     assert all(r["score"] > 0.5 for r in rows)
     # one request per table: the warm-ups send nothing; train carries the target, test does not
     assert len(vendor.seen) == 3 and not any(s["target_in_test"] for s in vendor.seen)
-    assert vendor.seen[0]["fields"] == sorted(["op", "train", "target", "test", "preset", "problem_type", "eval_metric",
-                                               "time_limit", "seed"])
+    assert vendor.seen[0]["fields"] == sorted(["train", "target", "test", "model", "preset", "problem_type", "eval_metric",
+                                               "seed", "groups"])
+    assert {(s["model"], s["seed"], s["groups_in_test"]) for s in vendor.seen} == {("chakra-tab", 1234, False)}
     calls = (sandboxed / "sandbox.log").read_text().splitlines()
     assert len(calls) == 9 and not any("--network none" in c for c in calls)  # 2 warm-ups and the timed child, x3
     assert all("SINGULARITYENV_STRABLE_API_KEY" in c and "SINGULARITYENV_STRABLE_API_AUTH" in c for c in calls)

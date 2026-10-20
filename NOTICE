@@ -6,9 +6,9 @@ This repository includes code ported from TabArena (https://github.com/autogluon
 is in LICENSE-APACHE. The ported code was changed to fit the board's model interface; each file says
 what it took and what changed:
 
-- strable_leaderboard/api.py: the request and retry logic of the Chakra-Tab client
+- strable_leaderboard/api.py: the retry loop of the Chakra-Tab client
   (packages/tabarena/src/tabarena/systems/chakra_tab/system.py)
-- tests/api_model/model.py: the request of the same client
+- tests/api_model/model.py: the structure of the same client
 - scripts/audit_api.py: the black-box probes of TabArena's audit and their thresholds
   (packages/tabarena/src/tabarena/tools/audit_system.py)
 

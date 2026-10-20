@@ -26,7 +26,7 @@ Never run from the clone's working copy, which may hold unmerged edits: use a ch
 
 ## An API model
 
-A model with `hardware: api` (docs/automation.md, section 4, API models) needs its endpoint and key on the cluster, never in git: `install -d -m 700 private/api_keys`, then `private/api_keys/<name>.env` with the two lines `STRABLE_API_URL=https://...` and `STRABLE_API_KEY=...`, `chmod 600`. Write the key without leaving it in the shell history, as for the token below. The order: audit `python scripts/audit_api.py models/test-<name> --data-dir $STRABLE_CACHE/data` (key file `private/api_keys/test-<name>.env`; any FAIL, ask the provider before going on), then the test run of `models/test-<name>/` (3 tasks), then the real folders. The dispatcher starts each only once its pull request has the label `run-api`. By hand, `export STRABLE_API_KEYS=<clone>/private/api_keys` before step 3.
+A model with `hardware: api` (docs/automation.md, section 4, API models) needs its base URL and key on the cluster, never in git: `install -d -m 700 private/api_keys`, then `private/api_keys/<name>.env` with the two lines `STRABLE_API_URL=https://api.yhatlabs.com` (the provider's base URL) and `STRABLE_API_KEY=...`, `chmod 600`. Write the key without leaving it in the shell history, as for the token below. The order: audit `python scripts/audit_api.py models/test-<name> --data-dir $STRABLE_CACHE/data` (key file `private/api_keys/test-<name>.env`; any FAIL, ask the provider before going on), then the test run of `models/test-<name>/` (3 tasks), then the real folders. The dispatcher starts each only once its pull request has the label `run-api`. By hand, `export STRABLE_API_KEYS=<clone>/private/api_keys` before step 3.
 
 ## A new package in the shared environment
 

@@ -67,3 +67,5 @@ def test_the_audit_reads_the_key_file_of_a_test_folder(tmp_path, monkeypatch, ca
         keys.rename(tmp_path / "keys" / "test-api_model.env")
         assert audit_api.main([str(folder), "--seed", "3"]) == 0
     assert len(vendor.seen) == 8 and "FAIL" not in capsys.readouterr().out  # eight calls, all served
+    # every call carries the model's groups: the board's inner folds of the training rows it was given
+    assert all(s["groups"] == "__fold__" and set(s["folds"]) == set(range(8)) and not s["groups_in_test"] for s in vendor.seen)
