@@ -38,11 +38,14 @@ ENV_INPUT = "env/requirements.in"  # a contributor may add packages here; the ma
 WEB = ("arxiv.org", "huggingface.co", "github.com", "raw.githubusercontent.com")
 HOST = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$")
 CARD_LINK = re.compile(r"^(?:code|paper):\s*[\"']?(https?://[^\s\"'#]+)", re.M)
+# hardware: api in a card, block or flow style, quoted or not; a false match only asks the maintainer.
+API_CARD = re.compile(r"""\bhardware["']?\s*:\s*["']?api\b""")
 REPO = os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO)
 
 
-def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> list[str]:
-    """Conditions 3 and 4 on every path the pull request adds, changes, removes or renames."""
+def scope_problems(paths: list[str], author: str, existing_models: set[str], api_models=frozenset()) -> list[str]:
+    """Conditions 3 and 4 on every path the pull request adds, changes, removes or renames. ``api_models``:
+    the folders whose card, as the pull request has it, says hardware: api (``api_folders``)."""
     if not paths:
         return ["the diff is empty"]
     if "site/results.json" in paths and set(paths) <= set(RESULTS_FILES):
@@ -63,7 +66,22 @@ def scope_problems(paths: list[str], author: str, existing_models: set[str]) -> 
             out.append(f"`models/{name}/` is reserved for the maintainer")
         elif name.startswith(TEST_PREFIX) and author != MAINTAINER:
             out.append(f"`models/{name}/` is reserved for the maintainer's test runs")
+        elif name in api_models and author != MAINTAINER:
+            out.append(f"`models/{name}/` is an API model (hardware: api): only the maintainer adds those")
     return out
+
+
+def is_api_card(text: str) -> bool:
+    """Whether a model.yaml says hardware: api: the pattern, or the parsed card when PyYAML is installed."""
+    if API_CARD.search(text or ""):
+        return True
+    try:
+        import yaml
+
+        card = yaml.safe_load(text or "")
+    except Exception:  # no PyYAML, or not YAML: the Checks workflow refuses such a card anyway
+        return False
+    return isinstance(card, dict) and card.get("hardware") == "api"
 
 
 def needs_review(paths: list[str], author: str) -> bool:
@@ -128,14 +146,14 @@ def review_verdict(outputs: list[str | None]) -> tuple[str, str, str]:
 
 
 def decide(pr: dict, paths: list[str], status: dict | None, checks_run: dict | None,
-           existing_models: set[str]) -> tuple[str, str]:
+           existing_models: set[str], api_models=frozenset()) -> tuple[str, str]:
     """("merge" | "wait" | "needs" | "skip", reason). ``status``: the "Claude review" commit status
     of the current head, or None; ``checks_run``: the latest Checks run of the current head."""
     if pr["state"] != "open":
         return "skip", "closed"
     if pr.get("draft"):
         return "wait", "draft"
-    scope = scope_problems(paths, pr["user"]["login"], existing_models)
+    scope = scope_problems(paths, pr["user"]["login"], existing_models, api_models)
     status_pending = not status or status["state"] == "pending"
     if scope:
         if ENV_INPUT in paths and status_pending:
@@ -190,6 +208,13 @@ def changed_paths(number: int) -> list[str]:
     return [f["filename"] for f in files] + [f["previous_filename"] for f in files if f.get("previous_filename")]
 
 
+def api_folders(paths: list[str], sha: str) -> set[str]:
+    """The model folders whose model.yaml at ``sha`` says hardware: api, read through the API."""
+    cards = [p for p in paths if re.fullmatch(r"models/[^/]+/model\.yaml", p)]
+    return {p.split("/")[1] for p in cards if is_api_card(
+        gh("api", "-H", "Accept: application/vnd.github.raw", f"repos/{REPO}/contents/{p}?ref={sha}", check=False))}
+
+
 def comment_once(number: int, body: str, marker: str) -> None:
     """Comment unless a comment with ``marker`` already exists (a re-run says nothing new)."""
     if not any(marker in c["body"] for c in api(f"issues/{number}/comments?per_page=100", paginate=True)):
@@ -214,8 +239,9 @@ def gate(pr: dict, details: str = "") -> str:
     if not needs_review(changed_paths(pr["number"]), pr["user"]["login"]):
         print(f"#{pr['number']} {sha[:7]}: opened by the maintainer, merged by hand")
         return "skip"
-    verdict, reason = decide(pr, changed_paths(pr["number"]), commit_status(sha), latest_run(CHECKS_WORKFLOW, sha),
-                             existing_models())
+    paths = changed_paths(pr["number"])
+    verdict, reason = decide(pr, paths, commit_status(sha), latest_run(CHECKS_WORKFLOW, sha), existing_models(),
+                             api_folders(paths, sha))
     print(f"#{pr['number']} {sha[:7]}: {verdict} ({reason})")
     if verdict == "needs":
         needs_maintainer(pr, reason, details)
@@ -312,7 +338,7 @@ def main(argv=None) -> int:
             print(f"#{pr['number']}: opened by the maintainer, no triage")
             return 0
         paths = changed_paths(pr["number"])
-        scope = scope_problems(paths, pr["user"]["login"], existing_models())
+        scope = scope_problems(paths, pr["user"]["login"], existing_models(), api_folders(paths, pr["head"]["sha"]))
         if pr["state"] == "open" and scope and ENV_INPUT not in paths:  # else the verdict job asks, with the env report
             needs_maintainer(pr, "; ".join(scope))
         print(f"#{pr['number']}: scope " + ("; ".join(scope) if scope else "ok"))

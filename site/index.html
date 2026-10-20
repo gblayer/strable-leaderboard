@@ -230,6 +230,13 @@ button.ovl-mark:hover, .ovl.open button.ovl-mark { color: var(--ink); border-col
 .ovl-tip a { color: inherit; font-weight: 600; text-underline-offset: 3px; }
 .ovl-tip a:focus-visible { outline-color: var(--bg); }
 .tip .ovl-mark { display: inline-grid; vertical-align: -3px; margin-left: 8px; color: var(--bg); background: color-mix(in srgb, var(--bg) 16%, transparent); border-color: color-mix(in srgb, var(--bg) 40%, transparent); }
+/* API: a model that runs on its provider's servers. A teal pill (the Pine Grove line colour: the same in both
+   themes, used by no tag and not by ∩; its text 4.7:1), and a round marker on the plot */
+.api-pill { appearance: none; margin: 0; flex: none; display: inline-flex; align-items: center; font: 600 10px/1 var(--f-mono); letter-spacing: 0.1em; color: var(--pine-ink); background: var(--pine-line); border: 0; padding: 4px 7px; border-radius: 999px; white-space: nowrap; }
+button.api-pill { cursor: help; }
+button.api-pill:hover, .ovl.open button.api-pill { filter: brightness(1.15); }
+.tip .api-pill { vertical-align: 1px; margin-left: 8px; }
+.tip .wrap { white-space: normal; max-width: 40ch; }
 .leader { flex: 1 1 12px; min-width: 12px; align-self: center; border-bottom: 2px dotted var(--line); transform: translateY(3px); }
 .star { width: 11px; height: 11px; flex: none; }
 .star path { fill: var(--mark); }
@@ -252,6 +259,7 @@ button.ovl-mark:hover, .ovl.open button.ovl-mark { color: var(--ink); border-col
 .sw-on { background: var(--mark); }
 .sw-off { background: var(--mark-muted); }
 .sw-line { width: 16px; height: 2px; background: var(--mark); }
+.sw-api { border-radius: 50%; background: var(--mark-muted); }
 #plot { position: relative; margin-top: 10px; touch-action: pan-y; }
 #plot svg { display: block; width: 100%; height: auto; }
 .ax text { fill: var(--ink-2); font: 13px var(--f-mono); }
@@ -463,6 +471,13 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
             <button type="button" id="overlap-hide" data-overlap="hide" aria-pressed="false">Hide</button>
           </div>
         </div>
+        <div class="ctl" id="ctl-api" hidden>
+          <span class="cap" id="api-lbl">API</span>
+          <div class="seg" role="group" aria-labelledby="api-lbl">
+            <button type="button" id="api-show" data-api="show" aria-pressed="true">Show</button>
+            <button type="button" id="api-hide" data-api="hide" aria-pressed="false">Hide</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -493,6 +508,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
             <li><span class="sw sw-on"></span>On the Pareto Front</li>
             <li><span class="sw sw-off"></span>Not on the Pareto Front</li>
             <li><span class="sw sw-line"></span>Pareto Front</li>
+            <li id="legend-api" hidden><span class="sw sw-api"></span>API model</li>
           </ul>
         </div>
         <div id="plot"></div>
@@ -598,11 +614,15 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
    total s per 1K samples, fold rows, fold rows expected] or null. kind: "modular" or "e2e" (reads raw
    strings itself), variant: "default" or "tuned", hw: what it ran on when recorded, shown in the
    tooltip. overlap: true when the maintainer marked the model's pre-training data as possibly
-   overlapping STRABLE's tables, with overlap_evidence, a URL. Empty until the file has loaded. */
+   overlapping STRABLE's tables, with overlap_evidence, a URL. api: true when the model runs on its
+   provider's servers (hardware "api"), with api_version, the version the provider reported. Empty
+   until the file has loaded. */
 let DATA = [], HISTORY = [], VERSION = '', BUILT = '', LOADED = false, LOADS = 0;  // HISTORY: results/versions.yaml; LOADS: successful loads
 const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model';  // the README heading "Submit a model"
 const OVERLAP_NAME = 'possible pre-training overlap';
 const OVERLAP_TIP = "Possible overlap between this model's pre-training data and STRABLE tables.";
+const API_NAME = 'API model';
+const API_TIP = "Runs on the provider's servers: its time includes the network and their hardware.";
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TIME_SUB = ' · run time per 1K samples, log scale';
@@ -613,7 +633,7 @@ const TASKS = {
   clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC', sub: 'Median AUC over ' + N_CLF + ' tables × 3 folds' + TIME_SUB }
 };
 const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
-const state = { task: 'both', sort: 'pareto', overlap: 'show', hot: null };  // overlap: show or hide the models marked ∩
+const state = { task: 'both', sort: 'pareto', overlap: 'show', api: 'show', hot: null };  // overlap, api: show or hide the models marked ∩, API
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -622,20 +642,23 @@ const SVGNS = 'http://www.w3.org/2000/svg';
 const sv = (tag, attrs) => { const n = document.createElementNS(SVGNS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
 /* One row per pipeline for the chosen task: median score and median total run time per 1K samples.
-   A pipeline without results for that task is left out, and so is one marked ∩ when the Overlap
-   switch says Hide. A pipeline with fewer fold rows than the task has is tagged incomplete. */
+   A pipeline without results for that task is left out, and so is one marked ∩ (API) when the
+   Overlap (API) switch says Hide. A pipeline with fewer fold rows than the task has is tagged incomplete. */
 const num = (v) => (v == null || Number.isNaN(v) ? NaN : v);
 const isUrl = (u) => typeof u === 'string' && /^https?:\/\/[^\s"'<>]+$/.test(u);
 const anyOverlap = () => DATA.some((d) => d.overlap === true);
 const hidingOverlap = () => state.overlap === 'hide' && anyOverlap();
+const anyApi = () => DATA.some((d) => d.api === true);
+const hidingApi = () => state.api === 'hide' && anyApi();
 function items(task) {
   const rows = [];
   for (const d of DATA) {
-    const v = d[task], overlap = d.overlap === true;
-    if (!v || (overlap && state.overlap === 'hide')) continue;
+    const v = d[task], overlap = d.overlap === true, api = d.api === true;
+    if (!v || (overlap && state.overlap === 'hide') || (api && state.api === 'hide')) continue;
     rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, hw: d.hw,
       tuned: d.variant === 'tuned', incomplete: v.length > 3 && v[2] < v[3],
       overlap: overlap, evidence: overlap && isUrl(d.overlap_evidence) ? d.overlap_evidence : null,
+      api: api, apiVersion: api && typeof d.api_version === 'string' ? d.api_version : null,
       s: v[0], t: num(v[1]) });
   }
   return rows;
@@ -662,11 +685,13 @@ const TAGS = [['e2e', 'end-to-end', (d) => d.kind === 'e2e'], ['tuned', 'tuned',
 const tagsOf = (d) => TAGS.filter((t) => t[2](d));
 const tagEl = (cls, name) => el('span', 'tag ' + cls, name.toUpperCase());
 
-/* ∩, right after the name of a pipeline whose model may have seen STRABLE tables in pre-training.
-   In the table it is a button: hover, focus or a tap opens a small tooltip with the evidence link,
-   which follows the button in the page so that Tab reaches it; Esc or a tap elsewhere closes it, and
-   so does scrolling the button out of the table's view. In the plot's tooltip it is the plain box. */
-const ovlBox = () => { const s = el('span', 'ovl-mark', '∩'); s.setAttribute('aria-hidden', 'true'); return s; };
+/* ∩, right after the name of a pipeline whose model may have seen STRABLE tables in pre-training, and
+   API, after the name of one whose model runs on its provider's servers. In the table each is a
+   button: hover, focus or a tap opens a small tooltip (for ∩ with the evidence link, which follows
+   the button in the page so that Tab reaches it); Esc or a tap elsewhere closes it, and so does
+   scrolling the button out of the table's view. In the plot's tooltip it is the plain box. */
+const markBox = (sym, cls) => { const s = el('span', cls, sym); s.setAttribute('aria-hidden', 'true'); return s; };
+const apiTip = (d) => API_TIP + (d.apiVersion ? ' Version ' + d.apiVersion + '.' : '');
 let ovlOpen = null, ovlTimer = null, ovlN = 0;
 /* Puts the open tooltip under its button (above when there is no room); false when the button is out of view. */
 function ovlPlace(box) {
@@ -691,14 +716,14 @@ function ovlHide() {
   ovlOpen.classList.remove('open'); ovlOpen.firstChild.setAttribute('aria-expanded', 'false'); ovlOpen.lastChild.hidden = true;
   ovlOpen = null;
 }
-function overlapMark(d) {
-  const box = el('span', 'ovl'), b = el('button', 'ovl-mark', '∩'), tip = el('span', 'ovl-tip');
+function tipMark(sym, cls, label, text, href) {
+  const box = el('span', 'ovl'), b = el('button', cls, sym), tip = el('span', 'ovl-tip');
   tip.id = 'ovl-tip-' + (++ovlN); tip.setAttribute('role', 'tooltip'); tip.hidden = true;
-  b.type = 'button'; b.setAttribute('aria-label', 'Possible pre-training overlap'); b.setAttribute('aria-describedby', tip.id);
+  b.type = 'button'; b.setAttribute('aria-label', label); b.setAttribute('aria-describedby', tip.id);
   b.setAttribute('aria-expanded', 'false');
-  tip.appendChild(document.createTextNode(OVERLAP_TIP));
-  if (d.evidence) {
-    const a = el('a', null, 'evidence'); a.href = d.evidence; a.target = '_blank'; a.rel = 'noopener';
+  tip.appendChild(document.createTextNode(text));
+  if (href) {
+    const a = el('a', null, 'evidence'); a.href = href; a.target = '_blank'; a.rel = 'noopener';
     tip.appendChild(document.createTextNode(' ')); tip.appendChild(a);
   }
   box.appendChild(b); box.appendChild(tip);
@@ -713,6 +738,8 @@ function overlapMark(d) {
   box.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && ovlOpen === box) { ev.stopPropagation(); b.focus(); ovlHide(); } });
   return box;
 }
+const overlapMark = (d) => tipMark('∩', 'ovl-mark', 'Possible pre-training overlap', OVERLAP_TIP, d.evidence);
+const apiMark = (d) => tipMark('API', 'api-pill', API_NAME, apiTip(d), null);
 document.addEventListener('pointerdown', (ev) => { if (ovlOpen && !ovlOpen.contains(ev.target)) ovlHide(); });
 window.addEventListener('scroll', () => { if (ovlOpen && !ovlPlace(ovlOpen)) ovlHide(); }, true);
 window.addEventListener('resize', () => ovlHide());
@@ -745,12 +772,13 @@ function renderTable(list, front, rows) {
       }
     }
     const tr = el('tr', 'row' + (i < nTop ? ' top' : '') + (i === 0 ? ' top-first' : '') + (i === nTop - 1 ? ' top-last' : '')); tr.tabIndex = 0; tr.dataset.id = d.id;
-    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + (d.hw ? ', runs on ' + d.hw : '') + (d.incomplete ? ', incomplete' : '') + (d.overlap ? ', ' + OVERLAP_NAME : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
+    tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + (d.hw && !d.api ? ', runs on ' + d.hw : '') + (d.incomplete ? ', incomplete' : '') + (d.overlap ? ', ' + OVERLAP_NAME : '') + (d.api ? ", runs on the provider's servers" : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
     if (d.kind !== 'e2e') { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); }
     p.appendChild(el('span', 'lrn', d.lrn));
     if (d.overlap) p.appendChild(overlapMark(d));
+    if (d.api) p.appendChild(apiMark(d));
     for (const [cls, name] of tagsOf(d)) p.appendChild(tagEl(cls, name));
     p.appendChild(el('span', 'leader'));
     if (front.has(d.id)) p.appendChild(starSvg());
@@ -770,7 +798,8 @@ function niceStep(range) {
   const raw = range / 5, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
   return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
 }
-/* The plot depends only on the data, the Task view and the Overlap switch, never on Sort. */
+/* The plot depends only on the data, the Task view and the Overlap and API switches, never on Sort.
+   A square per pipeline, a circle for an API model's. */
 function renderPlot(list, front) {
   const host = $('plot'); host.textContent = '';
   const W = Math.max(280, host.clientWidth || 520);
@@ -832,7 +861,9 @@ function renderPlot(list, front) {
   const draw = [...list].sort((a, b) => rankOf(a) - rankOf(b));
   for (const d of draw) {
     const on = front.has(d.id), sz = on ? 10 : 8, cx = X(d.t), cy = Y(d.s);
-    const r = sv('rect', { class: 'pt' + (on ? ' on' : ''), x: cx - sz / 2, y: cy - sz / 2, width: sz, height: sz });
+    const cls = 'pt' + (on ? ' on' : '') + (d.api ? ' api' : '');
+    const r = d.api ? sv('circle', { class: cls, cx: cx, cy: cy, r: sz * 0.6 })
+      : sv('rect', { class: cls, x: cx - sz / 2, y: cy - sz / 2, width: sz, height: sz });
     pts.appendChild(r); geo.push({ d, cx, cy, node: r, on });
   }
   svg.appendChild(pts);
@@ -876,10 +907,12 @@ function showTip(id) {
   if (!g) { tip.hidden = true; return; }
   tip.textContent = '';
   const l1 = el('div'); l1.appendChild(el('b', null, TASKS[state.task].metric + ' ' + fmtS(g.d.s))); l1.appendChild(document.createTextNode('  ·  ' + pipeName(g.d)));
-  if (g.d.overlap) l1.appendChild(ovlBox());
+  if (g.d.overlap) l1.appendChild(markBox('∩', 'ovl-mark'));
+  if (g.d.api) l1.appendChild(markBox('API', 'api-pill'));
   tip.appendChild(l1);
   tip.appendChild(el('div', null, timeText(g.d)));
-  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.hw ? ' · runs on ' + g.d.hw : '') + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
+  if (g.d.api) tip.appendChild(el('div', 'wrap', apiTip(g.d)));
+  tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.hw && !g.d.api ? ' · runs on ' + g.d.hw : '') + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
   tip.hidden = false;
   const svg = $('plot').querySelector('svg'); const k = svg.getBoundingClientRect().width / plotGeom.W;
   const tw = tip.offsetWidth, th = tip.offsetHeight, hostW = $('plot').clientWidth;
@@ -914,14 +947,15 @@ function renderTicker(list, front) {
   }
 }
 
-let plotKey = null;  // the Task view, Overlap switch and load the plot was drawn for
+let plotKey = null;  // the Task view, Overlap and API switches and load the plot was drawn for
 function render() {
   $('board-sub').textContent = TASKS[state.task].sub;
   const list = items(state.task);
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
-  if (plotKey !== state.task + state.overlap + LOADS) { renderPlot(list, front); plotKey = state.task + state.overlap + LOADS; }
+  const key = state.task + state.overlap + state.api + LOADS;
+  if (plotKey !== key) { renderPlot(list, front); plotKey = key; }
   setHot(state.hot);  // the table rows are new; the plot may be the same
   renderTicker(list, front);
   $('stat-n').textContent = String(list.length);
@@ -930,12 +964,16 @@ function render() {
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
   ['show', 'hide'].forEach((k) => $('overlap-' + k).setAttribute('aria-pressed', String(state.overlap === k)));
   $('ctl-overlap').hidden = !anyOverlap();  // no switch while no model is marked
+  ['show', 'hide'].forEach((k) => $('api-' + k).setAttribute('aria-pressed', String(state.api === k)));
+  $('ctl-api').hidden = !anyApi();  // no switch while the board has no API model
+  $('legend-api').hidden = !list.some((d) => d.api);
   $('dl-view').textContent = viewName() + ', ' + SORT_NAMES[state.sort];
 }
 
 document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; render(); }));
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
 document.querySelectorAll('[data-overlap]').forEach((b) => b.addEventListener('click', () => { state.overlap = b.dataset.overlap; render(); }));
+document.querySelectorAll('[data-api]').forEach((b) => b.addEventListener('click', () => { state.api = b.dataset.api; render(); }));
 
 /* results.json, built from results/ after each merge, sits next to this page. It is read at start
    and whenever Refresh is clicked, so the board updates without a page reload. If it cannot be read
@@ -1007,12 +1045,12 @@ $('cite-modal').addEventListener('keydown', (ev) => {
 /* ---------- downloads: the plot and the ranking of the current view ---------- */
 const VIEW_NAMES = { both: 'Both (R² & AUC)', reg: 'Regression (R²)', clf: 'Classification (AUC)' };
 const SORT_NAMES = { pareto: 'Pareto Front first', score: 'by score', time: 'by time' };
-const viewName = () => VIEW_NAMES[state.task] + (hidingOverlap() ? ', models marked ∩ hidden' : '');
+const viewName = () => VIEW_NAMES[state.task] + (hidingOverlap() ? ', models marked ∩ hidden' : '') + (hidingApi() ? ', API models hidden' : '');
 const COLUMNS = {
   rank: 'position in the current order',
   pipeline: 'encoder + learner, or the learner alone for end-to-end pipelines',
   variant: 'default configuration, or tuned',
-  tags: 'end-to-end, tuned, incomplete, possible pre-training overlap',
+  tags: 'end-to-end, tuned, incomplete, possible pre-training overlap, API model (runs on its provider\'s servers; its time includes the network)',
   median_score: { both: 'median over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification), as in the paper\'s Figure 4a',
     reg: 'median R² over the 76 regression tables x 3 outer folds', clf: 'median ROC-AUC over the 32 classification tables x 3 outer folds' },
   median_time_per_1k_s: 'median over the same fold rows of the total run time (encoding, training, prediction) in seconds per 1,000 samples',
@@ -1033,8 +1071,8 @@ function loadLib(name) {
     document.head.appendChild(s);
   }));
 }
-const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task and Overlap only, the ranking also the Sort
-const viewKey = (plot) => state.task + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '');
+const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task, Overlap and API only, the ranking also the Sort
+const viewKey = (plot) => state.task + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '') + (hidingApi() ? '-no-api' : '');
 const fileName = (ext, plot) => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey(plot) + '.' + ext;
 function saveFile(name, blob) {
   const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
@@ -1047,7 +1085,7 @@ function exportRows() {
   const list = items(state.task), front = paretoSet(list);
   return ordered(list, state.sort, front).map((d, i) => ({
     rank: i + 1, pipeline: d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn, variant: d.tuned ? 'tuned' : 'default',
-    tags: tagsOf(d).map((t) => t[1]).concat(d.overlap ? [OVERLAP_NAME] : []).join('; '), median_score: d.s, median_time_per_1k_s: Number.isNaN(d.t) ? null : d.t,
+    tags: tagsOf(d).map((t) => t[1]).concat(d.overlap ? [OVERLAP_NAME] : [], d.api ? [API_NAME] : []).join('; '), median_score: d.s, median_time_per_1k_s: Number.isNaN(d.t) ? null : d.t,
     pareto_front: front.has(d.id) ? 'yes' : 'no' }));
 }
 function exportMeta() {
@@ -1167,7 +1205,7 @@ function placeCaret() {
 placeCaret();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeCaret);
 
-/* ---------- demo tour: task, sort, overlap, table, plot, refresh, history, downloads, cite, adding a model ---------- */
+/* ---------- demo tour: task, sort, overlap, API, table, plot, refresh, history, downloads, cite, adding a model ---------- */
 const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
     text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
@@ -1175,8 +1213,10 @@ const TOUR = [
     text: 'Sort. Pareto first, or by score or time. The top three rows of the order get a red frame; the plot stays the same.' },
   { sel: '#ctl-overlap', block: 'center',
     text: 'Overlap ∩. A small ∩ marks models whose pre-training data may include some STRABLE tables. Show, the default, keeps every model; Hide leaves these ones out of the table and the plot.' },
+  { sel: '#ctl-api', block: 'center',
+    text: "API. A small teal API pill, and a round marker on the plot, mark models that run on their provider's servers: their time includes the network and the provider's hardware. Show, the default, keeps them; Hide leaves them out of the table and the plot." },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
-    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, ∩ marks models whose pre-training may overlap STRABLE, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
+    text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, ∩ marks models whose pre-training may overlap STRABLE, API those that run on their provider\'s servers, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
     text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
   { sel: '#refresh', block: 'center',
@@ -1191,7 +1231,7 @@ const TOUR = [
     text: 'Submit a model: open a pull request on the leaderboard repository. We run it on our hardware and the board refreshes. The panel at the bottom takes feature suggestions.' }
 ];
 let tour = null;
-/* The steps whose control is on the page: the Overlap switch only shows when a model is marked. */
+/* The steps whose control is on the page: the Overlap (API) switch only shows when a model is marked (an API model). */
 const tourSteps = () => TOUR.filter((s) => !(document.querySelector(s.sel) || {}).hidden);
 function clearFocus() { document.querySelectorAll('.tour-focus').forEach((n) => n.classList.remove('tour-focus')); }
 function startBar() {
@@ -1199,7 +1239,7 @@ function startBar() {
   if (tour && tour.playing) { b.style.transition = 'width 7000ms linear'; b.style.width = '100%'; }
 }
 function applyStep(s) {
-  state.task = s.task || 'both'; state.sort = s.sort || 'pareto'; state.overlap = 'show';
+  state.task = s.task || 'both'; state.sort = s.sort || 'pareto'; state.overlap = 'show'; state.api = 'show';
   state.hot = s.hot || null;
   render();
 }
@@ -1227,7 +1267,7 @@ function nextStep() { if (!tour) return; if (tour.i < tour.steps.length - 1) { t
 function prevStep() { if (tour && tour.i > 0) { tour.i--; showStep(); } }
 function startTour() {
   if (tour) return;
-  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, sort: state.sort, overlap: state.overlap } };
+  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, sort: state.sort, overlap: state.overlap, api: state.api } };
   $('tour').hidden = false; $('tour-play').textContent = 'Pause';
   showStep();
 }
@@ -1236,7 +1276,7 @@ function endTour() {
   clearTimeout(tour.timer); clearFocus();
   const s0 = tour.saved; tour = null;
   $('tour').hidden = true;
-  state.task = s0.task; state.sort = s0.sort; state.overlap = s0.overlap; state.hot = null; render();
+  state.task = s0.task; state.sort = s0.sort; state.overlap = s0.overlap; state.api = s0.api; state.hot = null; render();
 }
 $('demo-btn').addEventListener('click', startTour);
 $('tour-next').addEventListener('click', nextStep);
@@ -1264,6 +1304,7 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('score') >= 0) state.sort = 'score';
   if (toks.indexOf('time') >= 0) state.sort = 'time';
   if (toks.indexOf('no-overlap') >= 0) state.overlap = 'hide';
+  if (toks.indexOf('no-api') >= 0) state.api = 'hide';
   refresh(false);
   if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
 })();

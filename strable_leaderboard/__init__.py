@@ -13,6 +13,7 @@ REPO = "gblayer/strable-leaderboard"
 MAINTAINER = "gblayer"
 APPROVED, NEEDS = "claude-approved", "needs-maintainer"
 OVERLAP = "pretraining-overlap"  # set by the maintainer only: pre-training may include STRABLE tables; never blocks
+RUN_API = "run-api"  # set by the maintainer only: starts the run of an API model (hardware: api), never automatic
 # Per model folder, {"overlap": true, "evidence": "<url>"}: set by the maintainer, by hand or through the
 # OVERLAP label that the dispatcher reads; read by scripts/build_site_data.py for the page's ∩ mark.
 FLAGS = "site/flags.json"

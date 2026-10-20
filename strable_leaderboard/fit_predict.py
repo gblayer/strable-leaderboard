@@ -9,6 +9,10 @@ neither times nor scores itself: the parent does both. ``--warm-up`` fits on a f
 one per class, predicts eight, and writes nothing, so that the parent can measure the start-up
 overhead: imports, CUDA start-up, weight loading. BLAS, OpenMP and torch threads are capped to
 ``--n-jobs`` before the model is built (``limit_threads``).
+
+``--api``: the model runs on its provider's servers (``hardware: api``). The warm-up only builds it and
+sends nothing, so the time keeps the request, the network and the provider's work. A model that sets
+``self.api_version`` (the version its provider reports) gets it written to ``api_version.txt``.
 """
 
 from __future__ import annotations
@@ -55,6 +59,7 @@ def main(argv=None) -> int:
     parser.add_argument("--n-jobs", type=int, default=1)
     parser.add_argument("--weights-dir", type=Path)
     parser.add_argument("--warm-up", action="store_true")
+    parser.add_argument("--api", action="store_true", help="the model calls its provider's API")
     args = parser.parse_args(argv)
     cls = load_model_class(args.folder)
     if cls.end_to_end != args.strings:
@@ -64,6 +69,8 @@ def main(argv=None) -> int:
     y_train = np.load(args.inputs / "y_train.npy")
     model = cls(task=args.task, seed=SEED, device=args.device, n_jobs=args.n_jobs, weights_dir=args.weights_dir)
     regression = args.task == "regression"
+    if args.warm_up and args.api:
+        return 0
     if args.warm_up:
         rows = np.arange(min(64, len(y_train)))
         if not regression:
@@ -80,6 +87,8 @@ def main(argv=None) -> int:
     else:
         np.save(args.outputs / "proba.npy", np.asarray(model.predict_proba(X_test), dtype=float))
         np.save(args.outputs / "classes.npy", np.asarray(model.classes_))
+    if getattr(model, "api_version", None):
+        (args.outputs / "api_version.txt").write_text(str(model.api_version))
     return 0
 
 

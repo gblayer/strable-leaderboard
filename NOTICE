@@ -1,0 +1,18 @@
+STRABLE leaderboard
+Copyright (c) 2026 The STRABLE developers. BSD 3-Clause License: see LICENSE.
+
+This repository includes code ported from TabArena (https://github.com/autogluon/tabarena, commit
+860337d4c4dfdd1287889561dc8868d0e733508f), licensed under the Apache License, Version 2.0, whose text
+is in LICENSE-APACHE. The ported code was changed to fit the board's model interface; each file says
+what it took and what changed:
+
+- strable_leaderboard/api.py: the retry loop of the Chakra-Tab client
+  (packages/tabarena/src/tabarena/systems/chakra_tab/system.py)
+- tests/api_model/model.py: the structure of the same client
+- scripts/audit_api.py: the black-box probes of TabArena's audit and their thresholds
+  (packages/tabarena/src/tabarena/tools/audit_system.py)
+
+TabArena's NOTICE file reads:
+
+    TabArena
+    Copyright 2025-2026 TabArena Maintainers

@@ -110,6 +110,28 @@ def test_build_site_data_overlap_flags(tmp_path):
     assert problems(data) == ["tfidf+tabpfn-2.5: overlap must be true with overlap_evidence, a URL"]
 
 
+def test_api_pipelines_are_marked(tmp_path):
+    """An API model's rows (hardware api) give its pipelines "api": true and the version its provider reported."""
+    results = tmp_path / "results"; results.mkdir()
+    _complete_results().to_csv(results / "ridge.csv", index=False)
+    _complete_results(model="chakra").assign(hardware="api", api_version="chakra-tab-2026-10") \
+        .to_csv(results / "chakra.csv", index=False)
+    (results / "versions.yaml").write_text("- version: v0.1.1\n  date: 2026-11-20\n  note: Added Chakra\n")
+    data = build(results, tmp_path / "results.json")
+    chakra, ridge = data["pipelines"]
+    assert chakra["api"] is True and chakra["api_version"] == "chakra-tab-2026-10" and chakra["hw"] == "api"
+    assert "api" not in ridge and "api_version" not in ridge
+    assert problems(data) == [] and parquet_problems(data, tmp_path / "results.parquet") == []
+    assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == []
+    long = pd.read_parquet(tmp_path / "results.parquet")  # the downloads carry a true/false api column
+    assert long["api"].dtype == bool and set(long.loc[long["id"] == "tfidf+chakra", "api"]) == {True}
+    assert not long.loc[long["id"] == "tfidf+ridge", "api"].any()
+    for folds in [pd.read_parquet(tmp_path / "results_per_fold.parquet"), pd.read_csv(tmp_path / "results_per_fold.csv")]:
+        assert folds.loc[folds["id"] == "tfidf+chakra", "api"].all() and not folds.loc[folds["id"] == "tfidf+ridge", "api"].any()
+    chakra["api"] = "yes"
+    assert problems(data) == ["tfidf+chakra: api must be true, with api_version a string"]
+
+
 def test_a_one_family_model_gets_only_its_view(tmp_path, monkeypatch):
     """A model card with regression tasks only (or classification only): no "both" view and no view for the
     other family, so the page lists it only under its own task. The paper's learners have no card: all views."""

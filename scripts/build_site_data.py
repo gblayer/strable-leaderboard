@@ -20,6 +20,10 @@ seconds over the table's rows). A view with fewer fold rows than expected is sho
 incomplete tag. ``hw`` lists the hardware the rows ran on, when recorded. The page computes the
 ranking and the Pareto front from this file.
 
+API models: a pipeline whose rows all ran on hardware "api" (on its provider's servers) gets
+``"api": true`` and ``"api_version"``, the versions its provider reported, which the page marks API,
+and the Parquet and per-fold files an ``api`` column (true or false).
+
 Overlap flags: when site/flags.json sits next to the output (``{"<model>": {"overlap": true,
 "evidence": "<url>"}}``, set by the maintainer), every pipeline of a flagged model gets
 ``"overlap": true`` and ``"overlap_evidence": "<url>"``, which the page shows as a ∩ mark, and the
@@ -64,9 +68,11 @@ COLUMNS = {
     "pareto_front": "the score is strictly higher than that of every faster pipeline of the view",
     "overlap": "true when the maintainer marked the model's pre-training data as possibly overlapping STRABLE's tables "
                "(the page's ∩ mark; results.json links the evidence)",
+    "api": "true when the model runs on its provider's servers, behind an API: its time includes the network and "
+           "the provider's hardware (the page's API mark; results.json gives the version the provider reported)",
 }
 PER_FOLD = ["id", "encoder", "learner", "variant", "table", "task", "fold", "score", "total_s", "n_rows", "time_per_1k_s",
-            "overlap"]
+            "overlap", "api"]
 FAMILIES = {"reg": {"regression"}, "clf": {"binary", "multiclass"}}  # the views of a one-family model
 URL = re.compile(r"^https?://[^\s\"'<>]+$")
 # Display names of imported pipelines: the paper's and the TILE paper's selections.
@@ -149,7 +155,8 @@ def per_fold(rows: pd.DataFrame, record: dict) -> pd.DataFrame:
     """One pipeline's fold rows in PER_FOLD columns. Only rows with a score count; check_results flags the others."""
     rows = per_1k(rows[rows["score"].notna()])
     out = rows.drop(columns="total_s", errors="ignore").rename(columns={"total": "total_s", "total_per_1k": "time_per_1k_s"})
-    out = out.assign(id=record["id"], encoder=record["enc"], learner=record["lrn"], overlap=bool(record.get("overlap")))
+    out = out.assign(id=record["id"], encoder=record["enc"], learner=record["lrn"], overlap=bool(record.get("overlap")),
+                     api=bool(record.get("api")))
     return out[PER_FOLD].sort_values(["table", "fold"]).reset_index(drop=True)
 
 
@@ -178,6 +185,9 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
             hw = sorted(set(rows["hardware"].astype(str)) - {"paper", "nan"})  # imported rows record no hardware
             if hw:
                 record["hw"] = ", ".join(hw)
+            if hw == ["api"]:
+                versions = sorted(set(rows["api_version"].dropna().astype(str))) if "api_version" in rows else []
+                record.update(api=True, **({"api_version": ", ".join(versions)} if versions else {}))
             if path.stem in flags:
                 record.update(overlap=True, overlap_evidence=flags[path.stem]["evidence"])
             folds.append(per_fold(rows, record))
@@ -208,7 +218,7 @@ def long_table(data: dict) -> pd.DataFrame:
             rows.append({"version": data["version"], "date": data["built"], "view": view, "view_name": VIEW_NAMES[view],
                          "id": p["id"], "encoder": p["enc"], "learner": p["lrn"], "kind": p["kind"], "variant": p["variant"],
                          "median_score": score, "median_time_per_1k_s": time, "fold_rows": n, "fold_rows_expected": expected,
-                         "pareto_front": p["id"] in front, "overlap": bool(p.get("overlap"))})
+                         "pareto_front": p["id"] in front, "overlap": bool(p.get("overlap")), "api": bool(p.get("api"))})
     return pd.DataFrame(rows)
 
 
@@ -268,6 +278,8 @@ def problems(data: dict) -> list[str]:
         if ("overlap" in p or "overlap_evidence" in p) and (p.get("overlap") is not True
                                                             or not URL.match(str(p.get("overlap_evidence")))):
             out.append(f"{p.get('id')}: overlap must be true with overlap_evidence, a URL")
+        if ("api" in p or "api_version" in p) and (p.get("api") is not True or not isinstance(p.get("api_version", ""), str)):
+            out.append(f"{p.get('id')}: api must be true, with api_version a string")
     expected = folds_expected()
     for p in data["pipelines"]:
         if not p.get("lrn") or p.get("kind") not in ("modular", "e2e"):

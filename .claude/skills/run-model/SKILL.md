@@ -24,6 +24,10 @@ Never run from the clone's working copy, which may hold unmerged edits: use a ch
 7. One line at the top of `<clone>/results/versions.yaml` with the next patch version, today's date and what changed, e.g. `- {version: v0.1.3, date: 2026-11-20, note: Added TabPFN 2.5}`. Then, in a worktree of `origin/main` on a branch `results/<name>`: write `site/flags.json` (`{}` if absent), with `"<name>": {"overlap": true, "evidence": "https://github.com/gblayer/strable-leaderboard/pull/<number>"}` if the maintainer gave the model's pull request the label `pretraining-overlap`; `python scripts/build_site_data.py --results <clone>/results --models <the models of the published site/results.json, the paper's files, <name>>`; commit the files `RESULTS_FILES` of `strable_leaderboard/__init__.py` names, push, open the pull request titled `Results: <note> (<version>)`. Checks, the review and the gate take it from there.
 8. After the merge: `git tag <version> <merge commit> && git push origin <version>`, and `git worktree remove cache/manual`.
 
+## An API model
+
+A model with `hardware: api` (docs/automation.md, section 4, API models) needs its base URL and key on the cluster, never in git: `install -d -m 700 private/api_keys`, then `private/api_keys/<name>.env` with the two lines `STRABLE_API_URL=https://api.yhatlabs.com` (the provider's base URL) and `STRABLE_API_KEY=...`, `chmod 600`. Write the key without leaving it in the shell history, as for the token below. The order: audit `python scripts/audit_api.py models/test-<name> --data-dir $STRABLE_CACHE/data` (key file `private/api_keys/test-<name>.env`; any FAIL, ask the provider before going on), then the test run of `models/test-<name>/` (3 tasks), then the real folders. The dispatcher starts each only once its pull request has the label `run-api`. By hand, `export STRABLE_API_KEYS=<clone>/private/api_keys` before step 3.
+
 ## A new package in the shared environment
 
 A merged pull request that adds a line to `env/requirements.in`: run `bash scripts/lock_env.sh` (the paper's full environment, `env/paper-freeze.txt`, as constraints, so no existing version moves; a pin changed in `env/requirements.in` overrides it), commit the new `env/requirements.txt`, then `python scripts/prepare.py` rebuilds `cache/env`. Until then `prepare.py` stops on the model. Another version of a package already there is the maintainer's decision alone: it moves the whole board.
@@ -31,7 +35,7 @@ A merged pull request that adds a line to `env/requirements.in`: run `bash scrip
 ## Setup, once
 
 1. Secret `CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token` (uses the Claude subscription), or `ANTHROPIC_API_KEY`.
-2. Labels `claude`, `claude-approved`, `needs-maintainer`, `pretraining-overlap`.
+2. Labels `claude`, `claude-approved`, `needs-maintainer`, `pretraining-overlap`, `run-api`.
 3. Each workflow sets its own token permissions in its `permissions` block; nothing to change in the settings.
 4. On the cluster, in the clone: `python scripts/prepare.py` (shared env, data, encoders, sandbox image), `private/runner.env` with the partition flags, and the cron line of `scripts/dispatch.py`.
 5. The dispatcher's token, on the cluster. On github.com: Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Resource owner `gblayer`; Repository access: *Only select repositories*, `gblayer/strable-leaderboard` only; Repository permissions: Contents read and write, Pull requests read and write, Issues read and write, Metadata read-only (set by default); nothing else, in particular not Workflows; expiration at most one year (put a reminder in the calendar). Store it, readable by you only, without leaving it in the shell history:

@@ -45,7 +45,7 @@ Every model implements the class `StrableModel` of `strable_leaderboard/model.py
 - `end_to_end = True`: the model reads the raw table itself, text columns included, and runs alone. `False`: the model takes numbers only. The board turns the text into numbers with each of its four string encoders, as in the paper (Tf-Idf; the first 30 embedding dimensions of Qwen-3-8B and of LLaMA-3.1-8B; MiniLM-L6-v2 embeddings reduced to 30 by PCA) and runs the model once per encoder. A model runs one way only.
 - `fit(X, y)` trains on the training rows of one fold. `X` is a pandas DataFrame: numbers only for a numeric-only model (missing cells stay NaN), the raw table for an end-to-end one. `y` is a NumPy array. Classification targets are integers 0..K-1; the model sets `self.classes_`.
 - `predict(X)` returns values or labels. `predict_proba(X)` returns one column per class, in the order of `self.classes_`.
-- **The board's folds are used for everything.** Never split, cross-validate or search hyperparameters yourself. Early stopping may only use `fit_idx, val_idx = self.validation_split(y)`; turn off a package's own validation split.
+- **The board's folds are used for everything.** Never split, cross-validate or search hyperparameters yourself. Early stopping may only use `fit_idx, val_idx = self.validation_split(y)`; turn off a package's own validation split. Optional: a model whose own validation can hold out given groups of rows may take the board's 8 inner folds instead, `self.inner_folds(y)`, the inner fold (0 to 7) of each training row.
 - **No seed of your own.** Pass `self.seed` wherever a seed goes, never a number.
 - `self.device` and `self.n_jobs` are given; the runner already caps threads to `self.n_jobs`.
 - Use the package's default settings; options that only lift size limits (such as TabPFN's `ignore_pretraining_limits`) are fine. Never read the tables, the split files or the test rows yourself.
@@ -80,7 +80,7 @@ code: https://github.com/PriorLabs/TabPFN      # optional
 | `tasks` | The tasks the model supports: `regression`, `binary`, `multiclass` |
 | `variant` | Always `default`: the package's default configuration |
 | `licence` | The licence of the code and weights (the field is spelled `licence`) |
-| `hardware` | `gpu` or `cpu`: what the board runs the model on, shown when hovering its row |
+| `hardware` | `gpu` or `cpu`: what the board runs the model on, shown when hovering its row. `api` is for a model that runs on its provider's servers, which only the maintainer adds ([automation.md](automation.md#4-the-run), API models); it then needs an `api` block, `auth` and `concurrency` (and `allow_http: true` to accept a plain http:// endpoint, which sends the rows and the key unencrypted) |
 | `pretraining_data` | What the model was pre-trained on, as its paper or model card says: `synthetic` (generated data only), `real` (real tables), `mixed` (both), `none` (no pre-training) or `not disclosed` |
 | `code`, `paper` | Links to the code and the paper. Optional, but fill them when they exist: the review reads them |
 
