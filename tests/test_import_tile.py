@@ -19,7 +19,7 @@ SELECTION = yaml.safe_load((ROOT / "scripts" / "tile_selection.yaml").read_text(
 def test_tile_selection():
     rows = [p for methods in SELECTION["pipelines"].values() for p in methods.values()]
     ids = {f"{p['encoder']}+{p['model']}" for p in rows}
-    assert ids == {"tile+tabpfn-2.5", "tile+tabicl-v2", "tile+tabpfn-3", "tile+causilo", "tfidf+causilo", "tile+tabpfn-3.5"}
+    assert ids == {"tile+tabpfn-2.5", "tile+tabicl-v2", "tile+tabpfn-3", "tile+causilo", "tfidf+causilo", "tile+tabpfn-3.5", "tile+kumo-tabular"}
     assert all(p["variant"] == "default" for p in rows)
     assert "tfidf" in ENCODERS  # Tf-Idf + Causilo: the id the runner gives models/causilo with its tfidf encoder
     windows = {p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}
