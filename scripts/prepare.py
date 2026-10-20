@@ -72,7 +72,8 @@ def build_env(cache: Path, force: bool = False) -> Path:
     else:
         subprocess.run([sys.executable, "-m", "venv", str(env)], check=True, env=run_env)
         install = [str(env_python(cache)), "-m", "pip", "install", "-q"]
-    subprocess.run(install + ["-r", str(ENV_REQUIREMENTS)], check=True, env=run_env)
+    # The lock is complete: installed as it is, without dependencies it leaves out (check_requirements.EXCLUDES)
+    subprocess.run(install + ["--no-deps", "-r", str(ENV_REQUIREMENTS)], check=True, env=run_env)
     subprocess.run(install + ["--no-deps", "-e", str(ROOT)], check=True, env=run_env)
     stamp.write_text(digest + "\n")
     print("shared env built:", env)

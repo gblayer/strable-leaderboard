@@ -35,6 +35,10 @@ ENV = Path(__file__).resolve().parent.parent / "env"
 ENV_REQUIREMENTS, ENV_INPUT, FREEZE = ENV / "requirements.txt", ENV / "requirements.in", ENV / "paper-freeze.txt"
 UV_COMPILE = ["uv", "pip", "compile", "--python-version", "3.12", "--python-platform", "x86_64-manylinux_2_28",
               "--no-header", "--no-annotate", "--quiet"]
+# Left out of the lock: xgboost asks for NCCL built for CUDA 12, whose library is the same file as the
+# CUDA 13 NCCL of torch (nvidia/nccl/lib/libnccl.so.2); installed last, it breaks `import torch`.
+# xgboost loads NCCL only to train on several GPUs.
+EXCLUDES = ["nvidia-nccl-cu12"]
 LOCK_HEADER = """# The shared environment, every package pinned to the version of the STRABLE paper environment
 # (2026-03-23, Python 3.12.12). Generated from env/requirements.in; do not edit by hand.
 # scripts/prepare.py installs it into cache/env together with this package (-e .).
@@ -134,8 +138,10 @@ def freeze_constraints(requirements_in: Path, out: Path) -> Path:
 def compile_lock(requirements_in: Path, out: Path, freeze: bool = True, *extra: str) -> subprocess.CompletedProcess:
     """uv's resolution of ``requirements_in`` into ``out``; uv keeps the versions ``out`` already pins where it can."""
     constraints = ["-c", str(freeze_constraints(requirements_in, out.with_name("freeze.txt")))] if freeze else []
-    return subprocess.run(UV_COMPILE + [str(requirements_in), *constraints, *extra, "-o", str(out)],
-                          capture_output=True, text=True)
+    excludes = out.with_name("excludes.txt")
+    excludes.write_text("".join(name + "\n" for name in EXCLUDES))
+    return subprocess.run(UV_COMPILE + [str(requirements_in), *constraints, "--excludes", str(excludes), *extra,
+                                        "-o", str(out)], capture_output=True, text=True)
 
 
 def lock() -> None:
