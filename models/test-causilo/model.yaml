@@ -1,0 +1,19 @@
+name: Causilo (test)
+version: "1.0.2"
+end_to_end: false
+tasks: [regression, binary, multiclass]
+variant: default
+hardware: gpu
+
+package: causilo==1.0.2
+checkpoint:
+  repo: nums-ai/causilo
+  revision: 94f2bd91db0737d4da59f347910662905ecb5a09  # "Causilo 1.0.0", the release commit causilo 1.0.2 pins
+  files: [classifier/config.json, classifier/model.safetensors, regressor/config.json, regressor/model.safetensors]
+licence: Causilo License v1.0  # the weights; non-commercial research use. The code is Apache-2.0
+# Technical report, abstract: "Pretrained on approximately 36M synthetic tables"; section 1: "Pretrained
+# entirely on approximately 36-million synthetic tables with varying sizes and causalities".
+pretraining_data: synthetic
+
+code: https://github.com/nums-ai/causilo
+paper: https://arxiv.org/abs/2609.22866
