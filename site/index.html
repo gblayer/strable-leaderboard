@@ -191,6 +191,21 @@ section { scroll-margin-top: 76px; }
 .board-sub { margin: 0 0 12px; font-size: 14.5px; color: var(--ink-3); }
 .controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
 .ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-radius: 999px; }
+.board-count { margin: -6px 0 12px; font-size: 13.5px; color: var(--ink-3); }
+.stats-sub { margin: 10px 0 0; font-size: 13.5px; color: var(--ink-3); }
+.dd { position: relative; }
+.dd-btn { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--ink); font: 500 13.5px/1 var(--f-mono); padding: 8px 14px; min-height: 42px; white-space: nowrap; }
+.dd-btn::-webkit-details-marker { display: none; }
+.dd-btn:hover { border-color: var(--ink-3); }
+.dd-caret { color: var(--ink-3); transition: transform 0.15s; }
+.dd[open] .dd-caret { transform: rotate(180deg); }
+.dd-panel { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; width: max-content; max-width: min(340px, calc(100vw - 32px)); max-height: 380px; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px; box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 18%, transparent); }
+.dd-panel .linkbtn { min-height: 30px; padding: 7px 12px; }
+.dd-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.dd-list label { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 8px; font: 500 13.5px/1.2 var(--f-mono); color: var(--ink); cursor: pointer; }
+.dd-list label:hover { background: var(--surface-2); }
+.dd-list input { accent-color: var(--ink); width: 16px; height: 16px; margin: 0; flex: none; }
+.dd-list .n { margin-left: auto; padding-left: 14px; color: var(--ink-3); font-size: 12px; }
 .board { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 1000px) { .board { grid-template-columns: 1fr; } }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); min-width: 0; }
@@ -374,6 +389,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         <li><b>32</b> classification</li>
         <li><b id="stat-n">–</b> pipelines</li>
       </ul>
+      <p class="stats-sub" id="stats-sub" hidden></p>
     </div>
     <div class="art-wrap">
       <div class="sheet">
@@ -445,6 +461,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
     <h2 class="sr-only" id="board-title">Leaderboard</h2>
     <div class="board-head">
       <p class="board-sub" id="board-sub">Median over 108 tables × 3 folds (R² for regression, AUC for classification) · run time per 1K samples, log scale</p>
+      <p class="board-count" id="board-count" role="status" hidden></p>
       <div class="controls">
         <div class="ctl" id="ctl-task">
           <span class="cap" id="task-lbl">Task</span>
@@ -468,6 +485,16 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
             <button type="button" id="sort-score" data-sort="score" aria-pressed="false">Score</button>
             <button type="button" id="sort-time" data-sort="time" aria-pressed="false">Time</button>
           </div>
+        </div>
+        <div class="ctl" id="ctl-enc">
+          <span class="cap" id="enc-lbl">Encoders</span>
+          <details class="dd" id="enc-dd">
+            <summary class="dd-btn" aria-describedby="enc-lbl"><span id="enc-sum">All</span><span class="dd-caret" aria-hidden="true">▾</span></summary>
+            <div class="dd-panel" role="group" aria-labelledby="enc-lbl">
+              <button type="button" class="linkbtn" id="enc-all">All</button>
+              <ul class="dd-list" id="enc-list"></ul>
+            </div>
+          </details>
         </div>
         <div class="ctl" id="ctl-overlap" hidden>
           <span class="cap" id="overlap-lbl">Overlap <span aria-hidden="true">∩</span></span>
@@ -553,7 +580,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         </div>
       </div>
     </div>
-    <p class="note">The plot follows the Task and Score chosen above; the CSV, JSON and XLSX rankings follow the Task, Score and Sort. The Parquet file holds all three views at once, one row per pipeline and view. The raw results hold every fold: one row per pipeline, table and outer fold, with its score and run time. <span class="form-msg" id="dl-msg" role="status"></span></p>
+    <p class="note">The plot follows the Task, Score and Encoders chosen above; the CSV, JSON and XLSX rankings follow them and the Sort. File names carry these choices. The Parquet file holds all three views at once, one row per pipeline and view. The raw results hold every fold: one row per pipeline, table and outer fold, with its score and run time. <span class="form-msg" id="dl-msg" role="status"></span></p>
   </section>
 
   <section class="history" id="history" aria-labelledby="history-title">
@@ -630,6 +657,8 @@ const API_NAME = 'API model';
 const API_TIP = "Runs on the provider's servers: its time includes the network and their hardware.";
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
+const N_PAPER = 75;  // the paper's Figure 4a pipelines, never replaced; every other pipeline was added since
+const E2E = 'End-to-end';  // the Encoders entry of the models that read raw strings
 const TIME_SUB = ' · run time per 1K samples, log scale';
 const TASKS = {
   both: { metric: 'Score', colSub: 'R² & AUC, ', axis: 'score (R² & AUC)', over: 'over ' + N_ALL + ' tables × 3 folds (R² for regression, AUC for classification)' },
@@ -642,7 +671,7 @@ function viewLabels() {
   return { metric: t.metric, colSub: t.colSub + w, axis: W + ' ' + t.axis, sub: W + ' ' + t.over + TIME_SUB };
 }
 const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
-const state = { task: 'both', score: 'median', sort: 'pareto', overlap: 'show', api: 'show', hot: null };  // score: median or mean; overlap, api: show or hide the models marked ∩, API
+const state = { task: 'both', score: 'median', sort: 'pareto', enc: null, overlap: 'show', api: 'show', hot: null };  // score: median or mean; enc: null (all) or the Set of encoders shown; overlap, api: show or hide the models marked ∩, API
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -659,11 +688,12 @@ const anyOverlap = () => DATA.some((d) => d.overlap === true);
 const hidingOverlap = () => state.overlap === 'hide' && anyOverlap();
 const anyApi = () => DATA.some((d) => d.api === true);
 const hidingApi = () => state.api === 'hide' && anyApi();
+const encOf = (d) => (d.kind === 'e2e' ? E2E : d.enc);
 function items(task) {
   const rows = [];
   for (const d of DATA) {
     const v = d[task], overlap = d.overlap === true, api = d.api === true;
-    if (!v || (overlap && state.overlap === 'hide') || (api && state.api === 'hide')) continue;
+    if (!v || (overlap && state.overlap === 'hide') || (api && state.api === 'hide') || (state.enc && !state.enc.has(encOf(d)))) continue;
     rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, hw: d.hw,
       tuned: d.variant === 'tuned', incomplete: v.length > 3 && v[2] < v[3],
       overlap: overlap, evidence: overlap && isUrl(d.overlap_evidence) ? d.overlap_evidence : null,
@@ -956,18 +986,64 @@ function renderTicker(list, front) {
   }
 }
 
-let plotKey = null;  // the Task view, Score, Overlap and API switches and load the plot was drawn for
+let plotKey = null;  // the Task view, Score, Encoders, Overlap and API switches and load the plot was drawn for
+
+/* The Encoders dropdown: one checkbox per encoder of the Task view (End-to-end for the models that read
+   raw strings), with its number of pipelines. All, the default, shows every pipeline; the last checked
+   box cannot be cleared. Under the controls, a line counts the pipelines shown while some are hidden. */
+let encListKey = null;
+const slug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const encKey = () => (!state.enc ? '' : state.enc.size <= 4 ? [...state.enc].map(slug).sort().join('+') : state.enc.size + '-encoders');
+function encCounts() {
+  const counts = new Map();
+  for (const d of DATA) if (d[state.task]) counts.set(encOf(d), (counts.get(encOf(d)) || 0) + 1);
+  const names = [...counts.keys()].sort((a, b) => (a === E2E) - (b === E2E) || a.localeCompare(b, 'en', { sensitivity: 'base' }));
+  return names.map((n) => [n, counts.get(n)]);
+}
+function renderEnc(list) {
+  const counts = encCounts(), ul = $('enc-list'), key = state.task + LOADS;
+  if (encListKey !== key) {
+    ul.textContent = '';
+    for (const [name, n] of counts) {
+      const li = el('li'), lab = el('label'), box = el('input');
+      box.type = 'checkbox'; box.value = name;
+      box.addEventListener('change', () => toggleEnc(name, box));
+      lab.appendChild(box); lab.appendChild(el('span', null, name)); lab.appendChild(el('span', 'n', String(n)));
+      li.appendChild(lab); ul.appendChild(li);
+    }
+    encListKey = key;
+  }
+  ul.querySelectorAll('input').forEach((b) => { b.checked = !state.enc || state.enc.has(b.value); });
+  const shown = counts.filter(([n]) => !state.enc || state.enc.has(n)).length;
+  $('enc-sum').textContent = shown === counts.length ? 'All' : shown + ' of ' + counts.length;
+  const total = DATA.filter((d) => d[state.task]).length;
+  $('board-count').hidden = list.length === total;
+  $('board-count').textContent = 'Showing ' + list.length + ' of ' + total + ' pipelines' + (state.enc ? ' · encoders: ' + [...state.enc].join(', ') : '');
+}
+function toggleEnc(name, box) {
+  const all = encCounts().map(([n]) => n), set = new Set(state.enc || all);
+  if (box.checked) set.add(name); else if (set.size > 1) set.delete(name); else { box.checked = true; return; }
+  state.enc = all.every((n) => set.has(n)) ? null : set;
+  render();
+}
+$('enc-all').addEventListener('click', () => { state.enc = null; render(); });
+document.addEventListener('click', (e) => { if ($('enc-dd').open && !$('enc-dd').contains(e.target)) $('enc-dd').open = false; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('enc-dd').open) { $('enc-dd').open = false; $('enc-dd').querySelector('summary').focus(); } });
 function render() {
   $('board-sub').textContent = viewLabels().sub;
   const list = items(state.task);
+  if (!list.length && state.enc) { state.enc = null; return render(); }  // no chosen encoder in this view
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
-  const key = state.task + state.score + state.overlap + state.api + LOADS;
+  renderEnc(list);
+  const key = state.task + state.score + encKey() + state.overlap + state.api + LOADS;
   if (plotKey !== key) { renderPlot(list, front); plotKey = key; }
   setHot(state.hot);  // the table rows are new; the plot may be the same
   renderTicker(list, front);
-  $('stat-n').textContent = String(list.length);
+  $('stat-n').textContent = String(DATA.length);
+  $('stats-sub').textContent = N_PAPER + ' from the STRABLE paper · ' + (DATA.length - N_PAPER) + ' added since';
+  $('stats-sub').hidden = DATA.length < N_PAPER;
   $('ver-chip').textContent = VERSION;
   ['both', 'reg', 'clf'].forEach((k) => $('task-' + k).setAttribute('aria-pressed', String(state.task === k)));
   ['median', 'mean'].forEach((k) => $('score-' + k).setAttribute('aria-pressed', String(state.score === k)));
@@ -1056,7 +1132,7 @@ $('cite-modal').addEventListener('keydown', (ev) => {
 /* ---------- downloads: the plot and the ranking of the current view ---------- */
 const VIEW_NAMES = { both: 'Both (R² & AUC)', reg: 'Regression (R²)', clf: 'Classification (AUC)' };
 const SORT_NAMES = { pareto: 'Pareto Front first', score: 'by score', time: 'by time' };
-const viewName = () => VIEW_NAMES[state.task] + ', ' + state.score + ' score' + (hidingOverlap() ? ', models marked ∩ hidden' : '') + (hidingApi() ? ', API models hidden' : '');
+const viewName = () => VIEW_NAMES[state.task] + ', ' + state.score + ' score' + (state.enc ? ', encoders: ' + [...state.enc].join(', ') : '') + (hidingOverlap() ? ', models marked ∩ hidden' : '') + (hidingApi() ? ', API models hidden' : '');
 const COLUMNS = {
   rank: 'position in the current order',
   pipeline: 'encoder + learner, or the learner alone for end-to-end pipelines',
@@ -1084,8 +1160,8 @@ function loadLib(name) {
     document.head.appendChild(s);
   }));
 }
-const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task, Score, Overlap and API only, the ranking also the Sort
-const viewKey = (plot) => state.task + (state.score === 'mean' ? '-mean' : '') + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '') + (hidingApi() ? '-no-api' : '');
+const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task, Score, Encoders, Overlap and API only, the ranking also the Sort
+const viewKey = (plot) => state.task + (state.score === 'mean' ? '-mean' : '') + (state.enc ? '-enc-' + encKey() : '') + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '') + (hidingApi() ? '-no-api' : '');
 const fileName = (ext, plot) => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey(plot) + '.' + ext;
 function saveFile(name, blob) {
   const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
@@ -1219,7 +1295,7 @@ function placeCaret() {
 placeCaret();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeCaret);
 
-/* ---------- demo tour: task, score, sort, overlap, API, table, plot, refresh, history, downloads, cite, adding a model ---------- */
+/* ---------- demo tour: task, score, sort, encoders, overlap, API, table, plot, refresh, history, downloads, cite, adding a model ---------- */
 const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
     text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
@@ -1227,6 +1303,8 @@ const TOUR = [
     text: 'Score. Median, the default as in the STRABLE paper, follows the typical table. Mean averages every fold, so a fold where a pipeline struggles counts in full. The table and the plot follow; time stays the median.' },
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of the order get a red frame; the plot stays the same.' },
+  { sel: '#ctl-enc', block: 'center', enc: ['Tf-Idf', 'TILE'],
+    text: 'Encoders. Choose the encoders to compare, for a lighter table and plot. All, the default, keeps every pipeline; the Pareto Front is drawn again for the pipelines shown.' },
   { sel: '#ctl-overlap', block: 'center',
     text: 'Overlap ∩. A small ∩ marks models whose pre-training data may include some STRABLE tables. Show, the default, keeps every model; Hide leaves these ones out of the table and the plot.' },
   { sel: '#ctl-api', block: 'center',
@@ -1255,7 +1333,7 @@ function startBar() {
   if (tour && tour.playing) { b.style.transition = 'width 7000ms linear'; b.style.width = '100%'; }
 }
 function applyStep(s) {
-  state.task = s.task || 'both'; state.score = s.score || 'median'; state.sort = s.sort || 'pareto'; state.overlap = 'show'; state.api = 'show';
+  state.task = s.task || 'both'; state.score = s.score || 'median'; state.sort = s.sort || 'pareto'; state.enc = s.enc ? new Set(s.enc) : null; state.overlap = 'show'; state.api = 'show';
   state.hot = s.hot || null;
   render();
 }
@@ -1283,7 +1361,7 @@ function nextStep() { if (!tour) return; if (tour.i < tour.steps.length - 1) { t
 function prevStep() { if (tour && tour.i > 0) { tour.i--; showStep(); } }
 function startTour() {
   if (tour) return;
-  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, score: state.score, sort: state.sort, overlap: state.overlap, api: state.api } };
+  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, score: state.score, sort: state.sort, enc: state.enc, overlap: state.overlap, api: state.api } };
   $('tour').hidden = false; $('tour-play').textContent = 'Pause';
   showStep();
 }
@@ -1292,7 +1370,7 @@ function endTour() {
   clearTimeout(tour.timer); clearFocus();
   const s0 = tour.saved; tour = null;
   $('tour').hidden = true;
-  state.task = s0.task; state.score = s0.score; state.sort = s0.sort; state.overlap = s0.overlap; state.api = s0.api; state.hot = null; render();
+  state.task = s0.task; state.score = s0.score; state.sort = s0.sort; state.enc = s0.enc; state.overlap = s0.overlap; state.api = s0.api; state.hot = null; render();
 }
 $('demo-btn').addEventListener('click', startTour);
 $('tour-next').addEventListener('click', nextStep);
