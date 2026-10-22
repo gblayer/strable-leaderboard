@@ -1,0 +1,19 @@
+name: TabFM (test)
+version: "1.0.0"
+end_to_end: false
+tasks: [regression, binary, multiclass]
+variant: default
+hardware: gpu
+
+package: tabfm==1.0.1
+checkpoint:
+  repo: google/tabfm-1.0.0-pytorch
+  revision: 77cb9cc1b4fd3a9c77fbb9552c218200bb4dab83
+  files: [classification/config.json, classification/model.safetensors, regression/config.json, regression/model.safetensors]
+licence: TabFM Non-Commercial License v1.0  # the weights: internal benchmarking allowed, never redistributed. The code is Apache-2.0
+# Model card, "Training Data and Priors": "TabFM was trained on hundreds of millions of synthetic
+# datasets generated dynamically using structural causal models (SCMs)".
+pretraining_data: synthetic
+
+code: https://github.com/google-research/tabfm
+paper: https://research.google/blog/introducing-tabfm-a-zero-shot-foundation-model-for-tabular-data/
