@@ -569,6 +569,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
           <button type="button" class="linkbtn" data-dl="csv">CSV</button>
           <button type="button" class="linkbtn" data-dl="json">JSON</button>
           <button type="button" class="linkbtn" data-dl="xlsx">XLSX</button>
+          <button type="button" class="linkbtn" data-dl="matrix" title="One row per learner, one column per encoder, each cell the score of that pipeline">Learner × Encoder matrix · CSV</button>
           <a class="linkbtn" id="dl-parquet" href="results.parquet" download>Parquet · all views</a>
         </div>
       </div>
@@ -580,7 +581,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         </div>
       </div>
     </div>
-    <p class="note">The plot follows the Task, Score and Encoders chosen above; the CSV, JSON and XLSX rankings follow them and the Sort. File names carry these choices. The Parquet file holds all three views at once, one row per pipeline and view. The raw results hold every fold: one row per pipeline, table and outer fold, with its score and run time. <span class="form-msg" id="dl-msg" role="status"></span></p>
+    <p class="note">The plot follows the Task, Score and Encoders chosen above; the CSV, JSON and XLSX rankings and the learner × encoder matrix (one row per learner, one column per encoder, - where the view has no such pipeline, end-to-end models left out) follow them and the Sort. File names carry these choices. The Parquet file holds all three views at once, one row per pipeline and view. The raw results hold every fold: one row per pipeline, table and outer fold, with its score and run time. <span class="form-msg" id="dl-msg" role="status"></span></p>
   </section>
 
   <section class="history" id="history" aria-labelledby="history-title">
@@ -1162,7 +1163,7 @@ function loadLib(name) {
 }
 const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task, Score, Encoders, Overlap and API only, the ranking also the Sort
 const viewKey = (plot) => state.task + (state.score === 'mean' ? '-mean' : '') + (state.enc ? '-enc-' + encKey() : '') + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '') + (hidingApi() ? '-no-api' : '');
-const fileName = (ext, plot) => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey(plot) + '.' + ext;
+const fileName = (ext, plot, tag = '') => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey(plot) + tag + '.' + ext;
 function saveFile(name, blob) {
   const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
@@ -1183,12 +1184,34 @@ function exportMeta() {
   return { board: 'STRABLE leaderboard', version: VERSION, date: BUILT, view: viewName() + ', ' + SORT_NAMES[state.sort],
     url: SITE, columns: columns, citation: BIB };
 }
+const q = (v) => (v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
 function csvText() {
   const m = exportMeta(), rows = exportRows(), cols = Object.keys(rows[0]);
-  const q = (v) => (v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
   const head = ['board', 'version', 'date', 'view', 'url'].map((k) => '# ' + k + ': ' + m[k])
     .concat(cols.map((c) => '# ' + c + ': ' + m.columns[c]), '# citation:', BIB.split('\n').map((l) => '#   ' + l));
   return head.concat(cols.join(','), rows.map((r) => cols.map((c) => q(r[c])).join(','))).join('\n') + '\n';
+}
+/* The current view as a learner × encoder matrix: one row per learner in the order of the ranking (a
+   tuned run in its own row), one column per encoder of the view, the encoders with the most learners
+   first, each cell the score, - where the view has no such pipeline. End-to-end models, which use no
+   encoder, are left out. */
+function matrixText() {
+  const m = exportMeta(), list = items(state.task).filter((d) => d.kind !== 'e2e');
+  const cells = new Map(), perEnc = new Map();  // learner -> encoder -> score, in the order of the ranking
+  for (const d of ordered(list, state.sort, paretoSet(items(state.task)))) {
+    const lrn = d.lrn + (d.tuned ? ' (tuned)' : '');
+    if (!cells.has(lrn)) cells.set(lrn, new Map());
+    cells.get(lrn).set(d.enc, d.s);
+    perEnc.set(d.enc, (perEnc.get(d.enc) || 0) + 1);
+  }
+  const encs = [...perEnc.keys()].sort((a, b) => perEnc.get(b) - perEnc.get(a) || a.localeCompare(b, 'en', { sensitivity: 'base' }));
+  const head = ['board', 'version', 'date', 'view', 'url'].map((k) => '# ' + k + ': ' + m[k]).concat(
+    '# rows: learners, in the order of the ranking; a tuned run has its own row',
+    '# columns: encoders, those with the most learners first; end-to-end models, which use no encoder, are left out',
+    '# cells: ' + m.columns[state.score + '_score'] + '; - where the view has no such pipeline',
+    '# citation:', BIB.split('\n').map((l) => '#   ' + l));
+  const body = [...cells].map(([lrn, byEnc]) => [lrn].concat(encs.map((e) => (byEnc.has(e) ? byEnc.get(e) : '-'))).map(q).join(','));
+  return head.concat(['learner'].concat(encs).map(q).join(','), body).join('\n') + '\n';
 }
 const jsonText = () => JSON.stringify(Object.assign(exportMeta(), { rows: exportRows() }), null, 1) + '\n';
 async function xlsxBlob() {
@@ -1256,10 +1279,12 @@ async function pdfBlob() {
 const EXPORTS = {
   svg: async () => new Blob([exportSvg().text], { type: 'image/svg+xml' }), png: () => rasterBlob('image/png'),
   jpeg: () => rasterBlob('image/jpeg'), pdf: pdfBlob, xlsx: xlsxBlob,
-  csv: async () => new Blob([csvText()], { type: 'text/csv;charset=utf-8' }), json: async () => new Blob([jsonText()], { type: 'application/json' })
+  csv: async () => new Blob([csvText()], { type: 'text/csv;charset=utf-8' }),
+  matrix: async () => new Blob([matrixText()], { type: 'text/csv;charset=utf-8' }), json: async () => new Blob([jsonText()], { type: 'application/json' })
 };
 document.querySelectorAll('[data-dl]').forEach((b) => b.addEventListener('click', async () => {
-  const kind = b.dataset.dl, name = fileName(kind === 'jpeg' ? 'jpg' : kind, PLOT_KINDS.includes(kind)), msg = $('dl-msg');
+  const kind = b.dataset.dl, ext = { jpeg: 'jpg', matrix: 'csv' }[kind] || kind, msg = $('dl-msg');
+  const name = fileName(ext, PLOT_KINDS.includes(kind), kind === 'matrix' ? '_learner-x-encoder' : '');
   b.disabled = true; msg.textContent = kind === 'pdf' || kind === 'xlsx' ? 'Preparing ' + kind.toUpperCase() + '…' : '';
   try { saveFile(name, await EXPORTS[kind]()); msg.textContent = 'Saved ' + name + '.'; }
   catch (e) { msg.textContent = 'Could not make the ' + kind.toUpperCase() + ' file: ' + e.message + '.'; }
@@ -1318,7 +1343,7 @@ const TOUR = [
   { sel: '#history', block: 'center',
     text: 'Version history lists what changed in each version. The version chip at the top shows the current one.' },
   { sel: '#paper-use', block: 'center',
-    text: 'Using the leaderboard in your paper: download the plot (SVG, PNG, JPEG, PDF) or the ranking (CSV, JSON, XLSX) of the current view, named with the version and date. The Parquet file holds all views, the raw results every fold.' },
+    text: 'Using the leaderboard in your paper: download the plot (SVG, PNG, JPEG, PDF), the ranking (CSV, JSON, XLSX) or a learner × encoder matrix (CSV) of the current view, named with the version and date. The Parquet file holds all views, the raw results every fold.' },
   { sel: '#cite-btn', block: 'start',
     text: 'Cite opens the BibTeX of the STRABLE paper, with a button to copy it.' },
   { sel: '#submit-btn', block: 'start', link: [README, 'Read the leaderboard README'],
