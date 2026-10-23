@@ -1,6 +1,7 @@
 # The shared environment, every package pinned to the version of the STRABLE paper environment
 # (2026-03-23, Python 3.12.12). Generated from env/requirements.in; do not edit by hand.
 # scripts/prepare.py installs it into cache/env together with this package (-e .).
+absl-py==2.5.1
 accelerate==1.12.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.2
@@ -36,6 +37,7 @@ httpx2==2.3.0
 huggingface-hub==2.2.0
 idna==3.11
 iniconfig==2.3.0
+jaxtyping==0.2.38
 jinja2==3.1.6
 joblib==1.5.2
 kditransform==1.2.0
@@ -107,6 +109,7 @@ structured-data-models==0.2.1
 sympy==1.14.0
 synthefy==7.2.0
 synthefy-nori==0.21.0
+tabfm==1.0.1
 tabicl==2.0.3
 tabpfn==9.0.0
 tabstar==1.1.15
@@ -118,10 +121,13 @@ tqdm==4.67.1
 transformers==5.20.2
 triton==3.7.1
 truststore==0.10.5
+typeguard==2.13.3
 typer==0.27.3
 typing-extensions==4.15.0
 typing-inspection==0.4.2
 tzdata==2025.2
 urllib3==2.5.0
+wadler-lindig==0.1.7
 xgboost==3.1.1
+xiaomi-tabldm @ git+https://github.com/xiaomi-research/xiaomi-tabldm.git@e83da2baaa7357f27290ebf3a1bd1cdc216b6223
 yarl==1.22.0
