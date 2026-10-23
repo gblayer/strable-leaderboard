@@ -11,14 +11,14 @@ being published). Only the files written here are public. ``--check`` validates 
 instead, which the Checks workflow runs on every pull request that changes it.
 
 One record per pipeline (model, encoder, variant), with a list per view (both, reg, clf):
-[score, time, fold rows, fold rows expected], or null when the pipeline has no row in that view. A
-model whose card lists the tasks of one family only (``tasks: [regression]``, say) gets that view
-alone: no "both" view, no view for the other family.
+[score, time, fold rows, fold rows expected, mean score], or null when the pipeline has no row in that
+view. A model whose card lists the tasks of one family only (``tasks: [regression]``, say) gets that
+view alone: no "both" view, no view for the other family.
 As in the paper's Figure 4a, score is the median over the fold rows of the view of R² or AUC, and
 time the median of the total run time per 1,000 samples (encoding, training and prediction
-seconds over the table's rows). A view with fewer fold rows than expected is shown with an
-incomplete tag. ``hw`` lists the hardware the rows ran on, when recorded. The page computes the
-ranking and the Pareto front from this file.
+seconds over the table's rows); mean score, their mean, is the page's other Score. A view with fewer
+fold rows than expected is shown with an incomplete tag. ``hw`` lists the hardware the rows ran on,
+when recorded. The page computes the ranking and the Pareto front from this file.
 
 API models: a pipeline whose rows all ran on hardware "api" (on its provider's servers) gets
 ``"api": true`` and ``"api_version"``, the versions its provider reported, which the page marks API,
@@ -63,9 +63,10 @@ CITATION = ("Blayer et al., STRABLE: Benchmarking Tabular Machine Learning with 
             "https://arxiv.org/abs/2605.12292")
 COLUMNS = {
     "median_score": "median over the view's fold rows (tables x 3 outer folds) of R² (regression) and ROC-AUC (classification)",
+    "mean_score": "mean over the same fold rows of R² and ROC-AUC; a fold where a pipeline fails (R² far below 0) pulls it down",
     "median_time_per_1k_s": "median over the same fold rows of the total run time (encoding, training, prediction) in s per 1,000 samples",
     "fold_rows": "fold rows present; fewer than fold_rows_expected means incomplete",
-    "pareto_front": "the score is strictly higher than that of every faster pipeline of the view",
+    "pareto_front": "the median score is strictly higher than that of every faster pipeline of the view",
     "overlap": "true when the maintainer marked the model's pre-training data as possibly overlapping STRABLE's tables "
                "(the page's ∩ mark; results.json links the evidence)",
     "api": "true when the model runs on its provider's servers, behind an API: its time includes the network and "
@@ -139,15 +140,16 @@ def folds_expected() -> dict:
 
 
 def summarize(folds: pd.DataFrame, expected: dict, views=tuple(VIEW_KEYS.values())) -> dict:
-    """Per view: [median score, median total s per 1K samples, fold rows, fold rows expected] or None.
+    """Per view: [median score, median total s per 1K samples, fold rows, fold rows expected, mean score] or None.
 
     ``folds`` are one pipeline's rows of the per-fold table; views not in ``views`` (card_views) are None.
     """
     out = {}
     for view, tasks in VIEWS.items():
         r = folds[folds["task"].isin(tasks)]
-        out[VIEW_KEYS[view]] = [round(float(r["score"].median()), 4), _num(r["time_per_1k_s"].median()), len(r),
-                                expected[VIEW_KEYS[view]]] if len(r) and VIEW_KEYS[view] in views else None
+        out[VIEW_KEYS[view]] = ([round(float(r["score"].median()), 4), _num(r["time_per_1k_s"].median()), len(r),
+                                 expected[VIEW_KEYS[view]], round(float(r["score"].mean()), 4)]
+                                if len(r) and VIEW_KEYS[view] in views else None)
     return out
 
 
@@ -214,10 +216,10 @@ def long_table(data: dict) -> pd.DataFrame:
                               if p[view][1] is not None], columns=["id", "score", "total_per_1k"]).set_index("id")
         front = set(pareto_front(board))
         for p in have:
-            score, time, n, expected = p[view]
+            score, time, n, expected, mean = p[view]
             rows.append({"version": data["version"], "date": data["built"], "view": view, "view_name": VIEW_NAMES[view],
                          "id": p["id"], "encoder": p["enc"], "learner": p["lrn"], "kind": p["kind"], "variant": p["variant"],
-                         "median_score": score, "median_time_per_1k_s": time, "fold_rows": n, "fold_rows_expected": expected,
+                         "median_score": score, "mean_score": mean, "median_time_per_1k_s": time, "fold_rows": n, "fold_rows_expected": expected,
                          "pareto_front": p["id"] in front, "overlap": bool(p.get("overlap")), "api": bool(p.get("api"))})
     return pd.DataFrame(rows)
 
@@ -243,7 +245,7 @@ def per_fold_path(json_path: Path) -> Path:
 
 
 def per_fold_problems(data: dict, path: Path) -> list[str]:
-    """The JSON's medians and fold rows, recomputed from the per-fold Parquet; the CSV must hold the same rows."""
+    """The JSON's medians, means and fold rows, recomputed from the per-fold Parquet; the CSV must hold the same rows."""
     folds = pd.read_parquet(path)
     if list(folds.columns) != PER_FOLD:
         return [f"{path.name}: columns must be {PER_FOLD}"]
@@ -292,10 +294,10 @@ def problems(data: dict) -> list[str]:
             v = p.get(view)
             if v is None:
                 continue
-            if (len(v) != 4 or v[0] is None or v[0] > 1 or v[1] is None or v[1] <= 0
-                    or not 0 < v[2] <= v[3] or v[3] != expected[view]):
-                out.append(f"{p.get('id')} {view}: expected [score <= 1, time > 0, fold rows, {expected[view]}]")
-            elif view == "clf" and v[0] < 0:
+            if (len(v) != 5 or v[0] is None or v[0] > 1 or v[1] is None or v[1] <= 0
+                    or not 0 < v[2] <= v[3] or v[3] != expected[view] or v[4] is None or v[4] > 1):
+                out.append(f"{p.get('id')} {view}: expected [score <= 1, time > 0, fold rows, {expected[view]}, mean <= 1]")
+            elif view == "clf" and min(v[0], v[4]) < 0:
                 out.append(f"{p.get('id')} {view}: AUC below 0")
     return out
 

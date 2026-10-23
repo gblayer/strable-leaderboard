@@ -454,6 +454,13 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
             <button type="button" id="task-clf" data-task="clf" aria-pressed="false">Classification · AUC</button>
           </div>
         </div>
+        <div class="ctl" id="ctl-score">
+          <span class="cap" id="score-lbl">Score</span>
+          <div class="seg" role="group" aria-labelledby="score-lbl">
+            <button type="button" id="score-median" data-score="median" aria-pressed="true">Median</button>
+            <button type="button" id="score-mean" data-score="mean" aria-pressed="false">Mean</button>
+          </div>
+        </div>
         <div class="ctl" id="ctl-sort">
           <span class="cap" id="sort-lbl">Sort</span>
           <div class="seg" role="group" aria-labelledby="sort-lbl">
@@ -546,7 +553,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         </div>
       </div>
     </div>
-    <p class="note">The plot follows the Task chosen above; the CSV, JSON and XLSX rankings follow the Task and Sort. The Parquet file holds all three views at once, one row per pipeline and view. The raw results hold every fold: one row per pipeline, table and outer fold, with its score and run time. <span class="form-msg" id="dl-msg" role="status"></span></p>
+    <p class="note">The plot follows the Task and Score chosen above; the CSV, JSON and XLSX rankings follow the Task, Score and Sort. The Parquet file holds all three views at once, one row per pipeline and view. The raw results hold every fold: one row per pipeline, table and outer fold, with its score and run time. <span class="form-msg" id="dl-msg" role="status"></span></p>
   </section>
 
   <section class="history" id="history" aria-labelledby="history-title">
@@ -609,7 +616,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 
 <script>
 /* Pipelines from results.json, see loadResults(). Per task (both, reg, clf): [median score, median
-   total s per 1K samples, fold rows, fold rows expected] or null. kind: "modular" or "e2e" (reads raw
+   total s per 1K samples, fold rows, fold rows expected, mean score] or null. kind: "modular" or "e2e" (reads raw
    strings itself), variant: "default" or "tuned", hw: what it ran on when recorded, shown in the
    tooltip. overlap: true when the maintainer marked the model's pre-training data as possibly
    overlapping STRABLE's tables, with overlap_evidence, a URL. api: true when the model runs on its
@@ -625,13 +632,17 @@ const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const TIME_SUB = ' · run time per 1K samples, log scale';
 const TASKS = {
-  both: { metric: 'Score', colSub: 'R² & AUC, median', axis: 'Median score (R² & AUC)',
-    sub: 'Median over ' + N_ALL + ' tables × 3 folds (R² for regression, AUC for classification)' + TIME_SUB },
-  reg: { metric: 'R²', colSub: 'median', axis: 'Median R²', sub: 'Median R² over ' + N_REG + ' tables × 3 folds' + TIME_SUB },
-  clf: { metric: 'AUC', colSub: 'median', axis: 'Median AUC', sub: 'Median AUC over ' + N_CLF + ' tables × 3 folds' + TIME_SUB }
+  both: { metric: 'Score', colSub: 'R² & AUC, ', axis: 'score (R² & AUC)', over: 'over ' + N_ALL + ' tables × 3 folds (R² for regression, AUC for classification)' },
+  reg: { metric: 'R²', colSub: '', axis: 'R²', over: 'R² over ' + N_REG + ' tables × 3 folds' },
+  clf: { metric: 'AUC', colSub: '', axis: 'AUC', over: 'AUC over ' + N_CLF + ' tables × 3 folds' }
 };
+/* The labels of the current Task and Score (median or mean over the fold rows; time is always the median). */
+function viewLabels() {
+  const t = TASKS[state.task], w = state.score, W = w[0].toUpperCase() + w.slice(1);
+  return { metric: t.metric, colSub: t.colSub + w, axis: W + ' ' + t.axis, sub: W + ' ' + t.over + TIME_SUB };
+}
 const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
-const state = { task: 'both', sort: 'pareto', overlap: 'show', api: 'show', hot: null };  // overlap, api: show or hide the models marked ∩, API
+const state = { task: 'both', score: 'median', sort: 'pareto', overlap: 'show', api: 'show', hot: null };  // score: median or mean; overlap, api: show or hide the models marked ∩, API
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -639,7 +650,7 @@ const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls)
 const SVGNS = 'http://www.w3.org/2000/svg';
 const sv = (tag, attrs) => { const n = document.createElementNS(SVGNS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
-/* One row per pipeline for the chosen task: median score and median total run time per 1K samples.
+/* One row per pipeline for the chosen task: median (or mean) score and median total run time per 1K samples.
    A pipeline without results for that task is left out, and so is one marked ∩ (API) when the
    Overlap (API) switch says Hide. A pipeline with fewer fold rows than the task has is tagged incomplete. */
 const num = (v) => (v == null || Number.isNaN(v) ? NaN : v);
@@ -657,7 +668,7 @@ function items(task) {
       tuned: d.variant === 'tuned', incomplete: v.length > 3 && v[2] < v[3],
       overlap: overlap, evidence: overlap && isUrl(d.overlap_evidence) ? d.overlap_evidence : null,
       api: api, apiVersion: api && typeof d.api_version === 'string' ? d.api_version : null,
-      s: v[0], t: num(v[1]) });
+      s: state.score === 'mean' ? v[4] : v[0], t: num(v[1]) });
   }
   return rows;
 }
@@ -753,7 +764,7 @@ function starSvg() {
 function renderTable(list, front, rows) {
   ovlHide();
   const tbody = $('rows'); tbody.textContent = '';
-  const T = TASKS[state.task];
+  const T = viewLabels();
   $('th-metric').textContent = T.metric; $('th-metric-sub').textContent = T.colSub;
   const nOn = rows.filter((d) => front.has(d.id)).length;
   const nTop = topSet(rows, front).size;  // one red frame around the first rows
@@ -796,7 +807,7 @@ function niceStep(range) {
   const raw = range / 5, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
   return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
 }
-/* The plot depends only on the data, the Task view and the Overlap and API switches, never on Sort.
+/* The plot depends only on the data, the Task view and the Score, Overlap and API switches, never on Sort.
    A square per pipeline, a circle for an API model's. */
 function renderPlot(list, front) {
   const host = $('plot'); host.textContent = '';
@@ -806,7 +817,7 @@ function renderPlot(list, front) {
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   list = list.filter((d) => !Number.isNaN(d.t));
   if (!list.length) return;
-  const T = TASKS[state.task];
+  const T = viewLabels();
   const tMin = Math.min(...list.map((d) => d.t)), tMax = Math.max(...list.map((d) => d.t));
   const x0 = Math.floor(Math.log10(tMin)), x1 = Math.ceil(Math.log10(tMax));
   const sMin = Math.min(...list.map((d) => d.s)), sMax = Math.max(...list.map((d) => d.s));
@@ -945,20 +956,21 @@ function renderTicker(list, front) {
   }
 }
 
-let plotKey = null;  // the Task view, Overlap and API switches and load the plot was drawn for
+let plotKey = null;  // the Task view, Score, Overlap and API switches and load the plot was drawn for
 function render() {
-  $('board-sub').textContent = TASKS[state.task].sub;
+  $('board-sub').textContent = viewLabels().sub;
   const list = items(state.task);
   if (!list.length) return;
   const front = paretoSet(list), rows = ordered(list, state.sort, front);
   renderTable(list, front, rows);
-  const key = state.task + state.overlap + state.api + LOADS;
+  const key = state.task + state.score + state.overlap + state.api + LOADS;
   if (plotKey !== key) { renderPlot(list, front); plotKey = key; }
   setHot(state.hot);  // the table rows are new; the plot may be the same
   renderTicker(list, front);
   $('stat-n').textContent = String(list.length);
   $('ver-chip').textContent = VERSION;
   ['both', 'reg', 'clf'].forEach((k) => $('task-' + k).setAttribute('aria-pressed', String(state.task === k)));
+  ['median', 'mean'].forEach((k) => $('score-' + k).setAttribute('aria-pressed', String(state.score === k)));
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
   ['show', 'hide'].forEach((k) => $('overlap-' + k).setAttribute('aria-pressed', String(state.overlap === k)));
   $('ctl-overlap').hidden = !anyOverlap();  // no switch while no model is marked
@@ -969,6 +981,7 @@ function render() {
 }
 
 document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; render(); }));
+document.querySelectorAll('[data-score]').forEach((b) => b.addEventListener('click', () => { state.score = b.dataset.score; render(); }));
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
 document.querySelectorAll('[data-overlap]').forEach((b) => b.addEventListener('click', () => { state.overlap = b.dataset.overlap; render(); }));
 document.querySelectorAll('[data-api]').forEach((b) => b.addEventListener('click', () => { state.api = b.dataset.api; render(); }));
@@ -1043,7 +1056,7 @@ $('cite-modal').addEventListener('keydown', (ev) => {
 /* ---------- downloads: the plot and the ranking of the current view ---------- */
 const VIEW_NAMES = { both: 'Both (R² & AUC)', reg: 'Regression (R²)', clf: 'Classification (AUC)' };
 const SORT_NAMES = { pareto: 'Pareto Front first', score: 'by score', time: 'by time' };
-const viewName = () => VIEW_NAMES[state.task] + (hidingOverlap() ? ', models marked ∩ hidden' : '') + (hidingApi() ? ', API models hidden' : '');
+const viewName = () => VIEW_NAMES[state.task] + ', ' + state.score + ' score' + (hidingOverlap() ? ', models marked ∩ hidden' : '') + (hidingApi() ? ', API models hidden' : '');
 const COLUMNS = {
   rank: 'position in the current order',
   pipeline: 'encoder + learner, or the learner alone for end-to-end pipelines',
@@ -1051,8 +1064,10 @@ const COLUMNS = {
   tags: 'end-to-end, tuned, incomplete, possible pre-training overlap, API model (runs on its provider\'s servers; its time includes the network)',
   median_score: { both: 'median over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification), as in the paper\'s Figure 4a',
     reg: 'median R² over the 76 regression tables x 3 outer folds', clf: 'median ROC-AUC over the 32 classification tables x 3 outer folds' },
+  mean_score: { both: 'mean over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification); a fold where a pipeline fails (R² far below 0) pulls it down',
+    reg: 'mean R² over the 76 regression tables x 3 outer folds; a fold where a pipeline fails (R² far below 0) pulls it down', clf: 'mean ROC-AUC over the 32 classification tables x 3 outer folds' },
   median_time_per_1k_s: 'median over the same fold rows of the total run time (encoding, training, prediction) in seconds per 1,000 samples',
-  pareto_front: 'yes when the score is strictly higher than that of every faster pipeline'
+  pareto_front: 'yes when the score (median or mean, as in the view) is strictly higher than that of every faster pipeline'
 };
 /* Libraries for PDF and XLSX, loaded only when those buttons are clicked. */
 const LIBS = {
@@ -1069,8 +1084,8 @@ function loadLib(name) {
     document.head.appendChild(s);
   }));
 }
-const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task, Overlap and API only, the ranking also the Sort
-const viewKey = (plot) => state.task + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '') + (hidingApi() ? '-no-api' : '');
+const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task, Score, Overlap and API only, the ranking also the Sort
+const viewKey = (plot) => state.task + (state.score === 'mean' ? '-mean' : '') + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '') + (hidingApi() ? '-no-api' : '');
 const fileName = (ext, plot) => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey(plot) + '.' + ext;
 function saveFile(name, blob) {
   const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
@@ -1080,14 +1095,15 @@ function saveFile(name, blob) {
 
 /* The ranking of the current view, as on the page. */
 function exportRows() {
-  const list = items(state.task), front = paretoSet(list);
+  const list = items(state.task), front = paretoSet(list), key = state.score + '_score';
   return ordered(list, state.sort, front).map((d, i) => ({
     rank: i + 1, pipeline: d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn, variant: d.tuned ? 'tuned' : 'default',
-    tags: tagsOf(d).map((t) => t[1]).concat(d.overlap ? [OVERLAP_NAME] : [], d.api ? [API_NAME] : []).join('; '), median_score: d.s, median_time_per_1k_s: Number.isNaN(d.t) ? null : d.t,
+    tags: tagsOf(d).map((t) => t[1]).concat(d.overlap ? [OVERLAP_NAME] : [], d.api ? [API_NAME] : []).join('; '), [key]: d.s, median_time_per_1k_s: Number.isNaN(d.t) ? null : d.t,
     pareto_front: front.has(d.id) ? 'yes' : 'no' }));
 }
 function exportMeta() {
-  const columns = Object.assign({}, COLUMNS, { median_score: COLUMNS.median_score[state.task] });
+  const key = state.score + '_score', columns = Object.assign({}, COLUMNS, { [key]: COLUMNS[key][state.task] });
+  delete columns[key === 'mean_score' ? 'median_score' : 'mean_score'];
   return { board: 'STRABLE leaderboard', version: VERSION, date: BUILT, view: viewName() + ', ' + SORT_NAMES[state.sort],
     url: SITE, columns: columns, citation: BIB };
 }
@@ -1203,10 +1219,12 @@ function placeCaret() {
 placeCaret();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeCaret);
 
-/* ---------- demo tour: task, sort, overlap, API, table, plot, refresh, history, downloads, cite, adding a model ---------- */
+/* ---------- demo tour: task, score, sort, overlap, API, table, plot, refresh, history, downloads, cite, adding a model ---------- */
 const TOUR = [
   { sel: '#ctl-task', block: 'center', task: 'reg',
     text: 'Task. Switch between all 108 tables, the regression tables or the classification tables. The table, the plot and the ticker follow.' },
+  { sel: '#ctl-score', block: 'center', score: 'mean',
+    text: 'Score. Median, the default as in the STRABLE paper, follows the typical table. Mean averages every fold, so a fold where a pipeline struggles counts in full. The table and the plot follow; time stays the median.' },
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of the order get a red frame; the plot stays the same.' },
   { sel: '#ctl-overlap', block: 'center',
@@ -1216,7 +1234,7 @@ const TOUR = [
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
     text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, ∩ marks models whose pre-training may overlap STRABLE, API those that run on their provider\'s servers, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
-    text: 'The plot: median score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
+    text: 'The plot: the score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
   { sel: '#refresh', block: 'center',
     text: 'Refresh fetches the latest results without reloading the page.' },
   { sel: '#history', block: 'center',
@@ -1237,7 +1255,7 @@ function startBar() {
   if (tour && tour.playing) { b.style.transition = 'width 7000ms linear'; b.style.width = '100%'; }
 }
 function applyStep(s) {
-  state.task = s.task || 'both'; state.sort = s.sort || 'pareto'; state.overlap = 'show'; state.api = 'show';
+  state.task = s.task || 'both'; state.score = s.score || 'median'; state.sort = s.sort || 'pareto'; state.overlap = 'show'; state.api = 'show';
   state.hot = s.hot || null;
   render();
 }
@@ -1265,7 +1283,7 @@ function nextStep() { if (!tour) return; if (tour.i < tour.steps.length - 1) { t
 function prevStep() { if (tour && tour.i > 0) { tour.i--; showStep(); } }
 function startTour() {
   if (tour) return;
-  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, sort: state.sort, overlap: state.overlap, api: state.api } };
+  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, score: state.score, sort: state.sort, overlap: state.overlap, api: state.api } };
   $('tour').hidden = false; $('tour-play').textContent = 'Pause';
   showStep();
 }
@@ -1274,7 +1292,7 @@ function endTour() {
   clearTimeout(tour.timer); clearFocus();
   const s0 = tour.saved; tour = null;
   $('tour').hidden = true;
-  state.task = s0.task; state.sort = s0.sort; state.overlap = s0.overlap; state.api = s0.api; state.hot = null; render();
+  state.task = s0.task; state.score = s0.score; state.sort = s0.sort; state.overlap = s0.overlap; state.api = s0.api; state.hot = null; render();
 }
 $('demo-btn').addEventListener('click', startTour);
 $('tour-next').addEventListener('click', nextStep);
@@ -1299,6 +1317,7 @@ document.addEventListener('keydown', (e) => {
   const toks = (location.hash || '').replace('#', '').split('.');
   if (toks.indexOf('reg') >= 0) state.task = 'reg';
   if (toks.indexOf('clf') >= 0) state.task = 'clf';
+  if (toks.indexOf('mean') >= 0) state.score = 'mean';
   if (toks.indexOf('score') >= 0) state.sort = 'score';
   if (toks.indexOf('time') >= 0) state.sort = 'time';
   if (toks.indexOf('no-overlap') >= 0) state.overlap = 'hide';

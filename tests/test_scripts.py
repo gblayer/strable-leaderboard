@@ -47,12 +47,13 @@ def test_build_site_data(tmp_path):
     assert p["id"] == "tfidf+ridge" and p["enc"] == "Tf-Idf" and p["lrn"] == "Ridge" and p["kind"] == "modular"
     assert p["variant"] == "default" and p["hw"] == "cpu" and "paper" not in p
     assert p["both"][0] == 0.6 and p["clf"][0] == 0.6  # the median: one negative table does not move it
-    assert all(len(p[v]) == 4 for v in ("both", "reg", "clf"))  # [score, time, fold rows, expected]: no fit or predict
+    assert p["both"][4] == 0.5898 and p["reg"][4] == 0.5855 and p["clf"][4] == 0.6  # the mean: it does
+    assert all(len(p[v]) == 5 for v in ("both", "reg", "clf"))  # [score, time, fold rows, expected, mean]: no fit or predict
     assert p["reg"][1] > 0  # total run time per 1K samples
-    assert p["both"][2:] == [324, 324] and p["reg"][2:] == [228, 228] and p["clf"][2:] == [96, 96]
+    assert p["both"][2:4] == [324, 324] and p["reg"][2:4] == [228, 228] and p["clf"][2:4] == [96, 96]
     assert t["id"] == "tfidf+ridge:tuned" and t["variant"] == "tuned" and "hw" not in t  # imported rows record no hardware
     assert t["reg"][1] > 0  # imported rows: their total run time
-    assert t["reg"][2:] == [225, 228] and t["clf"][2:] == [95, 96]  # a table missing in reg, a score in clf: both incomplete
+    assert t["reg"][2:4] == [225, 228] and t["clf"][2:4] == [95, 96]  # a table missing in reg, a score in clf: both incomplete
     assert problems(data) == []
     long = pd.read_parquet(tmp_path / "results.parquet")  # all views, one row per pipeline and view
     assert len(long) == 6 and set(long["view"]) == {"both", "reg", "clf"} and long["pareto_front"].dtype == bool
@@ -146,9 +147,9 @@ def test_a_one_family_model_gets_only_its_view(tmp_path, monkeypatch):
     data = build(results, tmp_path / "results.json")
     by_id = {p["id"]: p for p in data["pipelines"]}
     assert by_id["tfidf+nori"]["both"] is None and by_id["tfidf+nori"]["clf"] is None
-    assert by_id["tfidf+nori"]["reg"][2:] == [228, 228]
+    assert by_id["tfidf+nori"]["reg"][2:4] == [228, 228]
     assert by_id["tfidf+clfonly"]["both"] is None and by_id["tfidf+clfonly"]["reg"] is None
-    assert by_id["tfidf+clfonly"]["clf"][2:] == [96, 96]
+    assert by_id["tfidf+clfonly"]["clf"][2:4] == [96, 96]
     assert all(by_id["tfidf+ridge"][v] for v in ("both", "reg", "clf"))  # no card: unaffected
     assert problems(data) == [] and parquet_problems(data, tmp_path / "results.parquet") == []
     assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == []
