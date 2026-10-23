@@ -6,7 +6,9 @@ Everything goes into the cache folder, ``cache/`` of this clone by default ($STR
 overrides it). It is gitignored and never reaches GitHub:
 
 - ``env/``: the ONE shared Python environment of every model, built from env/requirements.txt
-  (the paper's versions) plus this package (-e .). Rebuilt only when env/requirements.txt changes.
+  (the paper's versions) plus this package (-e .). Rebuilt only when env/requirements.txt changes,
+  next to the live one, then swapped in: a task already running keeps the env it started with.
+  The one it replaces stays as ``env.old-<time>/`` for ``OLD_ENV_DAYS`` days.
 - ``data/``: the dataset at the pinned revision.
 - ``weights/<encoder>/``: the language-model encoders' checkpoints.
 - ``weights/<model>/``: each model's checkpoint at its pinned commit, only the card's
@@ -30,6 +32,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -39,6 +42,7 @@ from strable_leaderboard.card import checkpoint_bytes, default_cache, fetch_chec
 
 PYTHON = "3.12.12"  # the paper's interpreter
 MAX_CHECKPOINT_BYTES = 20e9
+OLD_ENV_DAYS = 3  # longer than the longest task (48 h): no job still reads an env replaced that long ago
 LARGE_CHECKPOINTS: set[str] = set()  # model folders allowed a checkpoint above the cap
 # Debian bookworm with gcc and the C library headers (buildpack-deps:bookworm, 351 MB compressed), for
 # every model: Triton, which some packages run (Kumo Tabular's), compiles a small C launcher when its
@@ -51,14 +55,23 @@ def env_python(cache: Path) -> Path:
 
 
 def build_env(cache: Path, force: bool = False) -> Path:
-    """Build cache/env from env/requirements.txt, unless it is already built from the same file."""
+    """Build cache/env from env/requirements.txt, unless it is already built from the same file.
+
+    The new env is built in cache/env.new, then two renames swap it in. A running task keeps the old
+    one: the sandbox bound that directory, and a rename does not move it from under the mount. A task
+    that starts after the swap gets the new env.
+    """
     env, stamp = cache / "env", cache / "env" / ".requirements.sha256"
     digest = hashlib.sha256(ENV_REQUIREMENTS.read_bytes()).hexdigest()
     if not force and stamp.exists() and stamp.read_text().strip() == digest and env_python(cache).exists():
         print("shared env up to date:", env)
         return env
-    if env.exists():
-        shutil.rmtree(env)
+    for old in cache.glob("env.old-*"):
+        if time.time() - old.stat().st_mtime > OLD_ENV_DAYS * 86400:
+            shutil.rmtree(old)
+    new = cache / "env.new"
+    if new.exists():  # a build that stopped half-way
+        shutil.rmtree(new)
     run_env = dict(os.environ, PYTHONNOUSERSITE="1")
     uv = shutil.which("uv")
     if uv:
@@ -67,15 +80,21 @@ def build_env(cache: Path, force: bool = False) -> Path:
         run_env.update(UV_PYTHON_INSTALL_DIR=str(cache / "python"), UV_CACHE_DIR=str(cache / "uv"),
                        UV_PYTHON_PREFERENCE="only-managed", UV_LINK_MODE="hardlink")
         subprocess.run([uv, "python", "install", PYTHON], check=True, env=run_env)
-        subprocess.run([uv, "venv", "--python", PYTHON, str(env)], check=True, env=run_env)
-        install = [uv, "pip", "install", "--python", str(env_python(cache))]
-    else:
-        subprocess.run([sys.executable, "-m", "venv", str(env)], check=True, env=run_env)
-        install = [str(env_python(cache)), "-m", "pip", "install", "-q"]
+        # Relocatable: its scripts still work once renamed to cache/env
+        subprocess.run([uv, "venv", "--relocatable", "--python", PYTHON, str(new)], check=True, env=run_env)
+        install = [uv, "pip", "install", "--python", str(new / "bin" / "python")]
+    else:  # its console scripts keep the cache/env.new path; the runner only runs python -m
+        subprocess.run([sys.executable, "-m", "venv", str(new)], check=True, env=run_env)
+        install = [str(new / "bin" / "python"), "-m", "pip", "install", "-q"]
     # The lock is complete: installed as it is, without dependencies it leaves out (check_requirements.EXCLUDES)
     subprocess.run(install + ["--no-deps", "-r", str(ENV_REQUIREMENTS)], check=True, env=run_env)
     subprocess.run(install + ["--no-deps", "-e", str(ROOT)], check=True, env=run_env)
-    stamp.write_text(digest + "\n")
+    (new / stamp.name).write_text(digest + "\n")
+    if env.exists():
+        old = cache / ("env.old-" + time.strftime("%Y%m%d-%H%M%S"))
+        os.replace(env, old)
+        os.utime(old)  # its age counts from the swap
+    os.replace(new, env)
     print("shared env built:", env)
     return env
 
