@@ -1,0 +1,1 @@
+xiaomi-tabldm @ git+https://github.com/xiaomi-research/xiaomi-tabldm.git@e83da2baaa7357f27290ebf3a1bd1cdc216b6223
