@@ -25,6 +25,9 @@ def test_tile_selection():
     windows = {p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}
     assert windows == {"100-300", "50-300", "50-250", "75-400", "75-300"}  # one default setting per learner
     assert [p.get("date") for p in rows if p["model"] == "tabpfn-3.5"] == ["2026-10"]  # its own date
+    hardware = {f"{p['encoder']}+{p['model']}": p.get("hardware") for p in rows}  # the board's own TILE runs
+    assert {k for k, v in hardware.items() if v} == {"tile+tabpfn-3.5", "tile+kumo-tabular"}
+    assert {v for v in hardware.values() if v} == {"NVIDIA A40"}
     assert all(p["where"]["model"] == "llama3_14_layers|cell_meanpool|include_numbers" for p in rows if "where" in p)
     assert PAPER["encoders"]["tile"] == "TILE" and PAPER["learners"]["causilo"] == "Causilo"  # the board's names
     paper = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())

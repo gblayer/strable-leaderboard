@@ -15,6 +15,7 @@
 # Tf-Idf encoder, so it gets the id the runner gives a models/causilo folder with tfidf.
 
 date: "2026-09"  # when the source rows were computed; a pipeline's own `date` overrides it
+# hardware: "paper" (not recorded) unless a pipeline gives its own, the GPU its job logs show
 
 learners:  # model folder -> display name, for learners without a models/ folder
   causilo: Causilo
@@ -40,6 +41,6 @@ pipelines:
   strable_tfidf.csv:
     num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default}
   strable_colwin_tabpfn35.csv:  # run by the board's maintainers with the TILE authors' code and settings
-    num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile, variant: default, date: "2026-10", where: {<<: *tile, pca: 100, feature_window: 75-300}}
+    num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile, variant: default, date: "2026-10", hardware: NVIDIA A40, where: {<<: *tile, pca: 100, feature_window: 75-300}}
   strable_colwin_kumo.csv:  # same: TILE's code and settings, the default feature window for a learner the TILE paper did not run
-    num-str_latte_kumo: {model: kumo-tabular, encoder: tile, variant: default, date: "2026-10", where: {<<: *tile, pca: 100, feature_window: 75-300}}
+    num-str_latte_kumo: {model: kumo-tabular, encoder: tile, variant: default, date: "2026-10", hardware: NVIDIA A40, where: {<<: *tile, pca: 100, feature_window: 75-300}}
