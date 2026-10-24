@@ -225,6 +225,42 @@ def test_published_board_reproduces_table_e10():
     assert pareto_front(board.loc[ids]) == list(e10)
 
 
+def test_a_new_env_is_built_next_to_the_live_one_then_swapped_in(tmp_path, monkeypatch):
+    import os
+    import time
+
+    import prepare
+
+    calls = []
+
+    def fake_run(cmd, check, env):
+        calls.append(cmd)
+        if cmd[1] == "venv":  # uv venv --relocatable --python <version> <dir>
+            (Path(cmd[-1]) / "bin").mkdir(parents=True)
+            (Path(cmd[-1]) / "bin" / "python").write_text("")
+
+    lock = tmp_path / "requirements.txt"
+    monkeypatch.setattr(prepare, "ENV_REQUIREMENTS", lock)
+    monkeypatch.setattr(prepare.shutil, "which", lambda name: "/usr/bin/" + name)
+    monkeypatch.setattr(prepare.subprocess, "run", fake_run)
+    cache = tmp_path / "cache"; cache.mkdir()
+    lock.write_text("numpy==2.3.5\n")
+    env = prepare.build_env(cache)
+    assert env == cache / "env" and (env / "bin" / "python").exists() and not (cache / "env.new").exists()
+    assert ["/usr/bin/uv", "venv", "--relocatable"] == calls[1][:3]
+    (env / "a-running-task-reads-this").write_text("")
+    n = len(calls)
+    prepare.build_env(cache)  # the same lock: nothing is built
+    assert len(calls) == n
+    stale = cache / "env.old-20260101-000000"; stale.mkdir()
+    os.utime(stale, (time.time() - 4 * 86400,) * 2)
+    lock.write_text("numpy==2.3.5\npandas==2.3.3\n")
+    prepare.build_env(cache)
+    (old,) = cache.glob("env.old-*")  # the stale one removed, the one just replaced kept
+    assert (old / "a-running-task-reads-this").exists() and not (env / "a-running-task-reads-this").exists()
+    assert prepare.hashlib.sha256(lock.read_bytes()).hexdigest() in (env / ".requirements.sha256").read_text()
+
+
 def test_the_sandbox_image_is_pulled_again_when_it_changes(tmp_path, monkeypatch):
     import prepare
 
