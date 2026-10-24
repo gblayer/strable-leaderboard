@@ -1,0 +1,17 @@
+name: Nori-30M
+version: "0.21.0 (30M)"
+end_to_end: false
+tasks: [regression]
+variant: default
+hardware: gpu
+
+package: synthefy-nori==0.21.0
+checkpoint:
+  repo: Synthefy/Nori-30M
+  revision: 63c9f7facf9fb32c37ce3fc2fba331d524696318
+  files: [nori.pt]
+licence: Apache-2.0
+pretraining_data: synthetic
+
+code: https://github.com/Synthefy/synthefy-nori
+paper: https://doi.org/10.5281/zenodo.20710462
