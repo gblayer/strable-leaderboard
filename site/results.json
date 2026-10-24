@@ -1,7 +1,11 @@
 {
- "version": "v0.1.6",
- "built": "2026-10-20",
+ "version": "v0.1.7",
+ "built": "2026-10-24",
  "history": [
+  {
+   "version": "v0.1.7",
+   "note": "Hardware recorded for TILE + TabPFN-3.5 and TILE + Kumo-Tabular (NVIDIA A40)"
+  },
   {
    "version": "v0.1.6",
    "note": "Added TILE + Kumo-Tabular"
@@ -800,6 +804,7 @@
    "lrn": "Kumo Tabular",
    "kind": "modular",
    "variant": "default",
+   "hw": "NVIDIA A40",
    "both": [
     0.8325,
     124.3591,
@@ -2124,6 +2129,7 @@
    "lrn": "TabPFN-3.5",
    "kind": "modular",
    "variant": "default",
+   "hw": "NVIDIA A40",
    "both": [
     0.8132,
     127.0551,
