@@ -10,7 +10,7 @@ One pull request adds one folder, `models/<name>/`:
 
 `models/_template/` is the starting point, `models/ridge/` a complete example.
 
-**Folder names.** One folder per model version, named with lowercase letters, digits, dots and hyphens (`kumo-tabular-1.0`); the version itself lives in `model.yaml`. Folder names already used by models on the board are taken: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`, `causilo`.
+**Folder names.** One folder per model version, named with lowercase letters, digits, dots and hyphens (`kumo-tabular-1.0`); the version itself lives in `model.yaml`. Folder names already used by models on the board are taken: `ridge`, `xgboost`, `extratrees`, `catboost`, `tabpfn-2.5`, `tabicl-v2`, `realmlp`, `tabm`, `mambular`, `contexttab`, `tabstar`, `tarte`, `causilo`, `kumo-tabular-small`, `kumo-tabular-medium`.
 
 **One shared environment.** All models run in one Python environment, [`env/requirements.txt`](../env/requirements.txt), so that results stay comparable. In your `requirements.txt`, write your model's package version, as listed there. If your model needs a package that is missing, ask for it in the pull request text and add one line `name==version` to [`env/requirements.in`](../env/requirements.in); never change a line that is already there. A package that is not on PyPI is pinned to one commit of its git repository, `name @ git+https://<host>/<repository>@<full 40-character commit hash>`, never a branch or a tag; the card's `package` field holds the same line. The maintainer decides on any other version and updates the environment.
 
