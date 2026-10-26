@@ -5,7 +5,7 @@ tasks: [binary, multiclass]  # the regression weights need the mitra-finetune pa
 variant: default
 hardware: gpu
 
-package: autogluon.tabular==1.6.3
+package: autogluon.tabular[mitra]==1.6.3
 checkpoint:
   repo: autogluon/mitra-classifier-2
   revision: edada0d20759c58ada8c8605c25f22f6e98ea5f0
