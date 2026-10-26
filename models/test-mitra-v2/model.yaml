@@ -1,0 +1,19 @@
+name: Mitra-v2 (test)
+version: "2"
+end_to_end: false
+tasks: [binary, multiclass]  # the regression weights need the mitra-finetune package, not stock AutoGluon
+variant: default
+hardware: gpu
+
+package: autogluon.tabular[mitra]==1.6.3
+checkpoint:
+  repo: autogluon/mitra-classifier-2
+  revision: edada0d20759c58ada8c8605c25f22f6e98ea5f0
+  files: [config.json, model.safetensors]
+licence: Apache-2.0  # the code and the checkpoint
+# Model card: "Mitra-v2 classifier is a tabular foundation model that is pre-trained on purely
+# synthetic datasets sampled from a mix of random classifiers".
+pretraining_data: synthetic
+
+code: https://github.com/autogluon/autogluon
+paper: https://arxiv.org/abs/2609.04540
