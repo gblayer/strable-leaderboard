@@ -1,0 +1,18 @@
+name: Xiaomi-TabLDM
+version: "0.1.0 (default)"
+end_to_end: false
+tasks: [regression, binary, multiclass]
+variant: default
+hardware: gpu
+
+package: "xiaomi-tabldm @ git+https://github.com/xiaomi-research/xiaomi-tabldm.git@e83da2baaa7357f27290ebf3a1bd1cdc216b6223"  # not on PyPI: the code at one commit, as in env/requirements.in
+checkpoint:
+  repo: occams/Xiaomi-TabLDM
+  revision: 712e5635be9fd8728084cd5ae105ddecb31dc03c
+  files: [checkpoints/clf_default.ckpt, checkpoints/reg_default.ckpt]
+licence: Apache-2.0  # the code and the weights
+# Model card: "Pretrained exclusively on synthetic data generated from structural causal models (SCMs)".
+pretraining_data: synthetic
+
+code: https://github.com/xiaomi-research/xiaomi-tabldm
+paper: https://arxiv.org/abs/2609.03880
