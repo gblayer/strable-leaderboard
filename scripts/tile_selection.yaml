@@ -21,6 +21,7 @@
 date: "2026-10"  # when the source rows were computed; a pipeline's own `date` overrides it
 # hardware: the GPU of each source row when its CSV records one (column `gpu`), else the pipeline's own
 # `hardware`, else "paper" (not recorded)
+# Tf-Idf + Causilo: the GPU its job logs and launcher show; its CSV has no `gpu` column
 
 learners:  # model folder -> display name, for learners without a models/ folder
   causilo: Causilo
@@ -51,5 +52,7 @@ pipelines:
     num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
     num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
     num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
-  strable_tfidf.csv:
-    num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09"}
+  strable_tfidf.csv:  # the board's Tf-Idf encoder, run by the TILE authors
+    num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09", hardware: NVIDIA H100 80GB HBM3}
+    num-str_tabvec_kumo_small: {model: kumo-tabular-small, encoder: tfidf, variant: default}
+    num-str_tabvec_kumo_medium: {model: kumo-tabular-medium, encoder: tfidf, variant: default, hold: true}

@@ -21,16 +21,17 @@ def test_tile_selection():
     rows = [p for methods in SELECTION["pipelines"].values() for p in methods.values()]
     ids = {f"{p['encoder']}+{p['model']}" for p in rows}
     assert ids == {"tile+tabpfn-2.5", "tile+tabicl-v2", "tile+tabpfn-3", "tile+tabpfn-3.5", "tile+causilo", "tfidf+causilo",
-                   "tile+exaone-tabular", "tile+kumo-tabular", "tile+kumo-tabular-medium", "tile+kumo-tabular-small"}
+                   "tile+exaone-tabular", "tile+kumo-tabular", "tile+kumo-tabular-medium", "tile+kumo-tabular-small",
+                   "tfidf+kumo-tabular-small", "tfidf+kumo-tabular-medium"}
     assert all(p["variant"] == "default" for p in rows)
     held = {f"{p['encoder']}+{p['model']}" for p in rows if p.get("hold")}
-    assert held == {"tile+exaone-tabular"}  # listed, not imported
+    assert held == {"tile+exaone-tabular", "tfidf+kumo-tabular-medium"}  # listed, not imported
     assert {f"{p['encoder']}+{p['model']}" for ms in imported(SELECTION["pipelines"]).values() for p in ms.values()} == ids - held
     assert "tfidf" in ENCODERS  # Tf-Idf + Causilo: the id the runner gives models/causilo with its tfidf encoder
     windows = {p["model"]: p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}  # one per learner
     assert windows["tabpfn-2.5"] == "200-400" and windows["exaone-tabular"] == "150-400"
     assert {windows[k] for k in ("kumo-tabular", "kumo-tabular-medium", "kumo-tabular-small")} == {"200-600"}
-    assert [p.get("date") for p in rows if p["encoder"] == "tfidf"] == ["2026-09"]  # its own date
+    assert [p.get("date") for p in rows if p["encoder"] == "tfidf"] == ["2026-09", None, None]  # Causilo: its own date
     tile = [p["where"] for p in rows if p["encoder"] == "tile"]
     assert all(w["model"] == "llama3_14_layers_v2|cell_meanpool|include_numbers|clean" and w["window_total"] for w in tile)
     assert PAPER["encoders"]["tile"] == "TILE" and PAPER["learners"]["causilo"] == "Causilo"  # the board's names
