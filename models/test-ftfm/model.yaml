@@ -1,0 +1,19 @@
+name: FTFM-1 (test)
+version: "1"
+end_to_end: false
+tasks: [binary, multiclass]  # the regression weights are not released
+variant: default
+hardware: gpu
+
+package: "ftfm @ git+https://github.com/machinelearningnuremberg/ftfm-official@7e5e237daa26ef20f0faec1650d000b04de5122e"  # not on PyPI: the code at one commit, as in env/requirements.in
+checkpoint:
+  repo: josifgrabocka/ftfm
+  revision: a8362b12392a80d2e4618e91e6ce02b0bed2781d
+  files: [config.json, model.safetensors]
+licence: CC BY-NC 4.0  # the weights: non-commercial, publishing results allowed, never redistributed here. The code is Apache-2.0
+# Model card, "Training": stages B and C "draw half their updates from self-supervised episodes over
+# a corpus of public tables, filtered against the evaluation benchmarks by dataset name. A later
+# content-level audit found that this name filter missed a small number of benchmark tables".
+pretraining_data: mixed
+
+code: https://github.com/machinelearningnuremberg/ftfm-official
