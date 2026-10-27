@@ -17,9 +17,12 @@ RUN_API = "run-api"  # set by the maintainer only: starts the run of an API mode
 # Per model folder, {"overlap": true, "evidence": "<url>"}: set by the maintainer, by hand or through the
 # OVERLAP label that the dispatcher reads; read by scripts/build_site_data.py for the page's ∩ mark.
 FLAGS = "site/flags.json"
-# What a results pull request commits: the files scripts/build_site_data.py builds, and FLAGS.
+# Per pipeline id, the maintainer's one-sentence note (e.g. a detail of how it was run), set by hand;
+# read by scripts/build_site_data.py, shown when the pipeline is hovered.
+NOTES = "site/notes.json"
+# What a results pull request commits: the files scripts/build_site_data.py builds, FLAGS and NOTES.
 RESULTS_FILES = ("site/results.json", "site/results.parquet", "site/results_per_fold.parquet",
-                 "site/results_per_fold.csv", FLAGS)
+                 "site/results_per_fold.csv", FLAGS, NOTES)
 SLUG = re.compile(r"^[a-z0-9][a-z0-9.-]*$")  # a model folder name
 # Example folders for contributors: the dispatcher never runs them.
 EXAMPLES = {"ridge"}

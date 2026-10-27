@@ -11,8 +11,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_site_data  # noqa: E402
-from build_site_data import (PER_FOLD, build, flags_problems, overlap_problems, parquet_problems,  # noqa: E402
-                             per_fold_problems, problems, read_flags)
+from build_site_data import (PER_FOLD, build, flags_problems, note_problems, notes_problems,  # noqa: E402
+                             overlap_problems, parquet_problems, per_fold_problems, problems, read_flags)
 from import_paper_results import convert  # noqa: E402
 from strable_leaderboard.encoders import NAMES  # noqa: E402
 from strable_leaderboard.metrics import pareto_front  # noqa: E402
@@ -73,6 +73,32 @@ def test_build_site_data(tmp_path):
     assert per_fold_problems(data, tmp_path / "results_per_fold.parquet") == ["tfidf+ridge: medians or fold rows differ from results_per_fold.parquet"]
     folds.iloc[:-1].to_csv(tmp_path / "results_per_fold.csv", index=False)
     assert "results_per_fold.csv does not match results_per_fold.parquet: rebuild both" in per_fold_problems(data, tmp_path / "results_per_fold.parquet")
+
+
+def test_build_site_data_notes(tmp_path):
+    results = tmp_path / "results"; results.mkdir()
+    _complete_results().to_csv(results / "ridge.csv", index=False)
+    (results / "versions.yaml").write_text("- version: v0.1.1\n  date: 2026-11-20\n  note: First version\n")
+    note = "Run on 105 of 108 tables: the others ran out of GPU memory."
+    (tmp_path / "notes.json").write_text(json.dumps({"tfidf+ridge": note}))  # next to the output, like site/notes.json
+    data = build(results, tmp_path / "results.json")
+    (p,) = data["pipelines"]
+    assert p["note"] == note and problems(data) == [] and note_problems(data, {"tfidf+ridge": note}) == []
+    assert note_problems(data, {}) == ["tfidf+ridge: note does not match notes.json"]
+    long = pd.read_parquet(tmp_path / "results.parquet")
+    assert set(long["note"]) == {note} and parquet_problems(data, tmp_path / "results.parquet") == []
+    assert notes_problems({"tfidf+ridge": note}, {"tfidf+ridge"}) == []
+    assert notes_problems({"tfidf+xgboost": note}, {"tfidf+ridge"}) == ["notes.json: no pipeline tfidf+xgboost on the board"]
+    for bad in [[], {"tfidf+ridge": ""}, {"tfidf+ridge": " "}, {"tfidf+ridge": 3}]:
+        assert notes_problems(bad), bad
+    p["note"] = ""
+    assert problems(data) == ["tfidf+ridge: note must be a non-empty string"]
+    for bad in [{"tfidf+ridge": ""}, {"tfidf+xgboost": note}]:  # a malformed note or an unknown pipeline stops the build
+        (tmp_path / "notes.json").write_text(json.dumps(bad))
+        with pytest.raises(SystemExit):
+            build(results, tmp_path / "results.json")
+    (tmp_path / "notes.json").unlink()
+    assert "note" not in build(results, tmp_path / "results.json")["pipelines"][0]  # no file, no note
 
 
 def test_build_site_data_overlap_flags(tmp_path):
