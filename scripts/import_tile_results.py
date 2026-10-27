@@ -3,7 +3,8 @@
     python scripts/import_tile_results.py <folder of the TILE CSVs> --out $STRABLE_RESULTS
 
 Exactly the pipelines listed in ``scripts/tile_selection.yaml`` are imported, by source CSV, method
-token and the settings in ``where``; a listed pipeline without rows in its CSV is an error. The rows are
+token and the settings in ``where``, except those marked ``hold: true``, which stay listed and are not
+imported; a listed pipeline without rows in its CSV is an error. The rows are
 made as the paper's (``convert`` of scripts/import_paper_results.py): ``total_s`` only, the source's
 ``run_time``, with ``hardware`` and ``package`` set to ``paper``; ``hardware`` is instead the GPU of the
 source row when its CSV records one (column ``gpu``), else the pipeline's own when the selection gives
@@ -61,6 +62,11 @@ def hardware_of(df: pd.DataFrame, frames: dict, pipelines: dict) -> list[str]:
     return [gpus.get(key, own[key[:3]]) for key in keys]
 
 
+def imported(pipelines: dict) -> dict:
+    """The pipelines to import: every listed one but those marked ``hold``."""
+    return {csv: {m: p for m, p in methods.items() if not p.get("hold")} for csv, methods in pipelines.items()}
+
+
 def merge(old: pd.DataFrame | None, new: pd.DataFrame) -> pd.DataFrame:
     """A results file's rows: ``old`` without the keys ``new`` has, then ``new``, sorted."""
     if old is not None:
@@ -76,7 +82,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     tables = json.loads(MANIFEST.read_text())["tables"]
     selection = yaml.safe_load(SELECTION.read_text())
-    pipelines = selection["pipelines"]
+    pipelines = imported(selection["pipelines"])
     frames = {csv: select(pd.read_csv(args.compiled / csv), methods) for csv, methods in pipelines.items()}
     df, problems = convert(frames, tables, pipelines)
     if problems:
