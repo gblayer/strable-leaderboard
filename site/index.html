@@ -40,6 +40,7 @@
   --accent-2: #223631;
   --accent-text: #4E0000;  /* the accent as text on surfaces */
   --mark: #8E2A33; --mark-muted: #AC9C90;
+  --c-fit: #4F6B63; --c-pre: #8E2A33; --c-e2e: #13273F;
   --hdr: #223631; --hdr-ink: #F3E6DA;
   /* Pine Grove panel: the same in both themes */
   --pine: #223631; --pine-line: #4F6B63; --pine-ink: #F3E6DA; --pine-ink-2: #C3CDC7;
@@ -54,6 +55,7 @@
     --accent-2: #91ACA5;
   --accent-text: #D0646E;
     --mark: #D0646E; --mark-muted: #4F6483;
+    --c-fit: #91ACA5; --c-pre: #D0646E; --c-e2e: #E9D4C3;
     --hdr: #3A5A50; --hdr-ink: #F3E6DA;
     color-scheme: dark;
   }
@@ -65,6 +67,7 @@
   --accent-2: #91ACA5;
   --accent-text: #D0646E;
   --mark: #D0646E; --mark-muted: #4F6483;
+  --c-fit: #91ACA5; --c-pre: #D0646E; --c-e2e: #E9D4C3;
   --hdr: #3A5A50; --hdr-ink: #F3E6DA;
   color-scheme: dark;
 }
@@ -286,6 +289,11 @@ button.api-pill:hover, .ovl.open button.api-pill { filter: brightness(1.15); }
 .pt { fill: var(--mark-muted); stroke: var(--surface); stroke-width: 2; }
 .pt.on { fill: var(--mark); }
 .pt.hot { stroke: var(--ink); stroke-width: 2.5; }
+.by-encoder .pt { opacity: 0.55; } .by-encoder .pt.on, .by-encoder .pt.hot { opacity: 1; }
+.pt.k-fit, .sw-fit { fill: var(--c-fit); background: var(--c-fit); }
+.pt.k-pre, .sw-pre { fill: var(--c-pre); background: var(--c-pre); }
+.pt.k-e2e, .sw-e2e { fill: var(--c-e2e); background: var(--c-e2e); }
+.plot-tools { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .plabel { fill: var(--ink); font: 600 13.5px var(--f-mono); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
 .better { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
 .better-head { fill: var(--ink-3); }
@@ -551,13 +559,22 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 
       <div class="card plot-card" id="plot-card">
         <div class="plot-head">
-          <h3 class="card-title" id="plot-title">Score vs total run time</h3>
+          <h3 class="card-title" id="plot-title">Pareto Front: score vs total run time</h3>
+          <div class="plot-tools">
+          <div class="seg" role="group" aria-label="Point colours">
+            <button type="button" id="colour-default" data-colour="default" aria-pressed="true">Default</button>
+            <button type="button" id="colour-encoder" data-colour="encoder" aria-pressed="false" title="Fitted encoder, pre-trained encoder or end-to-end">By encoder</button>
+          </div>
           <ul class="legend">
-            <li><span class="sw sw-on"></span>On the Pareto Front</li>
-            <li><span class="sw sw-off"></span>Not on the Pareto Front</li>
+            <li class="lg-default"><span class="sw sw-on"></span>On the Pareto Front</li>
+            <li class="lg-default"><span class="sw sw-off"></span>Not on the Pareto Front</li>
+            <li class="lg-encoder" hidden title="Learned on the table itself: TargetEncoder, Tf-Idf"><span class="sw sw-fit"></span>Fitted encoder</li>
+            <li class="lg-encoder" hidden title="A pre-trained model embeds the strings: FastText, MiniLM, E5, Jasper, Nemotron, LLaMA, Qwen, TILE, Tarte"><span class="sw sw-pre"></span>Pre-trained encoder</li>
+            <li class="lg-encoder" hidden title="One model reads the raw table"><span class="sw sw-e2e"></span>End-to-end</li>
             <li><span class="sw sw-line"></span>Pareto Front</li>
             <li id="legend-api" hidden><span class="sw sw-api"></span>API model</li>
           </ul>
+          </div>
         </div>
         <div id="plot"></div>
       </div>
@@ -693,7 +710,11 @@ function viewLabels() {
   return { metric: t.metric, colSub: t.colSub + w, axis: W + ' ' + t.axis, sub: W + ' ' + t.over + TIME_SUB };
 }
 const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
-const state = { task: 'both', score: 'median', sort: 'pareto', enc: null, hw: null, overlap: 'show', api: 'show', hot: null };  // score: median or mean; enc, hw: null (all) or the Set of entries shown; overlap, api: show or hide the models marked ∩, API
+const state = { colour: 'default', task: 'both', score: 'median', sort: 'pareto', enc: null, hw: null, overlap: 'show', api: 'show', hot: null };  // colour: the plot's points, default (on or off the Pareto Front) or by encoder type; score: median or mean; enc, hw: null (all) or the Set of entries shown; overlap, api: show or hide the models marked ∩, API
+/* The encoder type of a pipeline, as in the paper's figure: fitted on the table (TargetEncoder, Tf-Idf),
+   pre-trained (every language model, FastText, TILE, Tarte), or none, end-to-end. */
+const FITTED = new Set(['Tf-Idf', 'TargetEncoder']);
+const typeOf = (d) => (d.kind === 'e2e' ? 'e2e' : FITTED.has(d.enc) ? 'fit' : 'pre');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $ = (id) => document.getElementById(id);
@@ -935,7 +956,7 @@ function renderPlot(list, front) {
   const draw = [...list].sort((a, b) => rankOf(a) - rankOf(b));
   for (const d of draw) {
     const on = front.has(d.id), sz = on ? 10 : 8, cx = X(d.t), cy = Y(d.s);
-    const cls = 'pt' + (on ? ' on' : '') + (d.api ? ' api' : '');
+    const cls = 'pt' + (on ? ' on' : '') + (d.api ? ' api' : '') + (state.colour === 'encoder' ? ' k-' + typeOf(d) : '');
     const r = d.api ? sv('circle', { class: cls, cx: cx, cy: cy, r: sz * 0.6 })
       : sv('rect', { class: cls, x: cx - sz / 2, y: cy - sz / 2, width: sz, height: sz });
     pts.appendChild(r); geo.push({ d, cx, cy, node: r, on });
@@ -1100,7 +1121,7 @@ function render() {
   else {
     const front = paretoSet(list), rows = ordered(list, state.sort, front);
     renderTable(list, front, rows);
-    const key = state.task + state.score + filterKey('enc') + '|' + filterKey('hw') + state.overlap + state.api + LOADS;
+    const key = state.colour + state.task + state.score + filterKey('enc') + '|' + filterKey('hw') + state.overlap + state.api + LOADS;
     if (plotKey !== key) { renderPlot(list, front); plotKey = key; }
     setHot(state.hot);  // the table rows are new; the plot may be the same
     renderTicker(list, front);
@@ -1112,6 +1133,10 @@ function render() {
   $('ver-chip').textContent = VERSION;
   ['both', 'reg', 'clf'].forEach((k) => $('task-' + k).setAttribute('aria-pressed', String(state.task === k)));
   ['median', 'mean'].forEach((k) => $('score-' + k).setAttribute('aria-pressed', String(state.score === k)));
+  ['default', 'encoder'].forEach((k) => $('colour-' + k).setAttribute('aria-pressed', String(state.colour === k)));
+  document.querySelectorAll('.lg-default').forEach((li) => { li.hidden = state.colour !== 'default'; });
+  document.querySelectorAll('.lg-encoder').forEach((li) => { li.hidden = state.colour !== 'encoder'; });
+  $('plot').classList.toggle('by-encoder', state.colour === 'encoder');
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
   ['show', 'hide'].forEach((k) => $('overlap-' + k).setAttribute('aria-pressed', String(state.overlap === k)));
   $('ctl-overlap').hidden = !anyOverlap();  // no switch while no model is marked
@@ -1123,6 +1148,7 @@ function render() {
 
 document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { state.task = b.dataset.task; render(); }));
 document.querySelectorAll('[data-score]').forEach((b) => b.addEventListener('click', () => { state.score = b.dataset.score; render(); }));
+document.querySelectorAll('[data-colour]').forEach((b) => b.addEventListener('click', () => { state.colour = b.dataset.colour; render(); }));
 document.querySelectorAll('[data-sort]').forEach((b) => b.addEventListener('click', () => { state.sort = b.dataset.sort; render(); }));
 document.querySelectorAll('[data-overlap]').forEach((b) => b.addEventListener('click', () => { state.overlap = b.dataset.overlap; render(); }));
 document.querySelectorAll('[data-api]').forEach((b) => b.addEventListener('click', () => { state.api = b.dataset.api; render(); }));
