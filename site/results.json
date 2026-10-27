@@ -1,7 +1,11 @@
 {
- "version": "v0.1.9",
+ "version": "v0.1.10",
  "built": "2026-10-27",
  "history": [
+  {
+   "version": "v0.1.10",
+   "note": "Added Tf-Idf + Kumo Tabular (small); hardware recorded for Tf-Idf + Causilo (NVIDIA H100)"
+  },
   {
    "version": "v0.1.9",
    "note": "Added Causilo 1.0.2"
@@ -193,6 +197,7 @@
    "lrn": "Causilo",
    "kind": "modular",
    "variant": "default",
+   "hw": "NVIDIA H100 80GB HBM3",
    "both": [
     0.7897,
     1.831,
@@ -805,6 +810,34 @@
     96,
     96,
     0.8725
+   ]
+  },
+  {
+   "id": "tfidf+kumo-tabular-small",
+   "enc": "Tf-Idf",
+   "lrn": "Kumo Tabular (small)",
+   "kind": "modular",
+   "variant": "default",
+   "both": [
+    0.7935,
+    1.3963,
+    324,
+    324,
+    0.7589
+   ],
+   "reg": [
+    0.7147,
+    1.3643,
+    228,
+    228,
+    0.7142
+   ],
+   "clf": [
+    0.8894,
+    1.5293,
+    96,
+    96,
+    0.865
    ]
   },
   {
