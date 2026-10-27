@@ -1318,12 +1318,14 @@ async function xlsxBlob() {
 
 /* The plot of the current view as a standalone SVG: light colours on white, styles written on each
    element (the page's CSS does not travel with the file), a line with the version at the bottom. */
-const PRINT_INK = { bg: '#FFFFFF', ink: '#13273F', ink2: '#34465E', ink3: '#4C5767', line: '#D4BBA6', mark: '#8E2A33', muted: '#AC9C90' };
+const PRINT_INK = { bg: '#FFFFFF', ink: '#13273F', ink2: '#34465E', ink3: '#4C5767', line: '#D4BBA6', mark: '#8E2A33', muted: '#AC9C90',
+  fit: '#4F6B63', pre: '#8E2A33', e2e: '#13273F' };
 const MONO = "'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace", SANS = "Outfit, system-ui, 'Segoe UI', sans-serif";
 function exportSvg() {
   const src = $('plot').querySelector('svg');
   if (!src) throw new Error('no plot to export');
-  const svg = src.cloneNode(true), c = PRINT_INK, W = +svg.getAttribute('width'), H0 = +svg.getAttribute('height'), H = H0 + 24;
+  const byEnc = state.colour === 'encoder', ENC = [['Fitted encoder', 'fit'], ['Pre-trained encoder', 'pre'], ['End-to-end', 'e2e']];
+  const svg = src.cloneNode(true), c = PRINT_INK, W = +svg.getAttribute('width'), H0 = +svg.getAttribute('height'), H = H0 + 24 + (byEnc ? 20 : 0);
   const set = (sel, attrs) => svg.querySelectorAll(sel).forEach((n) => { for (const k in attrs) n.setAttribute(k, attrs[k]); });
   svg.setAttribute('xmlns', SVGNS); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('height', H);
   svg.querySelectorAll('.hot').forEach((n) => n.classList.remove('hot'));
@@ -1333,6 +1335,10 @@ function exportSvg() {
   set('.frontier', { fill: 'none', stroke: c.mark, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'square' });
   set('.pt', { fill: c.muted, stroke: c.bg, 'stroke-width': 2 });
   set('.pt.on', { fill: c.mark });
+  if (byEnc) {  // as on the page: the encoder colours, the points off the Pareto Front faded
+    set('.pt', { 'fill-opacity': 0.55 }); set('.pt.on', { 'fill-opacity': 1 });
+    for (const [, k] of ENC) set('.pt.k-' + k, { fill: c[k] });
+  }
   set('.better', { fill: 'none', stroke: c.ink3, 'stroke-width': 1.5 });
   set('.better-head', { fill: c.ink3 });
   set('.better-t', { fill: c.ink, 'font-family': SANS, 'font-size': 15, 'font-weight': 'bold' });
@@ -1345,6 +1351,14 @@ function exportSvg() {
   svg.querySelector('marker').id = 'better-head-export';  // the PDF copy sits in the page next to the original
   svg.querySelector('[marker-end]').setAttribute('marker-end', 'url(#better-head-export)');
   svg.insertBefore(sv('rect', { x: 0, y: 0, width: W, height: H, fill: c.bg }), svg.firstChild);
+  if (byEnc) {  // the legend, under the plot
+    let x = 56;
+    for (const [label, k] of ENC) {
+      svg.appendChild(sv('rect', { x: x, y: H0 + 6, width: 10, height: 10, fill: c[k] }));
+      const t = sv('text', { x: x + 15, y: H0 + 15, fill: c.ink2, 'font-family': MONO, 'font-size': 11 }); t.textContent = label; svg.appendChild(t);
+      x += 15 + label.length * 7 + 18;
+    }
+  }
   const foot = sv('text', { x: W - 8, y: H - 8, 'text-anchor': 'end', fill: c.ink3, 'font-family': MONO, 'font-size': 11 });
   foot.textContent = 'STRABLE leaderboard ' + VERSION + ', ' + BUILT + ' · ' + viewName();
   svg.appendChild(foot);
