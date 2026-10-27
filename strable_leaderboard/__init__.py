@@ -27,4 +27,4 @@ EXAMPLES = {"ridge"}
 TEST_PREFIX = "test-"
 # Folder names only the maintainer adds: the paper's learners, and models she adds herself.
 RESERVED = {"ridge", "xgboost", "extratrees", "catboost", "tabpfn-2.5", "tabicl-v2", "realmlp", "tabm", "mambular",
-            "contexttab", "tabstar", "tarte", "causilo"}
+            "contexttab", "tabstar", "tarte", "causilo", "kumo-tabular-small", "kumo-tabular-medium"}

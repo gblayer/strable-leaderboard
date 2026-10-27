@@ -5,8 +5,9 @@
 Exactly the pipelines listed in ``scripts/tile_selection.yaml`` are imported, by source CSV, method
 token and the settings in ``where``; a listed pipeline without rows in its CSV is an error. The rows are
 made as the paper's (``convert`` of scripts/import_paper_results.py): ``total_s`` only, the source's
-``run_time``, with ``hardware`` and ``package`` set to ``paper``, or ``hardware`` to the pipeline's own
-when the selection gives it (the GPU its job logs show). For TILE, ``run_time`` counts the
+``run_time``, with ``hardware`` and ``package`` set to ``paper``; ``hardware`` is instead the GPU of the
+source row when its CSV records one (column ``gpu``), else the pipeline's own when the selection gives
+it (the GPU its job logs show). For TILE, ``run_time`` counts the
 language-model extraction of the whole table, the reduction and the target encoding, then fit and
 predict, as the runner counts an encoder's extraction time. In each results file, rows of the same
 (encoder, variant, table, fold) are replaced and all others kept.
@@ -45,6 +46,21 @@ def select(frame: pd.DataFrame, methods: dict) -> pd.DataFrame:
     return sel.assign(run_time=pd.to_numeric(sel["run_time"].astype(str).str.strip("[]")))
 
 
+def hardware_of(df: pd.DataFrame, frames: dict, pipelines: dict) -> list[str]:
+    """Each converted row's hardware: the GPU its source row records (column ``gpu``), else its
+    pipeline's own ``hardware``, else ``paper``."""
+    own = {(p["model"], p["encoder"], p["variant"]): p.get("hardware", "paper")
+           for methods in pipelines.values() for p in methods.values()}
+    gpus = {}
+    for csv, methods in pipelines.items():
+        if "gpu" in frames[csv]:
+            for method, p in methods.items():
+                for r in frames[csv][frames[csv]["method"] == method].itertuples():
+                    gpus[(p["model"], p["encoder"], p["variant"], r.data_name, int(r.fold_index))] = r.gpu
+    keys = zip(df["model"], df["encoder"], df["variant"], df["table"], df["fold"])
+    return [gpus.get(key, own[key[:3]]) for key in keys]
+
+
 def merge(old: pd.DataFrame | None, new: pd.DataFrame) -> pd.DataFrame:
     """A results file's rows: ``old`` without the keys ``new`` has, then ``new``, sorted."""
     if old is not None:
@@ -68,11 +84,8 @@ def main(argv=None) -> int:
         return 1
     dates = {(p["model"], p["encoder"], p["variant"]): str(p.get("date", selection["date"]))
              for methods in pipelines.values() for p in methods.values()}
-    hardware = {(p["model"], p["encoder"], p["variant"]): p.get("hardware", "paper")
-                for methods in pipelines.values() for p in methods.values()}
-    keys = list(zip(df["model"], df["encoder"], df["variant"]))
-    df["date"] = [dates[key] for key in keys]
-    df["hardware"] = [hardware[key] for key in keys]
+    df["date"] = [dates[key] for key in zip(df["model"], df["encoder"], df["variant"])]
+    df["hardware"] = hardware_of(df, frames, pipelines)
     args.out.mkdir(exist_ok=True)
     for model, rows in df.groupby("model"):
         out = args.out / f"{model}.csv"

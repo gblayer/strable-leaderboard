@@ -1,46 +1,54 @@
-# The five pipelines of the TILE paper's Table H.5 on STRABLE (https://arxiv.org/abs/2610.17065), the set
-# scripts/import_tile_results.py imports. Each source row is one table and outer fold, on the board's 108 tables and outer folds.
+# The TILE pipelines on STRABLE, the set scripts/import_tile_results.py imports: the TILE authors' runs
+# with their current default settings (configs/tile_defaults.sh of their code; TILE paper:
+# https://arxiv.org/abs/2610.17065). Each source row is one table and outer fold, on the board's 108
+# tables and outer folds.
 #
 # TILE (named latte in its authors' code, hence the method tokens) is an encoder. Every row is written
 # as one sentence, "The <column> is <value>." per cell, numbers included, and goes through the first
-# 14 layers of LLaMA-3.1-8B; the token states of each cell are averaged into one embedding per cell.
+# 14 blocks of LLaMA-3.1-8B; the token states of each cell are averaged into one embedding per cell.
 # Only the string columns' embeddings are kept, standardized on the training rows and reduced by one
-# PCA per column to 30 components, the counts rescaled into the learner's feature window. The learner
-# gets them with the numerical columns, an out-of-fold target encoding of the string columns and the
-# string columns of fewer than 50 distinct values as categorical features.
+# PCA per column to 30 components, the counts rescaled into the learner's feature window, which bounds
+# its whole input (numerical columns, categories and target encoding included). The learner gets them
+# with the numerical columns, an out-of-fold target encoding of the string columns and the string
+# columns of fewer than 50 distinct values as categorical features.
 #
 # pipelines: source CSV (the TILE authors' compiled results) -> method token -> model folder, encoder
 # id, variant, and in `where` the source columns that pick TILE's default settings for that learner
 # (`model` there is the source's language-model column). num-str_tabvec_causilo is the board's own
 # Tf-Idf encoder, so it gets the id the runner gives a models/causilo folder with tfidf.
 
-date: "2026-09"  # when the source rows were computed; a pipeline's own `date` overrides it
-# hardware: "paper" (not recorded) unless a pipeline gives its own, the GPU its job logs show
+date: "2026-10"  # when the source rows were computed; a pipeline's own `date` overrides it
+# hardware: the GPU of each source row when its CSV records one (column `gpu`), else the pipeline's own
+# `hardware`, else "paper" (not recorded)
 
 learners:  # model folder -> display name, for learners without a models/ folder
   causilo: Causilo
+  kumo-tabular-small: Kumo Tabular (small)
+  kumo-tabular-medium: Kumo Tabular (medium)
 
 encoders:  # encoder id -> display name
   tile: TILE
 
 settings: &tile  # TILE's default settings, the same for every learner
-  model: llama3_14_layers|cell_meanpool|include_numbers
+  model: llama3_14_layers_v2|cell_meanpool|include_numbers|clean
   standard_scaling: true
   per_column_components: 30
   string_cells_only: true
   normalize_cells: false
   cardinality_threshold: 50
   target_encode: proba
+  window_total: true
 
 pipelines:
-  strable_colwin.csv:
-    num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile, variant: default, where: {<<: *tile, pca: 150, feature_window: 100-300}}
-    num-str_latte_tabicl: {model: tabicl-v2, encoder: tile, variant: default, where: {<<: *tile, pca: 100, feature_window: 50-300}}
-    num-str_latte_tabpfn3: {model: tabpfn-3, encoder: tile, variant: default, where: {<<: *tile, pca: 75, feature_window: 50-250}}
-    num-str_latte_causilo: {model: causilo, encoder: tile, variant: default, where: {<<: *tile, pca: 150, feature_window: 75-400}}
+  strable_tile.csv:  # one feature window per learner, chosen by the TILE authors
+    num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-400}}
+    num-str_latte_tabicl: {model: tabicl-v2, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-800}}
+    num-str_latte_tabpfn3: {model: tabpfn-3, encoder: tile, variant: default, where: {<<: *tile, feature_window: 150-400}}
+    num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-800}}
+    num-str_latte_causilo: {model: causilo, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-800}}
+    num-str_latte_exaone: {model: exaone-tabular, encoder: tile, variant: default, where: {<<: *tile, feature_window: 150-400}}
+    num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
+    num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
+    num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
   strable_tfidf.csv:
-    num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default}
-  strable_colwin_tabpfn35.csv:  # run by the board's maintainers with the TILE authors' code and settings
-    num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile, variant: default, date: "2026-10", hardware: NVIDIA A40, where: {<<: *tile, pca: 100, feature_window: 75-300}}
-  strable_colwin_kumo.csv:  # same: TILE's code and settings, the default feature window for a learner the TILE paper did not run
-    num-str_latte_kumo: {model: kumo-tabular, encoder: tile, variant: default, date: "2026-10", hardware: NVIDIA A40, where: {<<: *tile, pca: 100, feature_window: 75-300}}
+    num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09"}
