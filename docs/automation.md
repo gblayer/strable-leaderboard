@@ -55,6 +55,10 @@ The results come back as a pull request opened by `gblayer` that changes only th
 
 **Possible overlap.** The review only reports facts. The maintainers decide whether a model's pre-training data may overlap with STRABLE tables. If so, they add the label `pretraining-overlap` to the model's pull request, and the dispatcher writes `{"<model folder>": {"overlap": true, "evidence": "<url>"}}` into `site/flags.json` when it publishes the results; they can also edit that file by hand. On the page, the model's pipelines then show a small ∩ next to their name, with a link to the evidence, and the switch "Overlap ∩: Show | Hide" hides them (`#no-overlap` in the address). The results files carry the mark too: `overlap` and `overlap_evidence` in `results.json`, a true/false `overlap` column in the Parquet and CSV files.
 
+**Notes.** The maintainers can give a pipeline a one-sentence note, by hand, in `site/notes.json` (`{"<pipeline id>": "<note>"}`), for example a detail of how it was run. On the page the pipeline then shows a small ∗ next to its name, and the note when it is hovered, in the table and in the plot. The results files carry it too: `note` in `results.json`, a `note` column in the Parquet file and in the downloads.
+
+**Compute.** The page's Compute dropdown groups the pipelines by the GPUs their rows ran on; [`docs/hardware.md`](hardware.md) explains the entries and the test of whether the GPU type changes the results.
+
 ## 6. Maintainers
 
 - Reviewing a pull request by hand: `.claude/skills/review-submission/SKILL.md`.

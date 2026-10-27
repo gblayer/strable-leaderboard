@@ -18,7 +18,9 @@ As in the paper's Figure 4a, score is the median over the fold rows of the view 
 time the median of the total run time per 1,000 samples (encoding, training and prediction
 seconds over the table's rows); mean score, their mean, is the page's other Score. A view with fewer
 fold rows than expected is shown with an incomplete tag. ``hw`` lists the hardware the rows ran on,
-when recorded. The page computes the ranking and the Pareto front from this file.
+when recorded. ``note`` is the maintainer's one-sentence note on a pipeline, from ``site/notes.json``
+({pipeline id: note}, next to the JSON), which the page shows when the pipeline is hovered. The page
+computes the ranking and the Pareto front from this file.
 
 API models: a pipeline whose rows all ran on hardware "api" (on its provider's servers) gets
 ``"api": true`` and ``"api_version"``, the versions its provider reported, which the page marks API,
@@ -69,6 +71,7 @@ COLUMNS = {
     "pareto_front": "the median score is strictly higher than that of every faster pipeline of the view",
     "overlap": "true when the maintainer marked the model's pre-training data as possibly overlapping STRABLE's tables "
                "(the page's ∩ mark; results.json links the evidence)",
+    "note": "the maintainer's note on the pipeline, e.g. a detail of how it was run; empty when none",
     "api": "true when the model runs on its provider's servers, behind an API: its time includes the network and "
            "the provider's hardware (the page's API mark; results.json gives the version the provider reported)",
 }
@@ -101,6 +104,30 @@ def flags_path(json_path: Path) -> Path:
 def read_flags(path: Path) -> dict:
     """Per model folder, {"overlap": true, "evidence": "<url>"}; empty when the file is absent."""
     return json.loads(path.read_text()) if path.exists() else {}
+
+
+def notes_path(json_path: Path) -> Path:
+    return json_path.with_name("notes.json")
+
+
+def read_notes(path: Path) -> dict:
+    """Per pipeline id, the maintainer's one-sentence note; empty when the file is absent."""
+    return json.loads(path.read_text()) if path.exists() else {}
+
+
+def notes_problems(notes, ids=None) -> list[str]:
+    """What is wrong with a notes.json: its shape, and with ``ids`` (the board's pipelines) an unknown id."""
+    if not isinstance(notes, dict):
+        return ["notes.json must map pipeline ids to one-sentence notes"]
+    out = [f"notes.json: {pid} needs a non-empty note" for pid, note in notes.items()
+           if not isinstance(note, str) or not note.strip()]
+    out += [f"notes.json: no pipeline {pid} on the board" for pid in notes if ids is not None and pid not in ids]
+    return out
+
+
+def note_problems(data: dict, notes: dict) -> list[str]:
+    """The JSON must carry exactly the notes: a ``note`` on every pipeline of notes.json, and on no other."""
+    return [f"{p['id']}: note does not match notes.json" for p in data["pipelines"] if p.get("note") != notes.get(p["id"])]
 
 
 def flags_problems(flags) -> list[str]:
@@ -171,6 +198,9 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
     flags = read_flags(flags_path(out))
     if flags_problems(flags):
         sys.exit("\n".join(flags_problems(flags)))
+    notes = read_notes(notes_path(out))
+    if notes_problems(notes):
+        sys.exit("\n".join(notes_problems(notes)))
     pipelines, folds = [], []
     paths = [results_dir / f"{m}.csv" for m in sorted(models)] if models else sorted(results_dir.glob("*.csv"))
     for path in paths:
@@ -192,9 +222,13 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
                 record.update(api=True, **({"api_version": ", ".join(versions)} if versions else {}))
             if path.stem in flags:
                 record.update(overlap=True, overlap_evidence=flags[path.stem]["evidence"])
+            if record["id"] in notes:
+                record["note"] = notes[record["id"]]
             folds.append(per_fold(rows, record))
             record.update(summarize(folds[-1], expected, card_views(card)))
             pipelines.append(record)
+    if notes_problems(notes, {p["id"] for p in pipelines}):
+        sys.exit("\n".join(notes_problems(notes, {p["id"] for p in pipelines})))
     versions = yaml.safe_load((results_dir / "versions.yaml").read_text()) if (results_dir / "versions.yaml").exists() else []
     data = {"version": versions[0]["version"] if versions else "v0.0.0", "built": date.today().isoformat(),
             "history": [{"version": v["version"], "note": v["note"]} for v in versions], "pipelines": pipelines}
@@ -220,7 +254,8 @@ def long_table(data: dict) -> pd.DataFrame:
             rows.append({"version": data["version"], "date": data["built"], "view": view, "view_name": VIEW_NAMES[view],
                          "id": p["id"], "encoder": p["enc"], "learner": p["lrn"], "kind": p["kind"], "variant": p["variant"],
                          "median_score": score, "mean_score": mean, "median_time_per_1k_s": time, "fold_rows": n, "fold_rows_expected": expected,
-                         "pareto_front": p["id"] in front, "overlap": bool(p.get("overlap")), "api": bool(p.get("api"))})
+                         "pareto_front": p["id"] in front, "overlap": bool(p.get("overlap")), "api": bool(p.get("api")),
+                         "note": p.get("note", "")})
     return pd.DataFrame(rows)
 
 
@@ -282,6 +317,8 @@ def problems(data: dict) -> list[str]:
             out.append(f"{p.get('id')}: overlap must be true with overlap_evidence, a URL")
         if ("api" in p or "api_version" in p) and (p.get("api") is not True or not isinstance(p.get("api_version", ""), str)):
             out.append(f"{p.get('id')}: api must be true, with api_version a string")
+        if "note" in p and (not isinstance(p["note"], str) or not p["note"].strip()):
+            out.append(f"{p.get('id')}: note must be a non-empty string")
     expected = folds_expected()
     for p in data["pipelines"]:
         if not p.get("lrn") or p.get("kind") not in ("modular", "e2e"):
@@ -314,6 +351,9 @@ if __name__ == "__main__":
         if not found and flags_path(args.check).exists():
             flags = read_flags(flags_path(args.check))
             found = flags_problems(flags) or overlap_problems(data, flags)
+        if not found:  # no notes.json: no pipeline carries a note
+            notes = read_notes(notes_path(args.check))
+            found = notes_problems(notes, {p["id"] for p in data["pipelines"]}) or note_problems(data, notes)
         if not found and args.check.with_suffix(".parquet").exists():
             found = parquet_problems(data, args.check.with_suffix(".parquet"))
         if not found and per_fold_path(args.check).exists():
