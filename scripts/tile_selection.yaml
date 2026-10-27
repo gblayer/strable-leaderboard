@@ -13,9 +13,10 @@
 # columns of fewer than 50 distinct values as categorical features.
 #
 # pipelines: source CSV (the TILE authors' compiled results) -> method token -> model folder, encoder
-# id, variant, and in `where` the source columns that pick TILE's default settings for that learner
-# (`model` there is the source's language-model column). num-str_tabvec_causilo is the board's own
-# Tf-Idf encoder, so it gets the id the runner gives a models/causilo folder with tfidf.
+# id, variant, `hold: true` for a pipeline listed but not imported, and in `where` the source columns
+# that pick TILE's default settings for that learner (`model` there is the source's language-model
+# column). num-str_tabvec_causilo is the board's own Tf-Idf encoder, so it gets the id the runner gives
+# a models/causilo folder with tfidf.
 
 date: "2026-10"  # when the source rows were computed; a pipeline's own `date` overrides it
 # hardware: the GPU of each source row when its CSV records one (column `gpu`), else the pipeline's own
@@ -46,7 +47,7 @@ pipelines:
     num-str_latte_tabpfn3: {model: tabpfn-3, encoder: tile, variant: default, where: {<<: *tile, feature_window: 150-400}}
     num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-800}}
     num-str_latte_causilo: {model: causilo, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-800}}
-    num-str_latte_exaone: {model: exaone-tabular, encoder: tile, variant: default, where: {<<: *tile, feature_window: 150-400}}
+    num-str_latte_exaone: {model: exaone-tabular, encoder: tile, variant: default, hold: true, where: {<<: *tile, feature_window: 150-400}}
     num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
     num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
     num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}

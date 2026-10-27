@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 from build_site_data import PAPER  # noqa: E402
 from import_paper_results import convert  # noqa: E402
-from import_tile_results import hardware_of, merge, select  # noqa: E402
+from import_tile_results import hardware_of, imported, merge, select  # noqa: E402
 from strable_leaderboard import RESERVED  # noqa: E402
 from strable_leaderboard.encoders import ENCODERS, NAMES  # noqa: E402
 
@@ -23,6 +23,9 @@ def test_tile_selection():
     assert ids == {"tile+tabpfn-2.5", "tile+tabicl-v2", "tile+tabpfn-3", "tile+tabpfn-3.5", "tile+causilo", "tfidf+causilo",
                    "tile+exaone-tabular", "tile+kumo-tabular", "tile+kumo-tabular-medium", "tile+kumo-tabular-small"}
     assert all(p["variant"] == "default" for p in rows)
+    held = {f"{p['encoder']}+{p['model']}" for p in rows if p.get("hold")}
+    assert held == {"tile+exaone-tabular"}  # listed, not imported
+    assert {f"{p['encoder']}+{p['model']}" for ms in imported(SELECTION["pipelines"]).values() for p in ms.values()} == ids - held
     assert "tfidf" in ENCODERS  # Tf-Idf + Causilo: the id the runner gives models/causilo with its tfidf encoder
     windows = {p["model"]: p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}  # one per learner
     assert windows["tabpfn-2.5"] == "200-400" and windows["exaone-tabular"] == "150-400"
