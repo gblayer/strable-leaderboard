@@ -35,6 +35,7 @@ fonttools==4.60.1
 frozendict==2.4.7
 frozenlist==1.8.0
 fsspec==2025.10.0
+ftfm @ git+https://github.com/machinelearningnuremberg/ftfm-official@7e5e237daa26ef20f0faec1650d000b04de5122e
 graphviz==0.21
 h11==0.16.0
 hf-xet==1.7.0

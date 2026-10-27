@@ -38,6 +38,7 @@ synthefy-nori==0.21.0  # Nori-30M (Synthefy)
 tabfm[pytorch]==1.0.1  # TabFM (Google)
 xiaomi-tabldm @ git+https://github.com/xiaomi-research/xiaomi-tabldm.git@e83da2baaa7357f27290ebf3a1bd1cdc216b6223  # Xiaomi-TabLDM, not on PyPI
 autogluon.tabular[mitra]==1.6.3  # Mitra-v2 (AutoGluon)
+ftfm @ git+https://github.com/machinelearningnuremberg/ftfm-official@7e5e237daa26ef20f0faec1650d000b04de5122e  # FTFM-1, not on PyPI
 
 # dependencies the paper's freeze holds at versions the pins above cannot use
 click==8.5.0  # 8.3.0 in the paper; huggingface-hub 2.2.0 needs 8.4.2 or later
@@ -48,6 +49,10 @@ tokenizers==0.23.3  # 0.22.1 in the paper; transformers 5.20 needs 0.23, and hug
 triton==3.7.1  # 3.5.1 in the paper; torch 2.13.0 needs it
 cuda-pathfinder==1.8.3  # not in the paper; a dependency of cuda-bindings (torch 2.13), held at the version locked and checked with it
 synthefy==7.2.0  # not in the paper; a dependency of synthefy-nori, held at the version locked and checked with it
+array-api-compat==1.15.0  # not in the paper; a dependency of pyvinecopulib, held at the version locked and checked with it
+boto3==1.43.118  # not in the paper; a dependency of autogluon (Mitra-v2), held at the version locked and checked with it
+botocore==1.43.118  # not in the paper; a dependency of boto3, held at the version locked and checked with it
+wadler-lindig==0.1.7  # not in the paper; a dependency of jaxtyping (TabFM), held at the version locked and checked with it
 
 # tests
 pytest==9.0.2
