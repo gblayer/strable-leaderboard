@@ -1,0 +1,20 @@
+name: FTFM-1
+version: "1"
+end_to_end: false
+tasks: [binary, multiclass]  # the regression weights are not released
+variant: default
+hardware: gpu
+
+package: "ftfm @ git+https://github.com/machinelearningnuremberg/ftfm-official@7e5e237daa26ef20f0faec1650d000b04de5122e"  # not on PyPI: the code at one commit, as in env/requirements.in
+checkpoint:
+  repo: josifgrabocka/ftfm
+  revision: a8362b12392a80d2e4618e91e6ce02b0bed2781d
+  files: [config.json, model.safetensors]
+licence: CC BY-NC 4.0  # the weights: non-commercial, publishing results allowed, never redistributed here. The code is Apache-2.0
+# Paper, Sec. 4.1 and App. F: stages B and C mix synthetic tables with self-supervised episodes over
+# "TabDPT's curated corpus of public OpenML tables. Removing every table that overlaps with TabArena or
+# BeyondArena reduces the corpus from 123 to 108 tables".
+pretraining_data: mixed
+
+code: https://github.com/machinelearningnuremberg/ftfm-official
+paper: https://arxiv.org/abs/2610.25558
