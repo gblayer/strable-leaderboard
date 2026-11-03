@@ -25,7 +25,11 @@ fails at once. Its retry loop is ported from TabArena's Chakra-Tab client (autog
 ``table_predict`` is ``POST /v1/table/predict`` of YHat Labs' API: a table goes inline as base64
 Parquet, or, above ``INLINE_BYTES`` (8 MB, as their documentation says their client does), through
 ``POST /v1/uploads`` and by reference; a body stays under ``MAX_BODY`` (64 MB). Each call uploads its
-own copy of a table and deletes it afterwards, since a key may hold only 200 tables.
+own copy of a table and deletes it afterwards, since a key may hold only 200 tables. A table above the
+preset's direct size (``GET /v1/limits``: 25,000 rows x 100 columns on medium) gets 413 ``async_required``
+and is sent again as a job (``"async": true``); a direct call that runs long (about 20 minutes) comes back as
+a job too. ``wait_job`` polls ``GET /v1/jobs/{id}`` until it ends, and its result is the reply the direct
+call gives (https://yhatlabs.com/models/docs/api/jobs.html).
 """
 
 from __future__ import annotations
@@ -49,7 +53,14 @@ SCHEMES = ("Bearer", "Api-Key")
 ATTEMPTS, WAIT, MAX_WAIT = 4, 30.0, 600.0  # tries per request; the pause before try n: Retry-After, else WAIT * (n - 1)
 AGAIN = {408, 409, 429}  # and 5xx
 INLINE_BYTES, MAX_BODY = 8 * 2**20, 64 * 2**20
-SLEEP = time.sleep  # the tests replace it
+POLL, POLL_EVERY = (2, 3, 5, 8, 10), 15  # seconds between job checks: "every few seconds"
+JOB_WAIT = 12 * 3600.0  # a job not done after this is canceled
+JOB_DONE = ("succeeded", "failed", "canceled")
+SLEEP, CLOCK = time.sleep, time.monotonic  # the tests replace them
+
+
+class AsyncRequired(RuntimeError):
+    """413 async_required: the table is above the preset's direct size, so it runs as a job."""
 
 
 def key_file(folder: Path) -> Path:
@@ -144,6 +155,8 @@ def request(method: str, path: str, body: dict | None = None, data: bytes | None
                     (f" (request {error['request_id']})" if error.get("request_id") else "")
             else:
                 failure = f"HTTP {r.status_code}{'' if reply is not None else ' (not JSON)'}: {r.text[:300]}"
+            if r.status_code == 413 and isinstance(error, dict) and error.get("type") == "async_required":
+                raise AsyncRequired(_hide(failure))
             quota = isinstance(error, dict) and error.get("type") == "quota_exceeded"
             again = (r.status_code in AGAIN and not quota) or r.status_code >= 500 or (r.status_code == 200 and reply is None)
         if not again or attempt == ATTEMPTS:
@@ -192,10 +205,33 @@ def upload(df) -> str:
     return slot["id"]
 
 
+def is_job(reply: dict) -> bool:
+    return reply.get("object") == "job" and isinstance(reply.get("id"), str)
+
+
+def wait_job(job: dict) -> dict:
+    """The result of a job, the reply the direct call gives: ``GET /v1/jobs/{id}`` until it ends. A job not
+    done after JOB_WAIT is canceled (``DELETE /v1/jobs/{id}``); a failed one fails here with its error."""
+    path, start, waits, state = f"/v1/jobs/{job['id']}", CLOCK(), iter(POLL), job
+    while state.get("status") not in JOB_DONE:
+        if CLOCK() - start > JOB_WAIT:
+            try:
+                request("DELETE", path)
+            except Exception as exc:  # the provider expires it anyway
+                print(f"could not cancel the job {job['id']}: {type(exc).__name__}", file=sys.stderr)
+            raise RuntimeError(f"API job {job['id']} not done after {JOB_WAIT / 3600:g} h: canceled")
+        SLEEP(next(waits, POLL_EVERY))
+        state = request("GET", path)  # a failed job carries an error: request raises it
+    if state["status"] == "succeeded" and isinstance(state.get("result"), dict):
+        return state["result"]
+    raise RuntimeError(f"API job {job['id']} ended {state['status']} without a result")
+
+
 def table_predict(train, test, **fields) -> dict:
     """``POST /v1/table/predict``: fit on ``train`` (with its target column) and predict ``test`` in one
     call; ``fields`` are the other body fields (target, model, preset, problem_type, eval_metric, seed,
-    groups). A table above INLINE_BYTES is uploaded first and deleted after the call."""
+    groups). A table above INLINE_BYTES is uploaded first and deleted after the call; a call above the
+    direct size, or one that runs long, is a job, waited for."""
     uploaded, tables = [], {}
     try:
         for name, df in (("train", train), ("test", test)):
@@ -209,7 +245,11 @@ def table_predict(train, test, **fields) -> dict:
         size = len(json.dumps(body))
         if size > MAX_BODY:
             raise ValueError(f"the request body would be {size / 2**20:.0f} MB, above {MAX_BODY / 2**20:.0f} MB")
-        return post("/v1/table/predict", body)
+        try:
+            reply = post("/v1/table/predict", body)
+        except AsyncRequired:
+            reply = post("/v1/table/predict", {**body, "async": True})
+        return wait_job(reply) if is_job(reply) else reply
     finally:
         for table_id in uploaded:
             try:

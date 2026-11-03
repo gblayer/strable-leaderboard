@@ -10,6 +10,10 @@ rows, drop}. The groups column of train is no feature. The reply: predictions, c
 fit {rows, features, seconds, problem_type, metric, preset, seed, version} and usage {rows, credits}.
 ``POST /v1/uploads`` {sha256, size_bytes, format} answers {id, exists, upload: {method, url, auth}};
 ``PUT /v1/uploads/{id}`` takes the Parquet bytes, checked against the hash; ``DELETE`` removes them.
+A train table above ``direct_rows`` gets 413 async_required unless the body says "async": true; then,
+or always with ``as_job`` (a direct call that ran long), the reply is a job, 202 {id, object: job,
+status: queued}. ``GET /v1/jobs/{id}`` answers running ``job_polls`` times, then succeeded with the
+reply in ``result`` (failed with ``job_error``, when set); ``DELETE`` cancels it (``canceled``).
 
 Errors are {error: {type, message, request_id}}: a wrong Authorization header gets 401, a predict body
 above ``max_body`` (64 MB) 413 request_too_large, an eval_metric outside ``metrics`` 400. ``fail`` lists
@@ -44,10 +48,11 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 VERSION = "fake-1.0"
 FIELDS = {"train", "target", "test", "quantiles", "set_coverage", "model", "preset", "problem_type", "eval_metric",
-          "time_limit", "seed", "groups", "time_col"}
+          "time_limit", "seed", "groups", "time_col", "async"}
 METRICS = {"regression": {"rmse", "mae", "r2"}, "binary": {"log_loss", "roc_auc", "accuracy", "f1"}}
 METRICS["multiclass"] = METRICS["binary"]
 TABLE = re.compile(r"^/v1/uploads/(tbl_[a-f0-9]{40})$")
+JOB = re.compile(r"^/v1/jobs/(job_[0-9]+)$")
 
 
 class Refused(Exception):
@@ -90,10 +95,12 @@ class FakeVendor:
     tables, ``deleted`` the ids deleted; ``calls`` counts every request."""
 
     def __init__(self, key: str = "test-key", auth: str = "Bearer", model=None, cheat: bool = False, port: int = 0,
-                 metrics=None, max_body: int = 64 * 2**20):
+                 metrics=None, max_body: int = 64 * 2**20, direct_rows: int | None = None, as_job: bool = False,
+                 job_polls: float = 1, job_error: str | None = None):
         self.key, self.auth, self.model, self.cheat, self.metrics, self.max_body = key, auth, model, cheat, metrics, max_body
+        self.direct_rows, self.as_job, self.job_polls, self.job_error = direct_rows, as_job, job_polls, job_error
         self.leaked, self.seen, self.fail, self.calls = {}, [], [], 0
-        self.slots, self.uploads, self.deleted = {}, {}, []
+        self.slots, self.uploads, self.deleted, self.jobs, self.canceled = {}, {}, [], {}, []
         vendor = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -109,7 +116,7 @@ class FakeVendor:
                 self.end_headers()
                 self.wfile.write(data)
 
-            do_POST = do_PUT = do_DELETE = serve
+            do_GET = do_POST = do_PUT = do_DELETE = serve
 
             def log_message(self, *args):
                 pass
@@ -143,7 +150,9 @@ class FakeVendor:
             if method == "POST" and path == "/v1/table/predict":
                 if len(body) > self.max_body:  # an upload's file may reach 1 GB
                     raise Refused(413, "request_too_large", f"the body is above {self.max_body} bytes")
-                return 200, self.predict(json.loads(body)), {}
+                req = json.loads(body)
+                reply = self.predict(req)
+                return (202, self.start_job(reply), {}) if req.get("async") or self.as_job else (200, reply, {})
             if method == "POST" and path == "/v1/uploads":
                 return 200, self.slot(json.loads(body)), {}
             m = TABLE.match(path)
@@ -156,6 +165,9 @@ class FakeVendor:
                 del self.uploads[m.group(1)]
                 self.deleted.append(m.group(1))
                 return 200, {}, {}
+            j = JOB.match(path)
+            if j and j.group(1) in self.jobs and method in ("GET", "DELETE"):
+                return 200, (self.poll if method == "GET" else self.cancel)(self.jobs[j.group(1)]), {}
             raise Refused(404, "not_found", f"no {method} {path}")
         except Refused as exc:
             return exc.status, error(exc.kind, str(exc)), {}
@@ -167,6 +179,33 @@ class FakeVendor:
         self.slots[table_id] = req["sha256"]
         return {"id": table_id, "exists": table_id in self.uploads,
                 "upload": {"method": "PUT", "url": f"/v1/uploads/{table_id}", "auth": True}}
+
+    def start_job(self, reply: dict) -> dict:
+        job = {"id": f"job_{len(self.jobs) + 1}", "status": "queued", "polls": 0, "result": reply}
+        self.jobs[job["id"]] = job
+        return self.state(job)
+
+    def state(self, job: dict) -> dict:
+        out = {"id": job["id"], "object": "job", "kind": "table.predict", "model": "chakra-tab", "status": job["status"]}
+        if job["status"] == "succeeded":
+            out["result"] = job["result"]
+        if job["status"] == "failed":
+            out["error"] = error(self.job_error, "the fake job failed")["error"]
+        return out
+
+    def poll(self, job: dict) -> dict:
+        if job["status"] in ("queued", "running"):
+            job["polls"] += 1
+            done = job["polls"] > self.job_polls
+            job["status"] = ("failed" if self.job_error else "succeeded") if done else "running"
+        return self.state(job)
+
+    def cancel(self, job: dict) -> dict:
+        if job["status"] not in ("queued", "running"):
+            raise Refused(409, "conflict", "the job is finished")
+        job["status"] = "canceled"
+        self.canceled.append(job["id"])
+        return self.state(job)
 
     def table(self, part) -> tuple[pd.DataFrame, str]:
         if isinstance(part, list):
@@ -185,6 +224,8 @@ class FakeVendor:
             raise Refused(400, "invalid_request_error", f"unknown fields {unknown}, or train, target or test missing")
         t0 = time.perf_counter()
         (train, train_format), (test, test_format) = self.table(req["train"]), self.table(req["test"])
+        if self.direct_rows is not None and len(train) > self.direct_rows and not req.get("async"):
+            raise Refused(413, "async_required", f"above {self.direct_rows} rows: send it with \"async\": true")
         y = train.pop(req["target"]).to_numpy()
         task = req.get("problem_type") or ("regression" if np.issubdtype(y.dtype, np.floating) else "multiclass")
         groups = req.get("groups")
