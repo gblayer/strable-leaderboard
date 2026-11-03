@@ -12,7 +12,8 @@ overhead: imports, CUDA start-up, weight loading. BLAS, OpenMP and torch threads
 
 ``--api``: the model runs on its provider's servers (``hardware: api``). The warm-up only builds it and
 sends nothing, so the time keeps the request, the network and the provider's work. A model that sets
-``self.api_version`` (the version its provider reports) gets it written to ``api_version.txt``.
+``self.api_version`` (the version its provider reports) gets it written to ``api_version.txt``, and
+one that sets ``self.api_seconds`` (the time the provider reports for its work) to ``api_seconds.txt``.
 """
 
 from __future__ import annotations
@@ -89,6 +90,8 @@ def main(argv=None) -> int:
         np.save(args.outputs / "classes.npy", np.asarray(model.classes_))
     if getattr(model, "api_version", None):
         (args.outputs / "api_version.txt").write_text(str(model.api_version))
+    if getattr(model, "api_seconds", None) is not None:
+        (args.outputs / "api_seconds.txt").write_text(str(float(model.api_seconds)))
     return 0
 
 

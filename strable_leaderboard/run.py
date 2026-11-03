@@ -22,7 +22,9 @@ Both processes cap their BLAS, OpenMP and torch threads to ``--n-jobs``, the job
 An API model (``hardware: api``, ``strable_leaderboard.api``) runs on its provider's servers: this
 process reads its key file and passes the endpoint and key to its child only, whose sandbox then
 keeps the network; the warm-ups send nothing, so its time includes the request, the network and the
-provider's work. Its rows say ``hardware`` "api" and carry the ``api_version`` its provider reported.
+provider's work. Its rows say ``hardware`` "api" and carry the ``api_version`` its provider reported
+and, when it reports one, ``api_seconds``, the provider's own time for the call (kept in the results
+files only: the board's time is ``total_s``, measured here).
 
 ``--smoke``: the static checks, then outer fold 0 of the three smoke tables through the same
 sandbox; nothing is written. ``--no-sandbox`` runs the child as a plain process, for local
@@ -105,6 +107,8 @@ def fit_predict(folder: Path, X_train, y_train, X_test, task: str, strings: bool
         out = {n: np.load(outputs / f"{n}.npy", allow_pickle=False) for n in names}
         if (outputs / "api_version.txt").exists():
             out["api_version"] = api_version((outputs / "api_version.txt").read_text())
+        if (outputs / "api_seconds.txt").exists():
+            out["api_seconds"] = round(float((outputs / "api_seconds.txt").read_text()), 4)
         return out, seconds
 
 
@@ -134,7 +138,7 @@ def run(folder: Path, encoder: str, table: str, fold: int, data_dir, cache_dir, 
     api = card["hardware"] == "api"
     out, model_s = fit_predict(folder, X_train, y_train, X_test, task, strings, weights_dir, device, n_jobs, sandbox,
                                api_env=child_env(folder, card) if api else None)
-    version = out.pop("api_version", "")
+    version, api_seconds = out.pop("api_version", ""), out.pop("api_seconds", None)
     score = checked_score(task, y_train, y_test, **out)
     checkpoint = card.get("checkpoint") or {}
     row = {
@@ -145,7 +149,9 @@ def run(folder: Path, encoder: str, table: str, fold: int, data_dir, cache_dir, 
         "package": card["package"], "checkpoint_revision": checkpoint.get("revision", ""),
         "protocol_version": PROTOCOL, "date": date.today().isoformat(), "leaderboard_version": __version__,
     }
-    return dict(row, api_version=version) if api else row
+    if not api:
+        return row
+    return dict(row, api_version=version, **({} if api_seconds is None else {"api_seconds": api_seconds}))
 
 
 def smoke(folder: Path, data_dir, cache_dir, device: str, n_jobs: int, sandbox: bool) -> int:

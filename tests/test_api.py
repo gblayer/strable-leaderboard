@@ -154,6 +154,36 @@ def test_large_tables_are_uploaded_then_deleted_and_bodies_stay_under_the_limit(
         assert vendor.calls == calls
 
 
+def test_calls_above_the_direct_size_or_running_long_are_jobs_waited_for(monkeypatch):
+    import itertools
+
+    waits = []
+    monkeypatch.setattr(api, "SLEEP", waits.append)
+    X = pd.DataFrame({"x": np.arange(8, dtype=float)})
+    train, fields = X.assign(t=X["x"] * 2), {"target": "t", "model": "chakra-tab", "preset": "medium",
+                                             "problem_type": "regression", "eval_metric": "r2", "seed": 1}
+    with FakeVendor(direct_rows=4, job_polls=2) as vendor:
+        endpoint(monkeypatch, vendor, "test-key")
+        monkeypatch.setattr(api, "INLINE_BYTES", 1)  # by upload: the uploads stay until the job ends
+        reply = api.table_predict(train, X, **fields)  # 413 async_required, sent again as a job, polled 3 times
+        assert len(reply["predictions"]) == 8 and reply["fit"]["version"] == "fake-1.0"
+        assert len(vendor.seen) == 1 and "async" in vendor.seen[0]["fields"] and waits == [2, 3, 5]
+        assert vendor.uploads == {} and len(vendor.deleted) == 2
+        monkeypatch.setattr(api, "INLINE_BYTES", 10**9)
+        vendor.direct_rows, vendor.as_job = None, True  # a direct call that ran long comes back as a job
+        assert len(api.table_predict(train, X, **fields)["predictions"]) == 8
+        assert "async" not in vendor.seen[-1]["fields"]
+        vendor.job_error = "internal_error"
+        with pytest.raises(RuntimeError, match="after 1 attempt.*HTTP 200 internal_error: the fake job failed"):
+            api.table_predict(train, X, **fields)
+        vendor.job_error, vendor.job_polls = None, float("inf")  # never done: canceled after JOB_WAIT
+        ticks = itertools.count(0, 3600)
+        monkeypatch.setattr(api, "CLOCK", lambda: next(ticks))
+        with pytest.raises(RuntimeError, match="not done after 12 h: canceled"):
+            api.table_predict(train, X, **fields)
+        assert vendor.canceled == [f"job_{len(vendor.jobs)}"]
+
+
 def test_the_api_gets_the_boards_inner_folds_as_groups_and_never_in_the_test_rows(tmp_path, monkeypatch):
     from strable_leaderboard.data import load_table
     from strable_leaderboard.model import StrableModel, load_model_class
@@ -238,6 +268,7 @@ def test_the_example_api_model_passes_the_smoke_test_through_the_sandbox(sandbox
         assert run_module.smoke(EXAMPLE, sandboxed / "data", None, "cpu", 1, sandbox=True) == 0, capsys.readouterr().out
     assert capsys.readouterr().out.count("  ok    ") == 3
     assert [r["hardware"] for r in rows] == ["api"] * 3 and {r["api_version"] for r in rows} == {"fake-1.0"}
+    assert all(r["api_seconds"] >= 0 for r in rows)  # the provider's own time, besides total_s
     assert all(r["score"] > 0.5 for r in rows)
     # one request per table: the warm-ups send nothing; train carries the target, test does not
     assert len(vendor.seen) == 3 and not any(s["target_in_test"] for s in vendor.seen)
@@ -253,7 +284,7 @@ def test_other_models_get_no_network_and_no_key(sandboxed):
     table = SMOKE_TABLES["regression"]
     write_keys(sandboxed / "keys", "STRABLE_API_URL=https://api.example.org\nSTRABLE_API_KEY=k\n")
     row = run_module.run(ROOT / "models" / "ridge", "tfidf", table, 0, sandboxed / "data", None, "cpu", 1)
-    assert row["hardware"] == "cpu" and "api_version" not in row
+    assert row["hardware"] == "cpu" and "api_version" not in row and "api_seconds" not in row
     calls = (sandboxed / "sandbox.log").read_text().splitlines()
     assert len(calls) == 3 and all("--net --network none" in c and "STRABLE_API" not in c for c in calls)
 

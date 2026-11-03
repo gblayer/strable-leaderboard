@@ -1,0 +1,18 @@
+# ChakraTab (YHat Labs), on their hosted API. Fields from its Hugging Face card
+# (https://huggingface.co/yhatlabs/ChakraTab) and YHat Labs' API documentation (https://yhatlabs.com/models/docs).
+name: ChakraTab (medium) (test)
+version: "chakra-tab-2026-10"   # as the API reports it (fit.version)
+end_to_end: false             # free text is treated as categories: run with each string encoder
+tasks: [regression, binary, multiclass]
+variant: default              # the medium preset as the API defines it; nothing else set
+hardware: api
+api:
+  auth: Bearer
+  concurrency: 8              # the calls YHat Labs' key takes at once
+
+package: requests==2.32.5     # the client: strable_leaderboard.api
+checkpoint: null              # weights not released
+licence: YHat Labs API terms
+pretraining_data: not disclosed  # "combines several pretrained tabular foundation models" (its card), not named
+
+paper: https://huggingface.co/yhatlabs/ChakraTab

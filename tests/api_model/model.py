@@ -4,7 +4,7 @@ One call per set of test rows, POST /v1/table/predict (strable_leaderboard.api.t
 uploads a large table first): the training rows with their target and their board inner fold, passed as
 ``groups`` so that the API's validation folds hold out whole board folds, and the test rows without
 either. The reply holds the predictions and, in fit.version, the version of the model behind the API,
-which the runner records with each row. Its structure follows TabArena's Chakra-Tab client
+which the runner records with each row, with the seconds the API reports for its work. Its structure follows TabArena's Chakra-Tab client
 (autogluon/tabarena, commit 860337d, Apache-2.0: see NOTICE); the protocol is YHat Labs' documented one
 (https://yhatlabs.com/models/docs/api/tabular-predict.html).
 """
@@ -42,7 +42,9 @@ class Model(StrableModel):
                 reply = table_predict(self.train_, X.reset_index(drop=True), **fields)
             except RuntimeError as exc:  # an API that refuses the board's metric fails the task: no other is sent
                 raise RuntimeError(f"{exc} (sent eval_metric {fields['eval_metric']!r} for {self.task})") from None
-            self.api_version = (reply.get("fit") or {}).get("version")
+            fit = reply.get("fit") or {}
+            self.api_version = fit.get("version")
+            self.api_seconds = next((fit[k] for k in ("total_s", "seconds") if fit.get(k) is not None), None)
             self.replies_ = {key: reply}
         return self.replies_[key]
 
