@@ -1,7 +1,11 @@
 {
- "version": "v0.1.10",
- "built": "2026-10-27",
+ "version": "v0.1.11",
+ "built": "2026-11-03",
  "history": [
+  {
+   "version": "v0.1.11",
+   "note": "Added TILE-70B; TILE-8B results updated"
+  },
   {
    "version": "v0.1.10",
    "note": "Added Tf-Idf + Kumo Tabular (small); hardware recorded for Tf-Idf + Causilo (NVIDIA H100)"
@@ -222,31 +226,60 @@
   },
   {
    "id": "tile+causilo",
-   "enc": "TILE",
+   "enc": "TILE-8B",
    "lrn": "Causilo",
    "kind": "modular",
    "variant": "default",
    "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
    "both": [
-    0.8148,
-    14.512,
+    0.8158,
+    13.8206,
     324,
     324,
-    0.7718
+    0.7749
    ],
    "reg": [
-    0.7184,
-    13.0012,
+    0.7233,
+    12.9581,
     228,
     228,
-    0.7307
+    0.7341
    ],
    "clf": [
-    0.8987,
-    18.38,
+    0.899,
+    18.169,
     96,
     96,
-    0.8696
+    0.8719
+   ]
+  },
+  {
+   "id": "tile-70b+causilo",
+   "enc": "TILE-70B",
+   "lrn": "Causilo",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8197,
+    39.4062,
+    324,
+    324,
+    0.782
+   ],
+   "reg": [
+    0.7428,
+    36.7004,
+    228,
+    228,
+    0.7423
+   ],
+   "clf": [
+    0.9062,
+    45.3617,
+    96,
+    96,
+    0.8763
    ]
   },
   {
@@ -784,92 +817,6 @@
    ]
   },
   {
-   "id": "tile+kumo-tabular-medium",
-   "enc": "TILE",
-   "lrn": "Kumo Tabular (medium)",
-   "kind": "modular",
-   "variant": "default",
-   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
-   "both": [
-    0.8263,
-    15.3186,
-    324,
-    324,
-    0.7783
-   ],
-   "reg": [
-    0.7332,
-    14.2757,
-    228,
-    228,
-    0.7386
-   ],
-   "clf": [
-    0.9022,
-    19.6307,
-    96,
-    96,
-    0.8725
-   ]
-  },
-  {
-   "id": "tfidf+kumo-tabular-small",
-   "enc": "Tf-Idf",
-   "lrn": "Kumo Tabular (small)",
-   "kind": "modular",
-   "variant": "default",
-   "both": [
-    0.7935,
-    1.3963,
-    324,
-    324,
-    0.7589
-   ],
-   "reg": [
-    0.7147,
-    1.3643,
-    228,
-    228,
-    0.7142
-   ],
-   "clf": [
-    0.8894,
-    1.5293,
-    96,
-    96,
-    0.865
-   ]
-  },
-  {
-   "id": "tile+kumo-tabular-small",
-   "enc": "TILE",
-   "lrn": "Kumo Tabular (small)",
-   "kind": "modular",
-   "variant": "default",
-   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
-   "both": [
-    0.8176,
-    14.1588,
-    324,
-    324,
-    0.7737
-   ],
-   "reg": [
-    0.7276,
-    13.5314,
-    228,
-    228,
-    0.7332
-   ],
-   "clf": [
-    0.8998,
-    18.1933,
-    96,
-    96,
-    0.8699
-   ]
-  },
-  {
    "id": "llama-3.1-8b-first30+kumo-tabular",
    "enc": "LLaMA-3.1-8B · first-30",
    "lrn": "Kumo Tabular",
@@ -987,31 +934,204 @@
   },
   {
    "id": "tile+kumo-tabular",
-   "enc": "TILE",
+   "enc": "TILE-8B",
    "lrn": "Kumo Tabular",
    "kind": "modular",
    "variant": "default",
    "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
    "both": [
-    0.8234,
-    18.0172,
+    0.832,
+    18.4006,
     324,
     324,
-    0.7799
+    0.7852
    ],
    "reg": [
-    0.7303,
-    15.7357,
+    0.7336,
+    18.0413,
     228,
     228,
-    0.7405
+    0.7468
    ],
    "clf": [
-    0.9026,
-    21.9836,
+    0.9044,
+    24.1364,
     96,
     96,
-    0.8733
+    0.8764
+   ]
+  },
+  {
+   "id": "tile-70b+kumo-tabular",
+   "enc": "TILE-70B",
+   "lrn": "Kumo Tabular",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8385,
+    43.0726,
+    324,
+    324,
+    0.7915
+   ],
+   "reg": [
+    0.7512,
+    39.93,
+    228,
+    228,
+    0.7545
+   ],
+   "clf": [
+    0.9105,
+    48.2803,
+    96,
+    96,
+    0.8796
+   ]
+  },
+  {
+   "id": "tile+kumo-tabular-medium",
+   "enc": "TILE-8B",
+   "lrn": "Kumo Tabular (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8318,
+    16.4594,
+    324,
+    324,
+    0.7839
+   ],
+   "reg": [
+    0.7362,
+    15.6079,
+    228,
+    228,
+    0.7455
+   ],
+   "clf": [
+    0.9043,
+    20.3356,
+    96,
+    96,
+    0.875
+   ]
+  },
+  {
+   "id": "tile-70b+kumo-tabular-medium",
+   "enc": "TILE-70B",
+   "lrn": "Kumo Tabular (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8312,
+    40.8171,
+    324,
+    324,
+    0.7907
+   ],
+   "reg": [
+    0.7555,
+    37.95,
+    228,
+    228,
+    0.7536
+   ],
+   "clf": [
+    0.9093,
+    46.1976,
+    96,
+    96,
+    0.8787
+   ]
+  },
+  {
+   "id": "tfidf+kumo-tabular-small",
+   "enc": "Tf-Idf",
+   "lrn": "Kumo Tabular (small)",
+   "kind": "modular",
+   "variant": "default",
+   "both": [
+    0.7935,
+    1.3963,
+    324,
+    324,
+    0.7589
+   ],
+   "reg": [
+    0.7147,
+    1.3643,
+    228,
+    228,
+    0.7142
+   ],
+   "clf": [
+    0.8894,
+    1.5293,
+    96,
+    96,
+    0.865
+   ]
+  },
+  {
+   "id": "tile+kumo-tabular-small",
+   "enc": "TILE-8B",
+   "lrn": "Kumo Tabular (small)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8235,
+    14.8613,
+    324,
+    324,
+    0.7779
+   ],
+   "reg": [
+    0.7323,
+    14.4999,
+    228,
+    228,
+    0.7382
+   ],
+   "clf": [
+    0.8998,
+    19.4578,
+    96,
+    96,
+    0.8722
+   ]
+  },
+  {
+   "id": "tile-70b+kumo-tabular-small",
+   "enc": "TILE-70B",
+   "lrn": "Kumo Tabular (small)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8256,
+    39.1172,
+    324,
+    324,
+    0.7849
+   ],
+   "reg": [
+    0.7445,
+    37.3532,
+    228,
+    228,
+    0.7464
+   ],
+   "clf": [
+    0.9058,
+    45.354,
+    96,
+    96,
+    0.8764
    ]
   },
   {
@@ -1548,31 +1668,60 @@
   },
   {
    "id": "tile+tabicl-v2",
-   "enc": "TILE",
+   "enc": "TILE-8B",
    "lrn": "TabICLv2",
    "kind": "modular",
    "variant": "default",
    "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
    "both": [
-    0.7969,
-    13.7343,
+    0.7959,
+    13.5207,
     324,
     324,
-    0.7575
+    0.7592
    ],
    "reg": [
-    0.7014,
-    12.7788,
+    0.7019,
+    12.8506,
     228,
     228,
-    0.7122
+    0.7141
    ],
    "clf": [
-    0.8918,
-    19.9199,
+    0.8909,
+    19.4734,
     96,
     96,
-    0.8649
+    0.8662
+   ]
+  },
+  {
+   "id": "tile-70b+tabicl-v2",
+   "enc": "TILE-70B",
+   "lrn": "TabICLv2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.7998,
+    37.0016,
+    324,
+    324,
+    0.7674
+   ],
+   "reg": [
+    0.7247,
+    36.1825,
+    228,
+    228,
+    0.724
+   ],
+   "clf": [
+    0.9002,
+    46.0537,
+    96,
+    96,
+    0.8705
    ]
   },
   {
@@ -2025,176 +2174,60 @@
   },
   {
    "id": "tile+tabpfn-2.5",
-   "enc": "TILE",
+   "enc": "TILE-8B",
    "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
    "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
    "both": [
-    0.8124,
-    23.1162,
+    0.8222,
+    22.93,
     324,
     324,
-    0.764
+    0.7683
    ],
    "reg": [
-    0.7104,
-    19.4036,
+    0.7131,
+    19.5993,
     228,
     228,
-    0.7221
+    0.7271
    ],
    "clf": [
     0.8936,
-    35.1227,
+    36.2993,
     96,
     96,
-    0.8634
+    0.8659
    ]
   },
   {
-   "id": "llama-3.1-8b-first30+tabpfn-3.5",
-   "enc": "LLaMA-3.1-8B · first-30",
-   "lrn": "TabPFN-3.5",
-   "kind": "modular",
-   "variant": "default",
-   "hw": "NVIDIA A40",
-   "both": [
-    0.7951,
-    38.0966,
-    324,
-    324,
-    0.7573
-   ],
-   "reg": [
-    0.6943,
-    31.9467,
-    228,
-    228,
-    0.7125
-   ],
-   "clf": [
-    0.8839,
-    90.2654,
-    96,
-    96,
-    0.8638
-   ]
-  },
-  {
-   "id": "minilm-l6-v2-pca30+tabpfn-3.5",
-   "enc": "MiniLM-L6-v2 · PCA-30",
-   "lrn": "TabPFN-3.5",
-   "kind": "modular",
-   "variant": "default",
-   "hw": "NVIDIA A40",
-   "both": [
-    0.7939,
-    3.1712,
-    324,
-    324,
-    0.7451
-   ],
-   "reg": [
-    0.6885,
-    3.0651,
-    228,
-    228,
-    0.6954
-   ],
-   "clf": [
-    0.8833,
-    3.2865,
-    96,
-    96,
-    0.8633
-   ]
-  },
-  {
-   "id": "qwen-3-8b-first30+tabpfn-3.5",
-   "enc": "Qwen-3-8B · first-30",
-   "lrn": "TabPFN-3.5",
-   "kind": "modular",
-   "variant": "default",
-   "hw": "NVIDIA A40",
-   "both": [
-    0.7976,
-    45.5355,
-    324,
-    324,
-    0.759
-   ],
-   "reg": [
-    0.7052,
-    38.7329,
-    228,
-    228,
-    0.7141
-   ],
-   "clf": [
-    0.8829,
-    106.0749,
-    96,
-    96,
-    0.8656
-   ]
-  },
-  {
-   "id": "tfidf+tabpfn-3.5",
-   "enc": "Tf-Idf",
-   "lrn": "TabPFN-3.5",
-   "kind": "modular",
-   "variant": "default",
-   "hw": "NVIDIA A40",
-   "both": [
-    0.7904,
-    2.056,
-    324,
-    324,
-    0.7566
-   ],
-   "reg": [
-    0.7178,
-    1.9674,
-    228,
-    228,
-    0.7099
-   ],
-   "clf": [
-    0.8913,
-    2.2532,
-    96,
-    96,
-    0.8675
-   ]
-  },
-  {
-   "id": "tile+tabpfn-3.5",
-   "enc": "TILE",
-   "lrn": "TabPFN-3.5",
+   "id": "tile-70b+tabpfn-2.5",
+   "enc": "TILE-70B",
+   "lrn": "TabPFN-2.5",
    "kind": "modular",
    "variant": "default",
    "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
    "both": [
-    0.8048,
-    19.1413,
+    0.8145,
+    50.1249,
     324,
     324,
-    0.7674
+    0.7762
    ],
    "reg": [
-    0.7176,
-    17.6506,
+    0.7283,
+    46.5898,
     228,
     228,
-    0.7244
+    0.7365
    ],
    "clf": [
-    0.896,
-    24.7489,
+    0.8958,
+    75.7982,
     96,
     96,
-    0.8696
+    0.8705
    ]
   },
   {
@@ -2315,31 +2348,234 @@
   },
   {
    "id": "tile+tabpfn-3",
-   "enc": "TILE",
+   "enc": "TILE-8B",
    "lrn": "TabPFN-3",
    "kind": "modular",
    "variant": "default",
    "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
    "both": [
-    0.7973,
-    16.5748,
+    0.7972,
+    16.7337,
     324,
     324,
-    0.7579
+    0.7606
    ],
    "reg": [
-    0.7016,
-    15.9704,
+    0.7023,
+    16.2281,
     228,
     228,
-    0.7149
+    0.718
    ],
    "clf": [
     0.8843,
-    18.7444,
+    18.4369,
     96,
     96,
-    0.8599
+    0.8618
+   ]
+  },
+  {
+   "id": "tile-70b+tabpfn-3",
+   "enc": "TILE-70B",
+   "lrn": "TabPFN-3",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.7963,
+    39.4057,
+    324,
+    324,
+    0.7684
+   ],
+   "reg": [
+    0.7261,
+    37.7903,
+    228,
+    228,
+    0.7267
+   ],
+   "clf": [
+    0.8918,
+    48.7882,
+    96,
+    96,
+    0.8675
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+tabpfn-3.5",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7951,
+    38.0966,
+    324,
+    324,
+    0.7573
+   ],
+   "reg": [
+    0.6943,
+    31.9467,
+    228,
+    228,
+    0.7125
+   ],
+   "clf": [
+    0.8839,
+    90.2654,
+    96,
+    96,
+    0.8638
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+tabpfn-3.5",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7939,
+    3.1712,
+    324,
+    324,
+    0.7451
+   ],
+   "reg": [
+    0.6885,
+    3.0651,
+    228,
+    228,
+    0.6954
+   ],
+   "clf": [
+    0.8833,
+    3.2865,
+    96,
+    96,
+    0.8633
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+tabpfn-3.5",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7976,
+    45.5355,
+    324,
+    324,
+    0.759
+   ],
+   "reg": [
+    0.7052,
+    38.7329,
+    228,
+    228,
+    0.7141
+   ],
+   "clf": [
+    0.8829,
+    106.0749,
+    96,
+    96,
+    0.8656
+   ]
+  },
+  {
+   "id": "tfidf+tabpfn-3.5",
+   "enc": "Tf-Idf",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7904,
+    2.056,
+    324,
+    324,
+    0.7566
+   ],
+   "reg": [
+    0.7178,
+    1.9674,
+    228,
+    228,
+    0.7099
+   ],
+   "clf": [
+    0.8913,
+    2.2532,
+    96,
+    96,
+    0.8675
+   ]
+  },
+  {
+   "id": "tile+tabpfn-3.5",
+   "enc": "TILE-8B",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8063,
+    19.5674,
+    324,
+    324,
+    0.77
+   ],
+   "reg": [
+    0.7169,
+    17.8331,
+    228,
+    228,
+    0.7267
+   ],
+   "clf": [
+    0.8968,
+    24.8308,
+    96,
+    96,
+    0.8727
+   ]
+  },
+  {
+   "id": "tile-70b+tabpfn-3.5",
+   "enc": "TILE-70B",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8071,
+    44.3886,
+    324,
+    324,
+    0.7779
+   ],
+   "reg": [
+    0.7394,
+    39.875,
+    228,
+    228,
+    0.7363
+   ],
+   "clf": [
+    0.9065,
+    60.8457,
+    96,
+    96,
+    0.8766
    ]
   },
   {

@@ -1435,7 +1435,7 @@ const TOUR = [
     text: 'Score. Median, the default as in the STRABLE paper, follows the typical table. Mean averages every fold, so a fold where a pipeline struggles counts in full. The table and the plot follow; time stays the median.' },
   { sel: '#ctl-sort', block: 'center', sort: 'score',
     text: 'Sort. Pareto first, or by score or time. The top three rows of the order get a red frame; the plot stays the same.' },
-  { sel: '#ctl-enc', block: 'center', enc: ['Tf-Idf', 'TILE'],
+  { sel: '#ctl-enc', block: 'center', enc: ['Tf-Idf', 'TILE-8B'],
     text: 'Encoders. Choose the encoders to compare, for a lighter table and plot. All, the default, keeps every pipeline; the Pareto Front is drawn again for the pipelines shown.' },
   { sel: '#ctl-hw', block: 'center', hw: ['A40'],
     text: 'Compute. Keep the pipelines that ran on the same kind of machine, so that their run times compare fairly: the GPU type changes the time, not the score. All, the default, keeps every pipeline.' },
