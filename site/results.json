@@ -1,7 +1,11 @@
 {
- "version": "v0.1.11",
+ "version": "v0.1.12",
  "built": "2026-11-03",
  "history": [
+  {
+   "version": "v0.1.12",
+   "note": "Added FTFM-1 1"
+  },
   {
    "version": "v0.1.11",
    "note": "Added TILE-70B; TILE-8B results updated"
@@ -814,6 +818,74 @@
     96,
     96,
     0.8454
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+ftfm",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "FTFM-1",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8769,
+    117.7873,
+    96,
+    96,
+    0.8555
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+ftfm",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "FTFM-1",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8785,
+    25.8957,
+    96,
+    96,
+    0.8558
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+ftfm",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "FTFM-1",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8786,
+    126.2169,
+    96,
+    96,
+    0.8582
+   ]
+  },
+  {
+   "id": "tfidf+ftfm",
+   "enc": "Tf-Idf",
+   "lrn": "FTFM-1",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8865,
+    14.5471,
+    96,
+    96,
+    0.8608
    ]
   },
   {
