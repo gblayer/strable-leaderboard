@@ -5,7 +5,8 @@
 #
 # TILE (named latte in its authors' code, hence the method tokens) is an encoder. Every row is written
 # as one sentence, "The <column> is <value>." per cell, numbers included, and goes through the first
-# 14 blocks of LLaMA-3.1-8B; the token states of each cell are averaged into one embedding per cell.
+# 14 blocks of LLaMA-3.1-8B (TILE-8B) or the first 32 of the 80 blocks of LLaMA-3.1-70B (TILE-70B); the
+# token states of each cell are averaged into one embedding per cell.
 # Only the string columns' embeddings are kept, standardized on the training rows and reduced by one
 # PCA per column to 30 components, the counts rescaled into the learner's feature window, which bounds
 # its whole input (numerical columns, categories and target encoding included). The learner gets them
@@ -29,7 +30,8 @@ learners:  # model folder -> display name, for learners without a models/ folder
   kumo-tabular-medium: Kumo Tabular (medium)
 
 encoders:  # encoder id -> display name
-  tile: TILE
+  tile: TILE-8B
+  tile-70b: TILE-70B
 
 settings: &tile  # TILE's default settings, the same for every learner
   model: llama3_14_layers_v2|cell_meanpool|include_numbers|clean
@@ -40,6 +42,9 @@ settings: &tile  # TILE's default settings, the same for every learner
   cardinality_threshold: 50
   target_encode: proba
   window_total: true
+settings_70b: &tile70b  # the same, with the embeddings of LLaMA-3.1-70B
+  <<: *tile
+  model: llama-3.1-70b_32_layers_v2|cell_meanpool|include_numbers|clean
 
 pipelines:
   strable_tile.csv:  # one feature window per learner, chosen by the TILE authors
@@ -52,6 +57,15 @@ pipelines:
     num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
     num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
     num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
+  strable_tile_70b.csv:  # TILE-70B, the same windows; EXAONE-Tabular was not run on it
+    num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-400}}
+    num-str_latte_tabicl: {model: tabicl-v2, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-800}}
+    num-str_latte_tabpfn3: {model: tabpfn-3, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 150-400}}
+    num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-800}}
+    num-str_latte_causilo: {model: causilo, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-800}}
+    num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-600}}
+    num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-600}}
+    num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-600}}
   strable_tfidf.csv:  # the board's Tf-Idf encoder, run by the TILE authors
     num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09", hardware: NVIDIA H100 80GB HBM3}
     num-str_tabvec_kumo_small: {model: kumo-tabular-small, encoder: tfidf, variant: default}

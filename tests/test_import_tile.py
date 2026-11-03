@@ -22,7 +22,9 @@ def test_tile_selection():
     ids = {f"{p['encoder']}+{p['model']}" for p in rows}
     assert ids == {"tile+tabpfn-2.5", "tile+tabicl-v2", "tile+tabpfn-3", "tile+tabpfn-3.5", "tile+causilo", "tfidf+causilo",
                    "tile+exaone-tabular", "tile+kumo-tabular", "tile+kumo-tabular-medium", "tile+kumo-tabular-small",
-                   "tfidf+kumo-tabular-small", "tfidf+kumo-tabular-medium"}
+                   "tfidf+kumo-tabular-small", "tfidf+kumo-tabular-medium",
+                   *(f"tile-70b+{m}" for m in ("tabpfn-2.5", "tabicl-v2", "tabpfn-3", "tabpfn-3.5", "causilo", "kumo-tabular",
+                                               "kumo-tabular-medium", "kumo-tabular-small"))}
     assert all(p["variant"] == "default" for p in rows)
     held = {f"{p['encoder']}+{p['model']}" for p in rows if p.get("hold")}
     assert held == {"tile+exaone-tabular", "tfidf+kumo-tabular-medium"}  # listed, not imported
@@ -34,7 +36,11 @@ def test_tile_selection():
     assert [p.get("date") for p in rows if p["encoder"] == "tfidf"] == ["2026-09", None, None]  # Causilo: its own date
     tile = [p["where"] for p in rows if p["encoder"] == "tile"]
     assert all(w["model"] == "llama3_14_layers_v2|cell_meanpool|include_numbers|clean" and w["window_total"] for w in tile)
-    assert PAPER["encoders"]["tile"] == "TILE" and PAPER["learners"]["causilo"] == "Causilo"  # the board's names
+    tile70b = {p["model"]: p["where"] for p in rows if p["encoder"] == "tile-70b"}  # TILE-70B: the same windows
+    assert all(w["model"] == "llama-3.1-70b_32_layers_v2|cell_meanpool|include_numbers|clean" for w in tile70b.values())
+    assert {m: w["feature_window"] for m, w in tile70b.items()} == {m: w for m, w in windows.items() if m in tile70b}
+    assert PAPER["encoders"]["tile"] == "TILE-8B" and PAPER["encoders"]["tile-70b"] == "TILE-70B"  # the board's names
+    assert PAPER["learners"]["causilo"] == "Causilo"
     assert {m for m in SELECTION["learners"]} <= RESERVED  # learners without a folder: names only the maintainer adds
     paper = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())
     for key in ("learners", "encoders"):  # one display name per id
