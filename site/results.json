@@ -1,10 +1,14 @@
 {
- "version": "v0.1.12",
- "built": "2026-11-03",
+ "version": "v0.1.13",
+ "built": "2026-11-04",
  "history": [
   {
+   "version": "v0.1.13",
+   "note": "Added Mitra-v2 2"
+  },
+  {
    "version": "v0.1.12",
-   "note": "Added FTFM-1 1"
+   "note": "Added FTFM-1"
   },
   {
    "version": "v0.1.11",
@@ -1232,6 +1236,74 @@
     96,
     96,
     0.7632
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+mitra-v2",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "Mitra-v2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8283,
+    163.6105,
+    96,
+    96,
+    0.8218
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+mitra-v2",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "Mitra-v2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8258,
+    74.4359,
+    96,
+    96,
+    0.8221
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+mitra-v2",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "Mitra-v2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8272,
+    170.7103,
+    96,
+    96,
+    0.8253
+   ]
+  },
+  {
+   "id": "tfidf+mitra-v2",
+   "enc": "Tf-Idf",
+   "lrn": "Mitra-v2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8503,
+    62.8854,
+    96,
+    96,
+    0.8367
    ]
   },
   {

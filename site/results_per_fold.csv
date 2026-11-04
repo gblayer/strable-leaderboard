@@ -13019,6 +13019,390 @@ mambular,,Mambular,default,workforce-demographics-wide,regression,2,0.1716336011
 mambular,,Mambular,default,yelp_business,multiclass,0,0.6525291472556336,669.2804,75000,8.923738666666667,False,False
 mambular,,Mambular,default,yelp_business,multiclass,1,0.6553076781159957,1372.7336,75000,18.30311466666667,False,False
 mambular,,Mambular,default,yelp_business,multiclass,2,0.6364921070871876,1453.1399,75000,19.375198666666666,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,animalandveterinary-event,binary,0,0.7888789682539681,938.4335,1345,697.7200743494424,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,animalandveterinary-event,binary,1,0.7921973094170403,937.0229,1345,696.6713011152417,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,animalandveterinary-event,binary,2,0.7988241155954161,895.1872,1345,665.566691449814,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,0,0.7179995380599985,425.4573,2789,152.54833273574758,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,1,0.7143261129401517,418.5056,2789,150.05579060595196,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,2,0.7196795576901405,423.4352,2789,151.82330584438867,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,cohort-default-rate,binary,0,0.8812414968866609,552.6026,4700,117.57502127659576,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,cohort-default-rate,binary,1,0.8763678581480439,550.9189,4700,117.21678723404256,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,cohort-default-rate,binary,2,0.8527956995322139,553.2805,4700,117.71925531914893,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,cosmetic-event,multiclass,0,0.8290996992312604,1855.5244,75000,24.740325333333335,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,cosmetic-event,multiclass,1,0.8245359268580241,1852.0362,75000,24.693816,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,cosmetic-event,multiclass,2,0.8275635646771656,1847.1259,75000,24.628345333333332,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-classification,multiclass,0,0.9152303069885122,740.3014,6522,113.50834099969335,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-classification,multiclass,1,0.9205332160249448,740.4304,6522,113.52812020852498,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-classification,multiclass,2,0.9091570140091588,738.6347,6522,113.25279055504446,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-covid19serology,binary,0,0.9885601076103055,571.9607,13420,42.620022354694484,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-covid19serology,binary,1,0.9897958000937344,566.3183,13420,42.19957526080477,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-covid19serology,binary,2,0.9915529423029436,575.184,13420,42.8602086438152,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-pma,binary,0,0.9314733306306828,2300.7693,54636,42.110866461673616,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-pma,binary,1,0.9337369710984365,2298.5959,54636,42.071086829196865,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,device-pma,binary,2,0.9394214450963876,2298.183,54636,42.063529540962,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-drugsfda,binary,0,0.8695026921781353,11367.9993,27075,419.870703601108,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-drugsfda,binary,1,0.8794933104422128,11368.4905,27075,419.8888457987073,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-drugsfda,binary,2,0.8657205964703287,11364.2054,27075,419.7305780240074,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-enforcement,multiclass,0,0.8093170599820896,1860.7575,4504,413.13443605683835,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-enforcement,multiclass,1,0.7956153298055003,1867.3692,4504,414.6023978685613,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-enforcement,multiclass,2,0.7907727892301474,1866.4579,4504,414.40006660746,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-ndc,multiclass,0,0.9864258802403824,331.1487,583,568.0080617495712,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-ndc,multiclass,1,0.9906450771301282,329.5222,583,565.2181818181818,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-ndc,multiclass,2,0.9954737455628055,335.7297,583,575.8656946826758,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-shortages,multiclass,0,0.8770084325967739,471.897,1180,399.91271186440673,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-shortages,multiclass,1,0.8677533909673353,474.7138,1180,402.29983050847454,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,drug-shortages,multiclass,2,0.8439174995666239,469.3834,1180,397.7825423728814,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,financial-product-complaint,multiclass,0,0.7801233297821193,4597.6673,75000,61.30223066666667,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,financial-product-complaint,multiclass,1,0.8455193770439176,4599.096,75000,61.321279999999994,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,financial-product-complaint,multiclass,2,0.8496279711668562,4599.7138,75000,61.32951733333334,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,food-enforcement,multiclass,0,0.750839780435934,2365.8771,7654,309.1033577214529,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,food-enforcement,multiclass,1,0.7383293043326363,2363.6495,7654,308.81232035536976,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,food-enforcement,multiclass,2,0.7337961148057556,2362.783,7654,308.6991115756467,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,food-event,multiclass,0,0.6910202818364318,2768.0502,23713,116.73133724117574,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,food-event,multiclass,1,0.6970057686942998,2760.0956,23713,116.39588411419896,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,food-event,multiclass,2,0.6937347736576833,2758.2576,23713,116.3183738877409,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,historical-earthquake-locations,multiclass,0,0.8605563120743854,1573.9258,3998,393.67828914457226,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,historical-earthquake-locations,multiclass,1,0.8652397559424075,1576.846,3998,394.4087043521761,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,historical-earthquake-locations,multiclass,2,0.8525171568125988,1577.3782,3998,394.5418209104553,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,historical-volcanic-locations,multiclass,0,0.8180484105202631,237.73,603,394.24543946932005,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,historical-volcanic-locations,multiclass,1,0.854215274826331,236.0815,603,391.51160862354897,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,historical-volcanic-locations,multiclass,2,0.7988296455763232,227.6895,603,377.5945273631841,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,hypertension-control-wide,binary,0,0.6442793656326246,583.6041,1363,428.1761555392516,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,hypertension-control-wide,binary,1,0.6815789473684211,683.8681,1363,501.73741746148204,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,hypertension-control-wide,binary,2,0.7269140821366904,681.1863,1363,499.76984592809976,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,kickstarter-projects,binary,0,0.8263135388734222,4776.1751,75000,63.68233466666668,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,kickstarter-projects,binary,1,0.8587210511445618,4963.9399,75000,66.18586533333334,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,kickstarter-projects,binary,2,0.8248945126944156,4874.1976,75000,64.98930133333333,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,lending-club-loan,binary,0,0.6567228453508133,5157.4666,38577,133.6927858568577,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,lending-club-loan,binary,1,0.6312637508986072,4981.0331,38577,129.11924462762786,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,lending-club-loan,binary,2,0.6481161911983765,5166.1221,38577,133.91715529979,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,medicines,binary,0,0.7870760951540949,788.7178,2559,308.2132864400156,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,medicines,binary,1,0.7825222737789367,792.8294,2559,309.8200078155529,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,medicines,binary,2,0.7528128587830081,781.0444,2559,305.2146932395467,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,michelin-ratings,multiclass,0,0.8561038351959815,2400.5551,18839,127.42476246085249,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,michelin-ratings,multiclass,1,0.858140761005863,2404.8808,18839,127.65437655926534,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,michelin-ratings,multiclass,2,0.8540651316120105,2405.6767,18839,127.69662402462976,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,mobile-home-parks,multiclass,0,0.8180491859924491,2623.0821,56094,46.76225799550754,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,mobile-home-parks,multiclass,1,0.8292173601272732,2611.5422,56094,46.55653367561593,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,mobile-home-parks,multiclass,2,0.8259936602506315,2619.7228,56094,46.70237102007345,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,orphan-designations,binary,0,0.9432608500314494,605.5215,3083,196.40658449562113,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,orphan-designations,binary,1,0.9372780425888168,539.1091,3083,174.86509892961402,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,orphan-designations,binary,2,0.9459033092643174,601.5689,3083,195.12452156989946,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,osha-accidents,binary,0,0.5640132874015749,1149.1416,4847,237.08306168764182,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,osha-accidents,binary,1,0.5509588254593176,1145.4757,4847,236.32673818857026,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,osha-accidents,binary,2,0.5420007755708334,1148.9033,4847,237.03389725603466,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,0,0.9174037570804084,869.0605,3056,284.37843586387436,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,1,0.8858000178554892,864.8392,3056,282.99712041884817,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,2,0.9330355018554862,866.5104,3056,283.5439790575916,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,prepaid-financial-product,binary,0,0.9751102076802508,821.0429,3336,246.11597721822542,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,prepaid-financial-product,binary,1,0.9776596786833855,820.9867,3336,246.09913069544365,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,prepaid-financial-product,binary,2,0.9735092062283028,820.018,3336,245.80875299760194,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,ramen-ratings,multiclass,0,0.7117405579186612,468.9784,5006,93.68326008789452,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,ramen-ratings,multiclass,1,0.7102169240529572,465.1668,5006,92.92185377546944,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,ramen-ratings,multiclass,2,0.714427348726447,471.7928,5006,94.24546544147023,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,rasff_window,multiclass,0,0.8819692598769414,1527.2408,25702,59.42108785308536,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,rasff_window,multiclass,1,0.8924006239025771,1530.0241,25702,59.52937903665085,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,rasff_window,multiclass,2,0.8705841677721672,1476.0751,25702,57.43035950509688,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,rasnf_notification_list,binary,0,0.8121178503849874,10313.1651,42186,244.46890200540463,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,rasnf_notification_list,binary,1,0.8157659517403628,10310.7852,42186,244.41248755511307,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,rasnf_notification_list,binary,2,0.8234343792459614,10318.1761,42186,244.58768548807663,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,tobacco-problem,multiclass,0,0.7809219185110264,77.1246,1314,58.6945205479452,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,tobacco-problem,multiclass,1,0.7745597278132625,69.5774,1314,52.95083713850837,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,tobacco-problem,multiclass,2,0.7645876894832925,80.5537,1314,61.304185692541864,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,transmission-lines,multiclass,0,0.8814159163474812,1292.0901,75000,17.227867999999997,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,transmission-lines,multiclass,1,0.8826368044795982,1293.1038,75000,17.241384000000004,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,transmission-lines,multiclass,2,0.8836771895580885,1293.0186,75000,17.240248,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,yelp_business,multiclass,0,0.7112389219877696,13106.4937,75000,174.75324933333334,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,yelp_business,multiclass,1,0.717177047686428,13100.4495,75000,174.67266,False,False
+llama-3.1-8b-first30+mitra-v2,LLaMA-3.1-8B · first-30,Mitra-v2,default,yelp_business,multiclass,2,0.713137010157777,13106.528,75000,174.7537066666667,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,animalandveterinary-event,binary,0,0.7880853174603175,336.8752,1345,250.46483271375465,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,animalandveterinary-event,binary,1,0.8118086696562032,358.7015,1345,266.6925650557621,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,animalandveterinary-event,binary,2,0.8033482810164424,364.0316,1345,270.65546468401493,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,0,0.7286443558419353,361.8777,2789,129.75177482968806,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,1,0.7355524949604009,364.061,2789,130.53460021513087,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,2,0.7559113684506659,365.2479,2789,130.96016493366798,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,cohort-default-rate,binary,0,0.8932291225633816,391.527,4700,83.3036170212766,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,cohort-default-rate,binary,1,0.8912144666479032,394.4724,4700,83.93029787234042,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,cohort-default-rate,binary,2,0.8602517457232605,386.8105,4700,82.30010638297871,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,cosmetic-event,multiclass,0,0.8249494059430433,1073.5151,75000,14.313534666666667,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,cosmetic-event,multiclass,1,0.8243381820566203,1071.637,75000,14.288493333333333,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,cosmetic-event,multiclass,2,0.8267210958011498,1078.7481,75000,14.383308000000001,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-classification,multiclass,0,0.9216118489009004,480.741,6522,73.71067157313708,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-classification,multiclass,1,0.9291286267134304,483.7057,6522,74.16524072370439,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-classification,multiclass,2,0.9140149461985682,485.6415,6522,74.46205151793929,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-covid19serology,binary,0,0.9837875452154724,554.0281,13420,41.283763040238455,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-covid19serology,binary,1,0.98417160956091,557.4379,13420,41.537846497764534,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-covid19serology,binary,2,0.9876197507471036,553.9243,13420,41.27602831594635,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-pma,binary,0,0.9380449460435126,1391.2179,54636,25.463392268833736,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-pma,binary,1,0.9304248702435186,1385.975,54636,25.367431729994873,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,device-pma,binary,2,0.9305553449146916,1398.1638,54636,25.59052273226444,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-drugsfda,binary,0,0.8663470643624698,628.3273,27075,23.20691782086796,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-drugsfda,binary,1,0.8787418263053517,631.3398,27075,23.318182825484765,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-drugsfda,binary,2,0.8620997398794783,635.453,27075,23.470101569713755,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-enforcement,multiclass,0,0.8138062962608498,646.6929,4504,143.581904973357,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-enforcement,multiclass,1,0.8288584842239809,634.8151,4504,140.9447380106572,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-enforcement,multiclass,2,0.8064394684015891,634.5675,4504,140.8897646536412,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-ndc,multiclass,0,0.9806737415223448,160.973,583,276.1114922813036,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-ndc,multiclass,1,0.994356796209755,161.7529,583,277.4492281303602,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-ndc,multiclass,2,0.9952966980025196,167.1407,583,286.6907375643225,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-shortages,multiclass,0,0.8736965370878457,169.1282,1180,143.32898305084746,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-shortages,multiclass,1,0.870323726515827,166.1111,1180,140.7721186440678,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,drug-shortages,multiclass,2,0.8576620963722749,166.17,1180,140.82203389830508,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,financial-product-complaint,multiclass,0,0.7941825960477299,1424.1949,75000,18.989265333333332,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,financial-product-complaint,multiclass,1,0.8509238610496742,1423.2291,75000,18.976388,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,financial-product-complaint,multiclass,2,0.844310796295302,1431.9214,75000,19.092285333333333,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,food-enforcement,multiclass,0,0.8011751506459183,571.3872,7654,74.65210347530703,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,food-enforcement,multiclass,1,0.7815250601762735,571.2551,7654,74.63484452573817,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,food-enforcement,multiclass,2,0.7773858446256968,569.5316,7654,74.40966814737394,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,food-event,multiclass,0,0.7149430618017343,677.8137,23713,28.58405515961709,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,food-event,multiclass,1,0.7160773067208944,677.9175,23713,28.5884325053768,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,food-event,multiclass,2,0.712549598243022,674.1043,23713,28.427626196601018,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,historical-earthquake-locations,multiclass,0,0.8666996129213925,540.7286,3998,135.24977488744372,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,historical-earthquake-locations,multiclass,1,0.8594957630162502,537.9385,3998,134.55190095047521,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,historical-earthquake-locations,multiclass,2,0.8466208681550883,545.1926,3998,136.36633316658327,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,historical-volcanic-locations,multiclass,0,0.7775271141617912,166.8946,603,276.7737976782753,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,historical-volcanic-locations,multiclass,1,0.8537432499123816,169.8165,603,281.6194029850746,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,historical-volcanic-locations,multiclass,2,0.813014330957922,162.7298,603,269.8669983416253,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,hypertension-control-wide,binary,0,0.6624041477866853,577.3214,1363,423.5666911225239,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,hypertension-control-wide,binary,1,0.6417763157894737,575.7189,1363,422.3909757887014,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,hypertension-control-wide,binary,2,0.6860205888138483,573.099,1363,420.46881878209837,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,kickstarter-projects,binary,0,0.8230930807310957,1228.9594,75000,16.386125333333332,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,kickstarter-projects,binary,1,0.8571884214159176,1407.8937,75000,18.771916,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,kickstarter-projects,binary,2,0.8210215846798395,1338.5453,75000,17.847270666666667,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,lending-club-loan,binary,0,0.6453320466132557,1243.649,38577,32.238095238095234,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,lending-club-loan,binary,1,0.6175280434367748,1066.7224,38577,27.6517717811131,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,lending-club-loan,binary,2,0.6471253208340783,1241.8593,38577,32.19170230966638,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,medicines,binary,0,0.6687470440106863,378.9973,2559,148.10367330988666,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,medicines,binary,1,0.7394031777684038,381.4461,2559,149.06060961313014,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,medicines,binary,2,0.7467757367011099,380.4866,2559,148.68565846033607,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,michelin-ratings,multiclass,0,0.8526424709062637,685.993,18839,36.41345082010722,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,michelin-ratings,multiclass,1,0.8563948709279494,691.0585,18839,36.68233451881735,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,michelin-ratings,multiclass,2,0.8539327335944098,683.1293,18839,36.26144169011094,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,mobile-home-parks,multiclass,0,0.8148573738236239,1467.3768,56094,26.15924697828645,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,mobile-home-parks,multiclass,1,0.8241978076199179,1451.3214,56094,25.873023852818484,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,mobile-home-parks,multiclass,2,0.8241001838688667,1473.5758,56094,26.26975790637145,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,orphan-designations,binary,0,0.946987599964058,376.7365,3083,122.19802140771975,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,orphan-designations,binary,1,0.942638778238384,373.2225,3083,121.05822251054168,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,orphan-designations,binary,2,0.9465072883143576,379.1055,3083,122.96642880311386,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,osha-accidents,binary,0,0.5283604002624671,491.4143,4847,101.38524860738602,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,osha-accidents,binary,1,0.5350401902887139,474.1912,4847,97.83189601815556,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,osha-accidents,binary,2,0.520382560172466,495.907,4847,102.31215184650299,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,0,0.920692559286902,497.1484,3056,162.6794502617801,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,1,0.89232559236326,493.0735,3056,161.34604057591622,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,2,0.9396720989193336,496.6028,3056,162.5009162303665,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,prepaid-financial-product,binary,0,0.9709663989028214,532.9761,3336,159.76501798561148,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,prepaid-financial-product,binary,1,0.9724725705329154,491.4253,3336,147.30974220623503,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,prepaid-financial-product,binary,2,0.9692246847031596,530.9966,3336,159.17164268585128,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,ramen-ratings,multiclass,0,0.6960280853967237,398.5896,5006,79.62237315221735,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,ramen-ratings,multiclass,1,0.7138894651098994,404.6765,5006,80.83829404714342,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,ramen-ratings,multiclass,2,0.7011217634924134,400.0313,5006,79.9103675589293,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,rasff_window,multiclass,0,0.8821552183794171,646.1143,25702,25.13867792389697,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,rasff_window,multiclass,1,0.8927853056950744,641.243,25702,24.949147926231422,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,rasff_window,multiclass,2,0.879778307040009,650.0073,25702,25.290144735818224,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,rasnf_notification_list,binary,0,0.8135347988055465,1559.9379,42186,36.97762053761911,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,rasnf_notification_list,binary,1,0.809266438518168,1549.7428,42186,36.735950315270465,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,rasnf_notification_list,binary,2,0.8234514881744697,1564.5861,42186,37.08780401080927,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,tobacco-problem,multiclass,0,0.7818958388890852,67.862,1314,51.64535768645357,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,tobacco-problem,multiclass,1,0.7796835541266001,58.3736,1314,44.42435312024354,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,tobacco-problem,multiclass,2,0.7705553256463572,71.0536,1314,54.07427701674277,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,transmission-lines,multiclass,0,0.8814164725704394,1289.2453,75000,17.189937333333337,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,transmission-lines,multiclass,1,0.8817497743698434,1291.5909,75000,17.221212,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,transmission-lines,multiclass,2,0.8830652252558182,1288.1383,75000,17.175177333333334,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,yelp_business,multiclass,0,0.7157316492731883,1407.9699,75000,18.772932,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,yelp_business,multiclass,1,0.7235621226086948,1398.8254,75000,18.65100533333333,False,False
+minilm-l6-v2-pca30+mitra-v2,MiniLM-L6-v2 · PCA-30,Mitra-v2,default,yelp_business,multiclass,2,0.7198915752105981,1408.3485,75000,18.77798,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,animalandveterinary-event,binary,0,0.7926488095238096,995.1908,1345,739.9188104089219,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,animalandveterinary-event,binary,1,0.8099651220727454,992.2407,1345,737.7254275092936,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,animalandveterinary-event,binary,2,0.8084603886397609,992.601,1345,737.9933085501858,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,0,0.742872844185966,430.1534,2789,154.23212621011115,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,1,0.7545200187570772,429.2592,2789,153.9115095016135,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,chocolate-bar-ratings,multiclass,2,0.7531162811277378,429.736,2789,154.08246683399068,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,cohort-default-rate,binary,0,0.8880397536425786,591.3415,4700,125.81734042553191,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,cohort-default-rate,binary,1,0.8854840979453982,567.1694,4700,120.67434042553192,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,cohort-default-rate,binary,2,0.8739618878669408,586.6929,4700,124.82827659574468,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,cosmetic-event,multiclass,0,0.826138326802651,2134.251,75000,28.456680000000002,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,cosmetic-event,multiclass,1,0.8234008270311817,2128.3626,75000,28.378168,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,cosmetic-event,multiclass,2,0.8252679609374427,2131.2352,75000,28.416469333333332,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-classification,multiclass,0,0.920124985238282,736.1528,6522,112.87224777675559,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-classification,multiclass,1,0.9302814527726372,734.7832,6522,112.6622508432996,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-classification,multiclass,2,0.9139958267334476,737.0736,6522,113.0134314627415,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-covid19serology,binary,0,0.988217653934124,570.3045,13420,42.49660953800298,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-covid19serology,binary,1,0.9877631240771444,573.04,13420,42.700447093889714,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-covid19serology,binary,2,0.9890318142647644,572.0779,13420,42.62875558867362,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-pma,binary,0,0.9402821374104746,2272.515,54636,41.59372940918075,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-pma,binary,1,0.9311747436750036,2263.1675,54636,41.42264257998389,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,device-pma,binary,2,0.9362788804761644,2265.9788,54636,41.47409766454352,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-drugsfda,binary,0,0.8715312168696372,7279.6579,27075,268.87009787626965,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-drugsfda,binary,1,0.8801175533086522,7279.0654,27075,268.84821421975994,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-drugsfda,binary,2,0.8658830179415907,7279.0315,27075,268.8469621421976,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-enforcement,multiclass,0,0.802821374049631,2470.2419,4504,548.4551287744227,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-enforcement,multiclass,1,0.8110123034147749,2469.4412,4504,548.2773534635879,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-enforcement,multiclass,2,0.8000312436644141,2462.1863,4504,546.6665852575488,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-ndc,multiclass,0,0.9905772931948544,383.8266,583,658.3646655231561,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-ndc,multiclass,1,0.9767811452792294,388.1794,583,665.8308747855917,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-ndc,multiclass,2,0.996277030442978,389.3057,583,667.7627787307032,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-shortages,multiclass,0,0.8688116506625119,603.0943,1180,511.0968644067796,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-shortages,multiclass,1,0.8817254666630738,602.0351,1180,510.19923728813563,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,drug-shortages,multiclass,2,0.8519878137402922,606.7457,1180,514.1912711864406,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,financial-product-complaint,multiclass,0,0.796331265880045,4752.7658,75000,63.370210666666665,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,financial-product-complaint,multiclass,1,0.8420243434839236,4754.0608,75000,63.38747733333333,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,financial-product-complaint,multiclass,2,0.8494213293342086,4757.5592,75000,63.43412266666666,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,food-enforcement,multiclass,0,0.7769719099581165,3099.0513,7654,404.89303632087797,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,food-enforcement,multiclass,1,0.7730602666848139,3097.0242,7654,404.6281944081526,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,food-enforcement,multiclass,2,0.7811861031500277,3090.5361,7654,403.78051998954794,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,food-event,multiclass,0,0.7125088653253461,3183.287,23713,134.24227217138275,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,food-event,multiclass,1,0.7042741409461332,3183.3759,23713,134.24602116982246,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,food-event,multiclass,2,0.7041659493732494,3182.8962,23713,134.22579175979422,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,historical-earthquake-locations,multiclass,0,0.8603408659327899,2035.8404,3998,509.2147073536768,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,historical-earthquake-locations,multiclass,1,0.8615446386014622,2032.7903,3998,508.45180090045017,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,historical-earthquake-locations,multiclass,2,0.8549912662604394,2038.8913,3998,509.97781390695354,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,historical-volcanic-locations,multiclass,0,0.8177496066637125,244.6779,603,405.7676616915423,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,historical-volcanic-locations,multiclass,1,0.8460800466326691,245.5061,603,407.14112769485905,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,historical-volcanic-locations,multiclass,2,0.7995934124796167,241.9712,603,401.2789386401327,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,hypertension-control-wide,binary,0,0.6698871558034158,641.5352,1363,470.6787967718269,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,hypertension-control-wide,binary,1,0.6739583333333333,705.123,1363,517.331621423331,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,hypertension-control-wide,binary,2,0.7300614167377003,712.6665,1363,522.8661041819515,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,kickstarter-projects,binary,0,0.825227737123049,5464.7124,75000,72.862832,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,kickstarter-projects,binary,1,0.855392221759144,5650.4201,75000,75.33893466666667,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,kickstarter-projects,binary,2,0.8215907442007261,5560.895,75000,74.14526666666667,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,lending-club-loan,binary,0,0.6554827142510317,5958.6718,38577,154.46177255877853,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,lending-club-loan,binary,1,0.6609260396033644,5958.3278,38577,154.45285532830445,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,lending-club-loan,binary,2,0.6488870326247561,5970.0443,38577,154.7565725691474,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,medicines,binary,0,0.766147690813105,873.7781,2559,341.4529503712387,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,medicines,binary,1,0.7350442919047436,871.4745,2559,340.55275498241497,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,medicines,binary,2,0.6806257175660161,871.5663,2559,340.5886283704572,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,michelin-ratings,multiclass,0,0.8555391242440116,2560.7201,18839,135.92654068687298,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,michelin-ratings,multiclass,1,0.859362812073653,2564.2041,18839,136.11147619300388,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,michelin-ratings,multiclass,2,0.8569896983309879,2563.8923,18839,136.09492542066988,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,mobile-home-parks,multiclass,0,0.8179995374854773,2949.7156,56094,52.585224801226516,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,mobile-home-parks,multiclass,1,0.8316992353363047,2940.2323,56094,52.41616393910222,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,mobile-home-parks,multiclass,2,0.8281936550484245,2942.5557,56094,52.45758369879131,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,orphan-designations,binary,0,0.9453410009884088,619.5062,3083,200.9426532598119,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,orphan-designations,binary,1,0.942800815587993,617.4745,3083,200.2836522867337,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,orphan-designations,binary,2,0.9504624496308516,618.4535,3083,200.60120012974375,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,osha-accidents,binary,0,0.5475803805774279,1138.2462,4847,234.83519702909018,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,osha-accidents,binary,1,0.5461236876640421,1140.3251,4847,235.26410150608623,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,osha-accidents,binary,2,0.5413205079331694,1142.1231,4847,235.6350526098618,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,0,0.9205927828902566,951.1343,3056,311.2350458115183,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,1,0.9000160219586041,949.8296,3056,310.80811518324606,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,paediatric-investigation-plan,multiclass,2,0.937590926451804,945.6779,3056,309.44957460732985,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,prepaid-financial-product,binary,0,0.978448275862069,869.5196,3336,260.64736211031175,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,prepaid-financial-product,binary,1,0.97562940830721,870.5987,3336,260.9708333333333,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,prepaid-financial-product,binary,2,0.974048738568506,871.1114,3336,261.12452038369304,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,ramen-ratings,multiclass,0,0.7060553142527835,463.5427,5006,92.59742309228926,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,ramen-ratings,multiclass,1,0.7159453919121507,468.7581,5006,93.63925289652418,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,ramen-ratings,multiclass,2,0.7047099960598316,468.9549,5006,93.67856572113465,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,rasff_window,multiclass,0,0.8802490967589317,1557.0823,25702,60.582145358337876,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,rasff_window,multiclass,1,0.8923554766386141,1553.9885,25702,60.461773402848024,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,rasff_window,multiclass,2,0.8778646744199095,1558.5323,25702,60.63856120146292,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,rasnf_notification_list,binary,0,0.817966601868551,12979.136,42186,307.66453325747875,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,rasnf_notification_list,binary,1,0.8124841348448434,12962.6392,42186,307.2734840942493,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,rasnf_notification_list,binary,2,0.8215780869054888,12965.813,42186,307.3487175840326,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,tobacco-problem,multiclass,0,0.7912406550004621,75.3572,1314,57.349467275494675,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,tobacco-problem,multiclass,1,0.7759644676388309,60.5507,1314,46.08120243531202,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,tobacco-problem,multiclass,2,0.7707622478510597,79.7202,1314,60.66986301369864,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,transmission-lines,multiclass,0,0.8812848943443586,1294.1117,75000,17.254822666666666,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,transmission-lines,multiclass,1,0.8851522739901042,1305.1169,75000,17.401558666666666,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,transmission-lines,multiclass,2,0.8830493649525827,1292.8371,75000,17.237828,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,yelp_business,multiclass,0,0.7253346460956327,13999.8072,75000,186.664096,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,yelp_business,multiclass,1,0.7308771191642015,14004.4638,75000,186.726184,False,False
+qwen-3-8b-first30+mitra-v2,Qwen-3-8B · first-30,Mitra-v2,default,yelp_business,multiclass,2,0.7247608831406088,14013.0373,75000,186.84049733333333,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,animalandveterinary-event,binary,0,0.7806150793650795,201.3376,1345,149.69338289962823,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,animalandveterinary-event,binary,1,0.8182361733931242,195.9882,1345,145.71613382899628,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,animalandveterinary-event,binary,2,0.8396213253612357,210.2748,1345,156.3381412639405,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,chocolate-bar-ratings,multiclass,0,0.7343746408932313,346.8176,2789,124.35195410541414,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,chocolate-bar-ratings,multiclass,1,0.7463559823078432,343.3492,2789,123.1083542488347,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,chocolate-bar-ratings,multiclass,2,0.7645369084694977,352.1823,2789,126.27547508067407,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,cohort-default-rate,binary,0,0.8875373290203847,377.9875,4700,80.42287234042553,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,cohort-default-rate,binary,1,0.880458767238953,359.6715,4700,76.52585106382978,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,cohort-default-rate,binary,2,0.8549383064789496,387.3954,4700,82.42455319148937,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,cosmetic-event,multiclass,0,0.8407683563328492,1177.8057,75000,15.704075999999997,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,cosmetic-event,multiclass,1,0.8393977134143628,1162.677,75000,15.502359999999998,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,cosmetic-event,multiclass,2,0.8403440519200962,1158.0136,75000,15.440181333333333,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-classification,multiclass,0,0.9471060378729932,522.099,6522,80.05197792088317,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-classification,multiclass,1,0.9445088721430942,520.6453,6522,79.82908616988654,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-classification,multiclass,2,0.940175910689826,524.3031,6522,80.38992640294387,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-covid19serology,binary,0,0.9982713583282116,551.4456,13420,41.0913263785395,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-covid19serology,binary,1,0.9996573150635228,550.1549,13420,40.99514903129657,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-covid19serology,binary,2,0.9993476387496032,548.0791,13420,40.84046944858421,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-pma,binary,0,0.961845596610104,1313.2743,54636,24.03679442126071,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-pma,binary,1,0.9552607190751836,1298.511,54636,23.76658247309466,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,device-pma,binary,2,0.9418647323211496,1300.0082,54636,23.79398565048686,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-drugsfda,binary,0,0.8892721799331875,894.901,27075,33.05266851338873,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-drugsfda,binary,1,0.8974338372471655,902.4527,27075,33.3315863342567,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-drugsfda,binary,2,0.8846221921000441,900.1485,27075,33.246481994459835,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-enforcement,multiclass,0,0.8174336431531312,558.3914,4504,123.97677619893427,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-enforcement,multiclass,1,0.8274343147019904,552.0741,4504,122.5741785079929,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-enforcement,multiclass,2,0.8260737323516153,555.5119,4504,123.33745559502664,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-ndc,multiclass,0,0.9872946298983408,127.0542,583,217.93173241852486,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-ndc,multiclass,1,0.9934699170428992,129.9193,583,222.84614065180102,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-ndc,multiclass,2,0.9921831865788928,127.9421,583,219.45471698113207,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-shortages,multiclass,0,0.8707016324138174,151.2227,1180,128.15483050847456,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-shortages,multiclass,1,0.8712828303778872,154.188,1180,130.66779661016946,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,drug-shortages,multiclass,2,0.8659650675834402,156.8096,1180,132.88949152542372,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,financial-product-complaint,multiclass,0,0.8742516465627088,1219.8822,75000,16.265096,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,financial-product-complaint,multiclass,1,0.8533392885666533,1210.4609,75000,16.13947866666667,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,financial-product-complaint,multiclass,2,0.8283469416709316,1202.5103,75000,16.033470666666663,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,food-enforcement,multiclass,0,0.8022062233115369,477.3422,7654,62.36506401881369,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,food-enforcement,multiclass,1,0.7827838645919695,467.1066,7654,61.027776326104,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,food-enforcement,multiclass,2,0.7818110954349272,478.1532,7654,62.471021688006275,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,food-event,multiclass,0,0.7296102762205822,834.7176,23713,35.20084341922152,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,food-event,multiclass,1,0.7341332506218334,833.004,23713,35.12857926032134,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,food-event,multiclass,2,0.7262272458529089,834.075,23713,35.173744359633965,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,historical-earthquake-locations,multiclass,0,0.8847739442051108,434.0168,3998,108.55847923961981,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,historical-earthquake-locations,multiclass,1,0.8834566272426267,431.4862,3998,107.92551275637818,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,historical-earthquake-locations,multiclass,2,0.8806688468467693,428.5318,3998,107.18654327163581,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,historical-volcanic-locations,multiclass,0,0.8162798890586489,77.2586,603,128.12371475953566,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,historical-volcanic-locations,multiclass,1,0.8537513945228623,80.9002,603,134.16285240464344,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,historical-volcanic-locations,multiclass,2,0.7815899272991473,83.3664,603,138.25273631840795,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,hypertension-control-wide,binary,0,0.6496710526315791,385.2241,1363,282.629567131328,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,hypertension-control-wide,binary,1,0.6570285087719298,450.0794,1363,330.21232575201765,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,hypertension-control-wide,binary,2,0.732039429108474,393.9649,1363,289.04247982391786,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,kickstarter-projects,binary,0,0.8535497869597098,1061.6617,75000,14.155489333333335,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,kickstarter-projects,binary,1,0.8548708812288666,1016.7866,75000,13.557154666666666,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,kickstarter-projects,binary,2,0.8487956098842407,1175.4633,75000,15.672843999999998,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,lending-club-loan,binary,0,0.6478426074289876,914.349,38577,23.701920833657365,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,lending-club-loan,binary,1,0.6550105202321791,918.2845,38577,23.80393757938668,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,lending-club-loan,binary,2,0.6454536396334166,924.0091,38577,23.95233170023589,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,medicines,binary,0,0.8302303434699799,324.7134,2559,126.89073856975381,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,medicines,binary,1,0.8529291457350667,328.3742,2559,128.32129738178975,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,medicines,binary,2,0.8165741803801505,328.6889,2559,128.44427510746385,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,michelin-ratings,multiclass,0,0.8599505969400111,605.2546,18839,32.12774563405701,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,michelin-ratings,multiclass,1,0.8517562542780229,605.3394,18839,32.132246934550665,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,michelin-ratings,multiclass,2,0.8562638176247951,608.6029,18839,32.30547799777058,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,mobile-home-parks,multiclass,0,0.8190240654709222,1006.796,56094,17.948372374942064,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,mobile-home-parks,multiclass,1,0.820415694020884,1014.9104,56094,18.093029557528432,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,mobile-home-parks,multiclass,2,0.8191424757691381,1005.873,56094,17.931917852176703,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,orphan-designations,binary,0,0.942261209452781,376.0468,3083,121.97431073629582,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,orphan-designations,binary,1,0.9348002214510444,327.1582,3083,106.11683425235162,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,orphan-designations,binary,2,0.9492747744093176,371.0807,3083,120.36350956860201,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,osha-accidents,binary,0,0.5978346456692913,464.9375,4847,95.92273571281206,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,osha-accidents,binary,1,0.556921751968504,468.0386,4847,96.56253352589229,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,osha-accidents,binary,2,0.5759254268925901,464.7936,4847,95.893047245719,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,paediatric-investigation-plan,multiclass,0,0.9230800627472082,489.2437,3056,160.0928337696335,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,paediatric-investigation-plan,multiclass,1,0.8980030360664335,490.0504,3056,160.35680628272252,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,paediatric-investigation-plan,multiclass,2,0.9292926235165064,488.9333,3056,159.9912630890052,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,prepaid-financial-product,binary,0,0.9758032915360502,433.2168,3336,129.86115107913668,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,prepaid-financial-product,binary,1,0.97888420846395,427.0262,3336,128.00545563549161,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,prepaid-financial-product,binary,2,0.975054563564722,394.8287,3336,118.3539268585132,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,ramen-ratings,multiclass,0,0.7052443650453807,327.3319,5006,65.38791450259689,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,ramen-ratings,multiclass,1,0.7242236919755558,321.2736,5006,64.17770675189773,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,ramen-ratings,multiclass,2,0.694084870920455,316.8785,5006,63.29974031162604,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,rasff_window,multiclass,0,0.9059914770015371,843.5728,25702,32.82129017197105,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,rasff_window,multiclass,1,0.9073509718263144,845.0389,25702,32.87833242549218,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,rasff_window,multiclass,2,0.8914303121967015,841.9,25702,32.75620574274375,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,rasnf_notification_list,binary,0,0.829414420026947,1381.5148,42186,32.74818186128099,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,rasnf_notification_list,binary,1,0.8181140606983414,1384.9103,42186,32.828670649030485,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,rasnf_notification_list,binary,2,0.8245467104243355,1391.677,42186,32.98907220404874,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,tobacco-problem,multiclass,0,0.7937940255991545,48.6222,1314,37.00319634703196,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,tobacco-problem,multiclass,1,0.7902693298645631,49.3066,1314,37.524048706240485,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,tobacco-problem,multiclass,2,0.7753312198950625,42.0593,1314,32.008599695586,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,transmission-lines,multiclass,0,0.9221994230248886,1733.4861,75000,23.113148,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,transmission-lines,multiclass,1,0.9207462166096996,1774.467,75000,23.65956,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,transmission-lines,multiclass,2,0.9217386082412272,1764.1762,75000,23.522349333333334,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,yelp_business,multiclass,0,0.7139206613650911,1293.4569,75000,17.246091999999997,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,yelp_business,multiclass,1,0.7157804853063959,1283.5738,75000,17.114317333333332,False,False
+tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,yelp_business,multiclass,2,0.7127357074215552,1297.3412,75000,17.297882666666666,False,False
 llama-3.1-8b-pca30+realmlp,LLaMA-3.1-8B · PCA-30,RealMLP,default,aca-federal-upper-limits-wide,regression,0,0.6065901517868042,94.7203,1976,47.93537449392712,False,False
 llama-3.1-8b-pca30+realmlp,LLaMA-3.1-8B · PCA-30,RealMLP,default,aca-federal-upper-limits-wide,regression,1,0.6482282876968384,84.7236,1976,42.876315789473686,False,False
 llama-3.1-8b-pca30+realmlp,LLaMA-3.1-8B · PCA-30,RealMLP,default,aca-federal-upper-limits-wide,regression,2,0.5678857564926147,71.68130000000001,1976,36.275961538461544,False,False
