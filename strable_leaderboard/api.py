@@ -123,9 +123,10 @@ def _retry_after(r) -> float | None:
 
 
 def request(method: str, path: str, body: dict | None = None, data: bytes | None = None, auth: bool = True,
-            timeout: float = 7200) -> dict:
+            timeout: float = 7200, json_reply: bool = True) -> dict:
     """``method`` on ``<base URL><path>`` (or on ``path`` itself when it is a full URL), JSON ``body`` or raw
-    ``data``; the JSON reply. Tries again as the module docstring says."""
+    ``data``; the JSON reply. Tries again as the module docstring says. ``json_reply=False``: any 2xx is a
+    success, whatever its body (a storage upload answers 200 with an empty one), and the result is {}."""
     import requests
 
     base, key, scheme = _endpoint()
@@ -148,6 +149,8 @@ def request(method: str, path: str, body: dict | None = None, data: bytes | None
             except ValueError:
                 reply = None  # a gateway's HTML error page
             error = reply.get("error") if isinstance(reply, dict) else None
+            if 200 <= r.status_code < 300 and not json_reply:
+                return {}
             if 200 <= r.status_code < 300 and isinstance(reply, dict) and not error:
                 return reply
             if isinstance(error, dict):
@@ -192,8 +195,9 @@ def send_upload(upload: dict, data: bytes) -> None:
     """Send the file where ``POST /v1/uploads`` said. The documentation names upload.method, upload.url and
     upload.auth, and gives PUT /v1/uploads/{id} an application/octet-stream body; it does not say what a
     signed storage URL wants beyond no key. Here: the raw Parquet bytes, with that content type, to
-    upload.url (a path on the API, or a full URL), with the key only when upload.auth is true."""
-    request(upload.get("method", "PUT"), upload["url"], data=data, auth=bool(upload.get("auth")))
+    upload.url (a path on the API, or a full URL), with the key only when upload.auth is true. The signed
+    storage URL answers 200 with an empty body, so any 2xx counts."""
+    request(upload.get("method", "PUT"), upload["url"], data=data, auth=bool(upload.get("auth")), json_reply=False)
 
 
 def upload(df) -> str:
