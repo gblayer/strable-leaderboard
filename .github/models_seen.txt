@@ -1,0 +1,50 @@
+# Models the weekly check for new models (.github/workflows/model-check.yml) never opens an issue for: every
+# model on the leaderboard it reads on 2026-11-04, when the check started. One model per line, as the check names
+# it (python scripts/model_check.py snapshot).
+APLR
+AutoGluon 1.4
+AutoGluon 1.5
+AutoGluon 1.6
+CTBoost
+CatBoost
+Causilo
+Chakra-Tab
+ChimeraBoost
+EBM
+EXAONE-Tabular
+ExtraTrees
+FastaiMLP
+KNN
+Kumo-Tabular
+Kumo-Tabular-Medium
+Kumo-Tabular-Small
+LightGBM
+LimiX
+LimiX-2
+Linear
+Mitra-v2
+ModernNCA
+PerpetualBooster
+PrismBoost
+RandomForest
+RealMLP
+RealTabPFN-2.5
+SAP-RPT-OSS
+TabAbax
+TabDPT
+TabDPT-1.3
+TabDPT-Turbo
+TabFM
+TabICLv2
+TabM
+TabPFN-2.6
+TabPFN-3
+TabPFN-3.5
+TabPFN-3.5-Fast
+TabSTAR-v1.1
+TabSwift
+TorchMLP
+XGBoost
+Xiaomi-TabLDM
+iLTM
+xRFM

@@ -63,6 +63,7 @@ The results come back as a pull request opened by `gblayer` that changes only th
 
 - Reviewing a pull request by hand: `.claude/skills/review-submission/SKILL.md`.
 - Running a model and publishing its results: the dispatcher (`scripts/dispatch.py`) does it. By hand, and to set the automation up: `.claude/skills/run-model/SKILL.md`.
+- New models elsewhere: every Monday, `.github/workflows/model-check.yml` opens one issue, labelled `new-model`, per new model that enters the top 10 of a public leaderboard of tabular models and that the board does not have, with what its public documents say: can the board run it, end-to-end or with the string encoders. Close an issue to dismiss the model; `.github/models_seen.txt` lists the models it never opens an issue for.
 - The page is `site/index.html`, deployed by `.github/workflows/pages.yml`. It reads `site/results.json`, which `scripts/build_site_data.py` writes.
 - Scores, folds, encoders and times follow the [paper](https://arxiv.org/abs/2605.12292); only the maintainer changes them.
 - Results reach this repository only as the results files of `site/` (`RESULTS_FILES`). Never commit `results/`, `runs/`, data, weights, `cache/` or `private/`, and never name the machines the runs use.
