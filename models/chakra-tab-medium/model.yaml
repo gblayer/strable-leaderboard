@@ -8,7 +8,7 @@ variant: default              # the medium preset as the API defines it; nothing
 hardware: api
 api:
   auth: Bearer
-  concurrency: 8              # the calls YHat Labs' key takes at once
+  concurrency: 2              # the tabular calls YHat Labs' key runs at once (GET /v1/limits: rate.concurrent.tabular)
 
 package: requests==2.32.5     # the client: strable_leaderboard.api
 checkpoint: null              # weights not released
