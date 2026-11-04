@@ -1,4 +1,4 @@
-"""ChakraTab (YHat Labs) at its medium preset (3-fold bagging), on YHat Labs' hosted API: its weights are not
+"""ChakraTab (YHat Labs) at its medium preset, on YHat Labs' hosted API: its weights are not
 released (https://huggingface.co/yhatlabs/ChakraTab).
 
 One call per set of test rows, POST /v1/table/predict (strable_leaderboard.api.table_predict, which uploads a
@@ -19,9 +19,6 @@ from strable_leaderboard.model import StrableModel
 
 MODEL, PRESET = "chakra-tab", "medium"
 TARGET, FOLD = "__target__", "__fold__"  # columns of train only
-# What the API validates on: the board's metric; for multiclass its own default (log-loss), since every multiclass
-# call with roc_auc fails on the provider's side (upstream_error, 2026-11-03). Scores are computed by the board.
-METRICS = {"regression": "r2", "binary": "roc_auc"}
 
 
 class Model(StrableModel):
@@ -38,12 +35,10 @@ class Model(StrableModel):
     def _reply(self, X):
         key = hashlib.sha256(pd.util.hash_pandas_object(X, index=False).to_numpy().tobytes()).hexdigest()
         if key not in self.replies_:
-            fields = {"target": TARGET, "model": MODEL, "preset": PRESET, "problem_type": self.task, "seed": self.seed,
-                      "groups": FOLD, **({"eval_metric": METRICS[self.task]} if self.task in METRICS else {})}
-            try:
-                reply = table_predict(self.train_, X.reset_index(drop=True), **fields)
-            except RuntimeError as exc:  # an API that refuses the board's metric fails the task: no other is sent
-                raise RuntimeError(f"{exc} (sent eval_metric {fields.get('eval_metric')!r} for {self.task})") from None
+            # No eval_metric: the API validates on its own default, as every model runs at its defaults; the board
+            # computes the scores.
+            reply = table_predict(self.train_, X.reset_index(drop=True), target=TARGET, model=MODEL, preset=PRESET,
+                                  problem_type=self.task, seed=self.seed, groups=FOLD)
             fit = reply.get("fit") or {}
             self.api_version = fit.get("version")
             self.api_seconds = next((fit[k] for k in ("total_s", "seconds") if fit.get(k) is not None), None)
