@@ -39,6 +39,7 @@ tabfm[pytorch]==1.0.1  # TabFM (Google)
 xiaomi-tabldm @ git+https://github.com/xiaomi-research/xiaomi-tabldm.git@e83da2baaa7357f27290ebf3a1bd1cdc216b6223  # Xiaomi-TabLDM, not on PyPI
 autogluon.tabular[mitra]==1.6.3  # Mitra-v2 (AutoGluon)
 ftfm @ git+https://github.com/machinelearningnuremberg/ftfm-official@7e5e237daa26ef20f0faec1650d000b04de5122e  # FTFM-1, not on PyPI
+tababax @ git+https://github.com/tababax-research/TabAbax@ef09729c767d7b333843303d60623b78dd42a911  # TabAbax (BaiRong), not on PyPI
 
 # dependencies the paper's freeze holds at versions the pins above cannot use
 click==8.5.0  # 8.3.0 in the paper; huggingface-hub 2.2.0 needs 8.4.2 or later
@@ -53,6 +54,7 @@ array-api-compat==1.15.0  # not in the paper; a dependency of pyvinecopulib, hel
 boto3==1.43.118  # not in the paper; a dependency of autogluon (Mitra-v2), held at the version locked and checked with it
 botocore==1.43.118  # not in the paper; a dependency of boto3, held at the version locked and checked with it
 wadler-lindig==0.1.7  # not in the paper; a dependency of jaxtyping (TabFM), held at the version locked and checked with it
+frozendict==2.4.7  # not in the paper; a dependency of einx (AutoGluon, Mitra-v2), held at the version locked and checked with it
 
 # tests
 pytest==9.0.2

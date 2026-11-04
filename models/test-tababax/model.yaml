@@ -1,0 +1,18 @@
+name: TabAbax (test)
+version: "1.0.0"
+end_to_end: false
+tasks: [regression, binary, multiclass]
+variant: default
+hardware: gpu
+
+package: "tababax @ git+https://github.com/tababax-research/TabAbax@ef09729c767d7b333843303d60623b78dd42a911"  # not on PyPI: the code at one commit, as in env/requirements.in
+checkpoint:
+  repo: tababax-ai/TabAbax
+  revision: 6ce3f6350d67f5f3584df2e612666373c27e29f5
+  files: [tababax-classifier.ckpt, tababax-regressor.ckpt]
+licence: CC BY-NC 4.0  # the weights: non-commercial. The code: BSD-3-Clause (TabICL-derived), MIT and Apache-2.0 parts
+# Technical report, Sec. 3.3: "TabAbax is pretrained entirely on synthetic datasets generated from an SCM prior".
+pretraining_data: synthetic
+
+code: https://github.com/tababax-research/TabAbax
+paper: https://arxiv.org/abs/2611.00562

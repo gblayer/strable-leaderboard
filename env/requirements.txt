@@ -120,6 +120,7 @@ structured-data-models==0.2.1
 sympy==1.14.0
 synthefy==7.2.0
 synthefy-nori==0.21.0
+tababax @ git+https://github.com/tababax-research/TabAbax@ef09729c767d7b333843303d60623b78dd42a911
 tabfm==1.0.1
 tabicl==2.0.3
 tabpfn==9.0.0
