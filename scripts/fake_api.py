@@ -160,7 +160,7 @@ class FakeVendor:
                 if hashlib.sha256(body).hexdigest() != self.slots[m.group(1)]:
                     raise Refused(400, "invalid_request_error", "the file does not match its sha256")
                 self.uploads[m.group(1)] = body
-                return 200, {}, {}
+                return 200, b"", {}  # as YHat Labs' signed storage URL: 200, empty body
             if m and method == "DELETE" and m.group(1) in self.uploads:
                 del self.uploads[m.group(1)]
                 self.deleted.append(m.group(1))
