@@ -1,10 +1,14 @@
 {
- "version": "v0.1.12",
- "built": "2026-11-03",
+ "version": "v0.1.13",
+ "built": "2026-11-05",
  "history": [
   {
+   "version": "v0.1.13",
+   "note": "Added ChakraTab (medium) chakra-tab-2026-10"
+  },
+  {
    "version": "v0.1.12",
-   "note": "Added FTFM-1 1"
+   "note": "Added FTFM-1"
   },
   {
    "version": "v0.1.11",
@@ -284,6 +288,130 @@
     96,
     96,
     0.8763
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+chakra-tab-medium",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "ChakraTab (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "api",
+   "api": true,
+   "api_version": "chakra-tab-2026-10",
+   "both": [
+    0.805,
+    49.9046,
+    324,
+    324,
+    0.768
+   ],
+   "reg": [
+    0.7163,
+    46.2114,
+    228,
+    228,
+    0.7266
+   ],
+   "clf": [
+    0.8894,
+    105.5803,
+    96,
+    96,
+    0.8665
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+chakra-tab-medium",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "ChakraTab (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "api",
+   "api": true,
+   "api_version": "chakra-tab-2026-10",
+   "both": [
+    0.8043,
+    10.918,
+    324,
+    324,
+    0.7542
+   ],
+   "reg": [
+    0.7126,
+    10.3027,
+    228,
+    228,
+    0.7068
+   ],
+   "clf": [
+    0.893,
+    11.583,
+    96,
+    96,
+    0.867
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+chakra-tab-medium",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "ChakraTab (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "api",
+   "api": true,
+   "api_version": "chakra-tab-2026-10",
+   "both": [
+    0.806,
+    55.393,
+    324,
+    324,
+    0.7691
+   ],
+   "reg": [
+    0.719,
+    49.6717,
+    228,
+    228,
+    0.727
+   ],
+   "clf": [
+    0.8905,
+    113.0353,
+    96,
+    96,
+    0.8689
+   ]
+  },
+  {
+   "id": "tfidf+chakra-tab-medium",
+   "enc": "Tf-Idf",
+   "lrn": "ChakraTab (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "api",
+   "api": true,
+   "api_version": "chakra-tab-2026-10",
+   "both": [
+    0.8031,
+    9.6277,
+    324,
+    324,
+    0.7666
+   ],
+   "reg": [
+    0.7228,
+    9.5315,
+    228,
+    228,
+    0.7232
+   ],
+   "clf": [
+    0.8942,
+    9.9469,
+    96,
+    96,
+    0.8695
    ]
   },
   {
