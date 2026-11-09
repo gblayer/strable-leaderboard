@@ -24,7 +24,8 @@ computes the ranking and the Pareto front from this file.
 
 API models: a pipeline whose rows all ran on hardware "api" (on its provider's servers) gets
 ``"api": true`` and ``"api_version"``, the versions its provider reported, which the page marks API,
-and the Parquet and per-fold files an ``api`` column (true or false).
+and the Parquet and per-fold files an ``api`` column (true or false). ``"api_time_reported": true`` says
+that every row's time is the provider's own number plus the board's encoding time.
 
 Overlap flags: when site/flags.json sits next to the output (``{"<model>": {"overlap": true,
 "evidence": "<url>"}}``, set by the maintainer), every pipeline of a flagged model gets
@@ -72,8 +73,9 @@ COLUMNS = {
     "overlap": "true when the maintainer marked the model's pre-training data as possibly overlapping STRABLE's tables "
                "(the page's ∩ mark; results.json links the evidence)",
     "note": "the maintainer's note on the pipeline, e.g. a detail of how it was run; empty when none",
-    "api": "true when the model runs on its provider's servers, behind an API: its time includes the network and "
-           "the provider's hardware (the page's API mark; results.json gives the version the provider reported)",
+    "api": "true when the model runs on its provider's servers, behind an API. The leaderboard is a third party to "
+           "that run: the time is the one the provider reports, when it reports one, plus the leaderboard's encoding "
+           "time, and is not verified here (the page's API mark; results.json gives the version the provider reported)",
 }
 PER_FOLD = ["id", "encoder", "learner", "variant", "table", "task", "fold", "score", "total_s", "n_rows", "time_per_1k_s",
             "overlap", "api"]
@@ -220,6 +222,8 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
             if hw == ["api"]:
                 versions = sorted(set(rows["api_version"].dropna().astype(str))) if "api_version" in rows else []
                 record.update(api=True, **({"api_version": ", ".join(versions)} if versions else {}))
+                if "api_seconds" in rows and rows["api_seconds"].notna().all():
+                    record["api_time_reported"] = True
             if path.stem in flags:
                 record.update(overlap=True, overlap_evidence=flags[path.stem]["evidence"])
             if record["id"] in notes:

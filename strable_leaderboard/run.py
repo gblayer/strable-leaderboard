@@ -21,10 +21,11 @@ Both processes cap their BLAS, OpenMP and torch threads to ``--n-jobs``, the job
 
 An API model (``hardware: api``, ``strable_leaderboard.api``) runs on its provider's servers: this
 process reads its key file and passes the endpoint and key to its child only, whose sandbox then
-keeps the network; the warm-ups send nothing, so its time includes the request, the network and the
-provider's work. Its rows say ``hardware`` "api" and carry the ``api_version`` its provider reported
-and, when it reports one, ``api_seconds``, the provider's own time for the call (kept in the results
-files only: the board's time is ``total_s``, measured here).
+keeps the network. The board is a third party to that run, so when the provider reports a time for
+the call (``api_seconds``), ``total_s = encoding + api_seconds``, the provider's number, not verified
+here; otherwise T is used as above (the warm-ups send nothing, so it includes the request, the network
+and the provider's work). Its rows say ``hardware`` "api" and carry the ``api_version`` its provider
+reported, ``encode_s`` and ``measured_total_s``, encoding + T - O (both in the results files only).
 
 ``--smoke``: the static checks, then outer fold 0 of the three smoke tables through the same
 sandbox; nothing is written. ``--no-sandbox`` runs the child as a plain process, for local
@@ -139,19 +140,21 @@ def run(folder: Path, encoder: str, table: str, fold: int, data_dir, cache_dir, 
     out, model_s = fit_predict(folder, X_train, y_train, X_test, task, strings, weights_dir, device, n_jobs, sandbox,
                                api_env=child_env(folder, card) if api else None)
     version, api_seconds = out.pop("api_version", ""), out.pop("api_seconds", None)
+    reported = api_seconds if api else None  # only an API model's provider reports a time
     score = checked_score(task, y_train, y_test, **out)
     checkpoint = card.get("checkpoint") or {}
     row = {
         "model": folder.name, "encoder": "none" if strings else encoder, "variant": card["variant"], "table": table,
         "task": task, "fold": fold, "score": score, "fit_s": None, "predict_s": None,
-        "total_s": round(encode_s + model_s, 4),
+        "total_s": round(encode_s + (model_s if reported is None else max(reported, MIN_SECONDS)), 4),
         "n_train": len(train_idx), "n_test": len(test_idx), "hardware": "api" if api else hardware_name(device),
         "package": card["package"], "checkpoint_revision": checkpoint.get("revision", ""),
         "protocol_version": PROTOCOL, "date": date.today().isoformat(), "leaderboard_version": __version__,
     }
     if not api:
         return row
-    return dict(row, api_version=version, **({} if api_seconds is None else {"api_seconds": api_seconds}))
+    return dict(row, api_version=version, encode_s=round(encode_s, 4), measured_total_s=round(encode_s + model_s, 4),
+                **({} if reported is None else {"api_seconds": reported}))
 
 
 def smoke(folder: Path, data_dir, cache_dir, device: str, n_jobs: int, sandbox: bool) -> int:

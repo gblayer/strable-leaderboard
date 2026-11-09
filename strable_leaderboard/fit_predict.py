@@ -11,9 +11,10 @@ overhead: imports, CUDA start-up, weight loading. BLAS, OpenMP and torch threads
 ``--n-jobs`` before the model is built (``limit_threads``).
 
 ``--api``: the model runs on its provider's servers (``hardware: api``). The warm-up only builds it and
-sends nothing, so the time keeps the request, the network and the provider's work. A model that sets
+sends nothing, so the measured time keeps the request, the network and the provider's work. A model that sets
 ``self.api_version`` (the version its provider reports) gets it written to ``api_version.txt``, and
-one that sets ``self.api_seconds`` (the time the provider reports for its work) to ``api_seconds.txt``.
+one that sets ``self.api_seconds`` (the time the provider reports for its work, which becomes the
+board's time, see strable_leaderboard.run) to ``api_seconds.txt``.
 """
 
 from __future__ import annotations

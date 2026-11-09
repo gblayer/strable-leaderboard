@@ -1,1 +1,6 @@
-{}
+{
+ "tfidf+chakra-tab-medium": "Run by YHat Labs on its own servers, not by this leaderboard, which is a third party: the time is the one YHat Labs reports for each call, on an NVIDIA RTX PRO 6000 GPU with 12 vCPUs according to YHat Labs (neither is verified here), plus this leaderboard's string-encoding time.",
+ "minilm-l6-v2-pca30+chakra-tab-medium": "Run by YHat Labs on its own servers, not by this leaderboard, which is a third party: the time is the one YHat Labs reports for each call, on an NVIDIA RTX PRO 6000 GPU with 12 vCPUs according to YHat Labs (neither is verified here), plus this leaderboard's string-encoding time.",
+ "qwen-3-8b-first30+chakra-tab-medium": "Run by YHat Labs on its own servers, not by this leaderboard, which is a third party: the time is the one YHat Labs reports for each call, on an NVIDIA RTX PRO 6000 GPU with 12 vCPUs according to YHat Labs (neither is verified here), plus this leaderboard's string-encoding time.",
+ "llama-3.1-8b-first30+chakra-tab-medium": "Run by YHat Labs on its own servers, not by this leaderboard, which is a third party: the time is the one YHat Labs reports for each call, on an NVIDIA RTX PRO 6000 GPU with 12 vCPUs according to YHat Labs (neither is verified here), plus this leaderboard's string-encoding time."
+}
