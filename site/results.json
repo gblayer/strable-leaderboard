@@ -1,7 +1,11 @@
 {
- "version": "v0.1.13",
- "built": "2026-11-05",
+ "version": "v0.1.14",
+ "built": "2026-11-09",
  "history": [
+  {
+   "version": "v0.1.14",
+   "note": "Added Mitra-v2 2"
+  },
   {
    "version": "v0.1.13",
    "note": "Added ChakraTab (medium) chakra-tab-2026-10"
@@ -1360,6 +1364,74 @@
     96,
     96,
     0.7632
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+mitra-v2",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "Mitra-v2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8663,
+    158.855,
+    96,
+    96,
+    0.8419
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+mitra-v2",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "Mitra-v2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8554,
+    43.8364,
+    96,
+    96,
+    0.8396
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+mitra-v2",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "Mitra-v2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8598,
+    164.5865,
+    96,
+    96,
+    0.8447
+   ]
+  },
+  {
+   "id": "tfidf+mitra-v2",
+   "enc": "Tf-Idf",
+   "lrn": "Mitra-v2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": null,
+   "reg": null,
+   "clf": [
+    0.8632,
+    41.2404,
+    96,
+    96,
+    0.8499
    ]
   },
   {
