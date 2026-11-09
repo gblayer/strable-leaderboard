@@ -7,7 +7,7 @@ Each result row records the hardware it ran on, in its `hardware` column; `site/
 | A40, A100, H100, … | run by the board, or imported with their GPU | the GPU's name, e.g. `NVIDIA A40` |
 | A100 + A40 | rows spread over two GPU types | both names |
 | Shared cluster | the STRABLE paper's pipelines | `paper`: no GPU per row. As the paper's Appendix D.1 says, its jobs were scheduled across NVIDIA V100, A100 and A40 GPUs with AMD EPYC and Intel Xeon CPUs (32 cores and one GPU per job), not pinned to one GPU type |
-| API | models that run on their provider's servers | `api` |
+| API | models that run on their provider's servers. The board is a third party to these runs and cannot verify them: it shows the time and hardware the provider reports. ChakraTab: YHat Labs states an NVIDIA RTX PRO 6000 GPU and 12 vCPUs | `api` |
 
 For a pipeline with a language-model encoder, the GPU shown is the one the learner ran on. The encoder's extraction, measured once per table, may have run on another GPU (almost always an A100 or an A40).
 

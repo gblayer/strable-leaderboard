@@ -268,7 +268,9 @@ def test_the_example_api_model_passes_the_smoke_test_through_the_sandbox(sandbox
         assert run_module.smoke(EXAMPLE, sandboxed / "data", None, "cpu", 1, sandbox=True) == 0, capsys.readouterr().out
     assert capsys.readouterr().out.count("  ok    ") == 3
     assert [r["hardware"] for r in rows] == ["api"] * 3 and {r["api_version"] for r in rows} == {"fake-1.0"}
-    assert all(r["api_seconds"] >= 0 for r in rows)  # the provider's own time, besides total_s
+    assert all(r["total_s"] == round(r["encode_s"] + max(r["api_seconds"], run_module.MIN_SECONDS), 4)
+               for r in rows)  # the board's time: the provider's own number, plus the encoding
+    assert all(r["measured_total_s"] > r["encode_s"] for r in rows)  # our wall clock, kept beside it
     assert all(r["score"] > 0.5 for r in rows)
     # one request per table: the warm-ups send nothing; train carries the target, test does not
     assert len(vendor.seen) == 3 and not any(s["target_in_test"] for s in vendor.seen)

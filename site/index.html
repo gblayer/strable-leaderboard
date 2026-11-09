@@ -552,6 +552,9 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
             <tbody id="rows"></tbody>
           </table>
         </div>
+        <div class="tbl-foot" id="api-note" hidden>
+          <p class="note"><b>ChakraTab is run by YHat Labs, on YHat Labs' servers.</b> This leaderboard is a third party: ChakraTab's time is the one YHat Labs reports (YHat Labs states an NVIDIA RTX PRO 6000 GPU and 12 vCPUs), not verified here, plus this leaderboard's string-encoding time.</p>
+        </div>
         <div class="tbl-foot" id="tbl-foot" hidden>
           <p class="note" role="status">Could not load the results. Try ↻ Refresh, or reload the page later.</p>
         </div>
@@ -689,7 +692,7 @@ const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model'; 
 const OVERLAP_NAME = 'possible pre-training overlap';
 const OVERLAP_TIP = "Possible overlap between this model's pre-training data and STRABLE tables.";
 const API_NAME = 'API model';
-const API_TIP = "Runs on the provider's servers: its time includes the network and their hardware.";
+const API_TIP = "Runs on its provider's servers, not on this leaderboard's. The leaderboard is a third party and cannot verify what the provider reports.";
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const N_PAPER = 75;  // the paper's Figure 4a pipelines, never replaced; every other pipeline was added since
@@ -750,7 +753,7 @@ function items(task) {
     rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, hw: d.hw,
       tuned: d.variant === 'tuned', incomplete: v.length > 3 && v[2] < v[3],
       overlap: overlap, evidence: overlap && isUrl(d.overlap_evidence) ? d.overlap_evidence : null,
-      api: api, apiVersion: api && typeof d.api_version === 'string' ? d.api_version : null,
+      api: api, apiVersion: api && typeof d.api_version === 'string' ? d.api_version : null, apiTimeReported: api && d.api_time_reported === true,
       note: typeof d.note === 'string' && d.note.trim() ? d.note : null,
       s: state.score === 'mean' ? v[4] : v[0], t: num(v[1]) });
   }
@@ -784,7 +787,7 @@ const tagEl = (cls, name) => el('span', 'tag ' + cls, name.toUpperCase());
    the button in the page so that Tab reaches it); Esc or a tap elsewhere closes it, and so does
    scrolling the button out of the table's view. In the plot's tooltip it is the plain box. */
 const markBox = (sym, cls) => { const s = el('span', cls, sym); s.setAttribute('aria-hidden', 'true'); return s; };
-const apiTip = (d) => API_TIP + (d.apiVersion ? ' Version ' + d.apiVersion + '.' : '');
+const apiTip = (d) => API_TIP + (d.apiTimeReported ? " Time: the seconds the provider reports, plus this leaderboard's string-encoding time." : " Time: measured at this leaderboard's side, network included.") + (d.apiVersion ? ' Version ' + d.apiVersion + '.' : '');
 let ovlOpen = null, ovlTimer = null, ovlN = 0;
 /* Puts the open tooltip under its button (above when there is no room); false when the button is out of view. */
 function ovlPlace(box) {
@@ -838,7 +841,7 @@ document.addEventListener('pointerdown', (ev) => { if (ovlOpen && !ovlOpen.conta
 window.addEventListener('scroll', () => { if (ovlOpen && !ovlPlace(ovlOpen)) ovlHide(); }, true);
 window.addEventListener('resize', () => ovlHide());
 function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
-function timeText(d) { return 'total run time ' + fmtT(d.t) + ' per 1K samples'; }
+function timeText(d) { return (d.apiTimeReported ? "time reported by the provider, plus this leaderboard's encoding, " : 'total run time ') + fmtT(d.t) + ' per 1K samples'; }
 
 function starSvg() {
   const s = sv('svg', { class: 'star', viewBox: '0 0 11 11', 'aria-hidden': 'true' });
@@ -1143,6 +1146,7 @@ function render() {
   ['show', 'hide'].forEach((k) => $('api-' + k).setAttribute('aria-pressed', String(state.api === k)));
   $('ctl-api').hidden = !anyApi();  // no switch while the board has no API model
   $('legend-api').hidden = !list.some((d) => d.api);
+  $('api-note').hidden = !list.some((d) => d.api);
   $('dl-view').textContent = viewName() + ', ' + SORT_NAMES[state.sort];
 }
 
@@ -1228,7 +1232,7 @@ const COLUMNS = {
   rank: 'position in the current order',
   pipeline: 'encoder + learner, or the learner alone for end-to-end pipelines',
   variant: 'default configuration, or tuned',
-  tags: 'end-to-end, tuned, incomplete, possible pre-training overlap, API model (runs on its provider\'s servers; its time includes the network)',
+  tags: 'end-to-end, tuned, incomplete, possible pre-training overlap, API model (runs on its provider\'s servers; this leaderboard is a third party: the time is the one the provider reports, when it reports one, plus this leaderboard\'s encoding time)',
   median_score: { both: 'median over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification), as in the paper\'s Figure 4a',
     reg: 'median R² over the 76 regression tables x 3 outer folds', clf: 'median ROC-AUC over the 32 classification tables x 3 outer folds' },
   mean_score: { both: 'mean over all fold rows (108 tables x 3 outer folds) of R² (regression) and ROC-AUC (classification); a fold where a pipeline fails (R² far below 0) pulls it down',
@@ -1442,7 +1446,7 @@ const TOUR = [
   { sel: '#ctl-overlap', block: 'center',
     text: 'Overlap ∩. A small ∩ marks models whose pre-training data may include some STRABLE tables. Show, the default, keeps every model; Hide leaves these ones out of the table and the plot.' },
   { sel: '#ctl-api', block: 'center',
-    text: "API. A small teal API pill, and a round marker on the plot, mark models that run on their provider's servers: their time includes the network and the provider's hardware. Show, the default, keeps them; Hide leaves them out of the table and the plot." },
+    text: "API. A small teal API pill, and a round marker on the plot, mark models that run on their provider's servers: this leaderboard is a third party, and their time is the one the provider reports, not verified here, plus this leaderboard's encoding time. Show, the default, keeps them; Hide leaves them out of the table and the plot." },
   { sel: '#tbl-card', block: 'center', hot: 'contexttab',
     text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, ∩ marks models whose pre-training may overlap STRABLE, API those that run on their provider\'s servers, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
