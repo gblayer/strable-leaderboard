@@ -308,7 +308,7 @@
    "api": true,
    "api_version": "chakra-tab-2026-10",
    "api_time_reported": true,
-   "note": "Run by YHat Labs on its own servers, not by this leaderboard, which is a third party: the time is the one YHat Labs reports for each call, on an NVIDIA RTX PRO 6000 GPU with 12 vCPUs according to YHat Labs (neither is verified here), plus this leaderboard's string-encoding time.",
+   "note": "YHat-reported time + encoding",
    "both": [
     0.805,
     44.1143,
@@ -341,7 +341,7 @@
    "api": true,
    "api_version": "chakra-tab-2026-10",
    "api_time_reported": true,
-   "note": "Run by YHat Labs on its own servers, not by this leaderboard, which is a third party: the time is the one YHat Labs reports for each call, on an NVIDIA RTX PRO 6000 GPU with 12 vCPUs according to YHat Labs (neither is verified here), plus this leaderboard's string-encoding time.",
+   "note": "YHat-reported time + encoding",
    "both": [
     0.8043,
     7.1084,
@@ -374,7 +374,7 @@
    "api": true,
    "api_version": "chakra-tab-2026-10",
    "api_time_reported": true,
-   "note": "Run by YHat Labs on its own servers, not by this leaderboard, which is a third party: the time is the one YHat Labs reports for each call, on an NVIDIA RTX PRO 6000 GPU with 12 vCPUs according to YHat Labs (neither is verified here), plus this leaderboard's string-encoding time.",
+   "note": "YHat-reported time + encoding",
    "both": [
     0.806,
     49.2411,
@@ -407,7 +407,7 @@
    "api": true,
    "api_version": "chakra-tab-2026-10",
    "api_time_reported": true,
-   "note": "Run by YHat Labs on its own servers, not by this leaderboard, which is a third party: the time is the one YHat Labs reports for each call, on an NVIDIA RTX PRO 6000 GPU with 12 vCPUs according to YHat Labs (neither is verified here), plus this leaderboard's string-encoding time.",
+   "note": "YHat-reported time + encoding",
    "both": [
     0.8031,
     6.683,
