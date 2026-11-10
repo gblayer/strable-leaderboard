@@ -308,7 +308,6 @@
    "api": true,
    "api_version": "chakra-tab-2026-10",
    "api_time_reported": true,
-   "note": "YHat-reported time + encoding",
    "both": [
     0.805,
     44.1143,
@@ -341,7 +340,6 @@
    "api": true,
    "api_version": "chakra-tab-2026-10",
    "api_time_reported": true,
-   "note": "YHat-reported time + encoding",
    "both": [
     0.8043,
     7.1084,
@@ -374,7 +372,6 @@
    "api": true,
    "api_version": "chakra-tab-2026-10",
    "api_time_reported": true,
-   "note": "YHat-reported time + encoding",
    "both": [
     0.806,
     49.2411,
@@ -407,7 +404,6 @@
    "api": true,
    "api_version": "chakra-tab-2026-10",
    "api_time_reported": true,
-   "note": "YHat-reported time + encoding",
    "both": [
     0.8031,
     6.683,

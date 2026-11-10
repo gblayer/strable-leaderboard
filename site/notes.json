@@ -1,6 +1,1 @@
-{
- "tfidf+chakra-tab-medium": "YHat-reported time + encoding",
- "minilm-l6-v2-pca30+chakra-tab-medium": "YHat-reported time + encoding",
- "qwen-3-8b-first30+chakra-tab-medium": "YHat-reported time + encoding",
- "llama-3.1-8b-first30+chakra-tab-medium": "YHat-reported time + encoding"
-}
+{}
