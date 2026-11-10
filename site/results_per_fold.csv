@@ -14699,6 +14699,918 @@ tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,transmission-lines,multiclass,2,0.9217386
 tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,yelp_business,multiclass,0,0.7365122708396133,591.5192,75000,7.886922666666666,False,False
 tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,yelp_business,multiclass,1,0.7402230570902542,589.4568,75000,7.859424000000001,False,False
 tfidf+mitra-v2,Tf-Idf,Mitra-v2,default,yelp_business,multiclass,2,0.7354334859472744,589.8388,75000,7.864517333333333,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,0,0.6953019859954128,48.7831,1976,24.687803643724695,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,1,0.7299980820433425,47.2282,1976,23.90091093117409,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,2,0.6732195336570644,47.1886,1976,23.880870445344133,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,0,0.6556115961192935,38.7008,5672,6.823131170662905,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,1,0.6702358774440897,36.7111,5672,6.472337799717914,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,2,0.6507849138561983,38.9109,5672,6.8601727785613535,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,antenna-structure-registration,regression,0,0.6509382313403622,1444.8251,17633,81.93870016446436,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,antenna-structure-registration,regression,1,0.6396373398098221,1445.9362,17633,82.00171269778257,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,antenna-structure-registration,regression,2,0.6329326175580019,1444.8207,17633,81.9384506323371,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,awarded-grants,regression,0,0.8178251026204202,1946.1582,63815,30.49687690981744,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,awarded-grants,regression,1,0.7975120557874849,1947.7243,63815,30.52141816187417,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,awarded-grants,regression,2,0.8043181801556762,1930.4593,63815,30.25087048499569,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,beer-ratings,regression,0,0.6059731050314463,292.1661,3197,91.38758210822645,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,beer-ratings,regression,1,0.6136941226354478,291.3524,3197,91.13306224585548,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,beer-ratings,regression,2,0.6140040474770114,290.2606,3197,90.79155458242103,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,broadband-availability,regression,0,0.4376384610637426,82.7486,3219,25.706306306306306,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,broadband-availability,regression,1,0.4427167545159904,81.9339,3219,25.453215284249765,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,broadband-availability,regression,2,0.4183150925997302,82.3658,3219,25.587387387387384,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,california-houses,regression,0,0.6574813318472916,8504.4011,44913,189.35277313918016,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,california-houses,regression,1,0.680280925188183,8495.7465,44913,189.16007614721795,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,california-houses,regression,2,0.762438004605097,8489.4763,44913,189.0204684612473,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,child-adult-healthcare-quality,regression,0,0.9276188011460428,1533.5467,29367,52.22006674158069,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,child-adult-healthcare-quality,regression,1,0.9318998324470964,1426.5377,29367,48.57621479892397,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,child-adult-healthcare-quality,regression,2,0.9299911116894364,1406.3458,29367,47.888643715735355,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,china-overseas-finance-inventory,regression,0,0.5149614260972881,47.6521,550,86.64018181818182,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,china-overseas-finance-inventory,regression,1,0.617433955775162,48.7051,550,88.55472727272728,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,china-overseas-finance-inventory,regression,2,0.5483203201859461,43.5005,550,79.09181818181818,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,clear-corpus,regression,0,0.6450815837515114,1267.4747,4724,268.30539796782386,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,clear-corpus,regression,1,0.6519227478511886,1267.6834,4724,268.34957662997454,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,clear-corpus,regression,2,0.6459275376211284,1269.5994,4724,268.75516511430993,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,college-creditcard-marketing,regression,0,0.6435068995165678,102.7951,6283,16.360830813305746,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,college-creditcard-marketing,regression,1,0.6540939782733053,102.2875,6283,16.280041381505647,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,college-creditcard-marketing,regression,2,0.6110725307761649,101.7953,6283,16.20170300811714,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,college-deposit-product-marketing,regression,0,0.7245285467542559,78.3719,1359,57.668800588668134,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,college-deposit-product-marketing,regression,1,0.6921924793974499,79.5458,1359,58.53259749816041,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,college-deposit-product-marketing,regression,2,0.7627642588067858,79.5138,1359,58.509050772626935,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,colleges-and-universities,regression,0,0.3078778581859035,602.3623,6128,98.29671997389033,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,colleges-and-universities,regression,1,0.2955327041642255,605.8324,6128,98.86298955613577,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,colleges-and-universities,regression,2,0.2860422399807674,604.1461,6128,98.58781005221933,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,commitments-in-trust-funds,regression,0,0.6470428725663551,2887.902,41243,70.02162791261547,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,commitments-in-trust-funds,regression,1,0.6476035249451784,2949.07,41243,71.50474019833669,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,commitments-in-trust-funds,regression,2,0.6355367836829504,2881.7482,41243,69.87241956210751,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,community-banking_wide,regression,0,0.5412521138805183,296.5368,5253,56.45094231867505,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,community-banking_wide,regression,1,0.5510186175885412,297.5702,5253,56.64766799923853,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,community-banking_wide,regression,2,0.557099424265309,293.5274,5253,55.878050637730816,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,conflict-events_wide,regression,0,0.8062412164714573,35.8456,1520,23.582631578947364,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,conflict-events_wide,regression,1,0.7800736978915547,35.8985,1520,23.617434210526316,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,conflict-events_wide,regression,2,0.805925102085132,33.1678,1520,21.82092105263158,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,contract-awards-investment-project-financing,regression,0,0.6487562326745844,5371.3679,75000,71.61823866666667,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,contract-awards-investment-project-financing,regression,1,0.6514771547711351,5369.8566,75000,71.598088,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,contract-awards-investment-project-financing,regression,2,0.6553114770109629,5372.0641,75000,71.62752133333333,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,0,0.7291374474114765,32.2767,2990,10.794882943143811,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,1,0.7275194740338257,31.9308,2990,10.679197324414718,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,2,0.7432454012227621,33.1545,2990,11.088461538461539,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,corporate-procurement-contract-awards,regression,0,0.1069016888590894,157.7094,3295,47.86324734446131,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,corporate-procurement-contract-awards,regression,1,0.1455361424222928,158.2141,3295,48.016418816388466,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,corporate-procurement-contract-awards,regression,2,0.1328353376071197,158.7481,3295,48.178482549317145,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,covid-clinical-trials,regression,0,0.5682299026851998,1122.6145,4227,265.58185474331674,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,covid-clinical-trials,regression,1,0.5559335588747416,1121.1902,4227,265.24490182162293,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,covid-clinical-trials,regression,2,0.5488167809439817,1122.6926,4227,265.6003312041637,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,disbursements-in-trust-funds,regression,0,0.5440010880464696,1366.3733,75000,18.218310666666667,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,disbursements-in-trust-funds,regression,1,0.5181464032273274,1368.5511,75000,18.247348,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,disbursements-in-trust-funds,regression,2,0.520200203621525,1368.1625,75000,18.242166666666666,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,discretionary-grant,regression,0,0.9299076479713496,999.3617,13218,75.60612044182176,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,discretionary-grant,regression,1,0.9315206501173048,999.1716,13218,75.59173853835678,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,discretionary-grant,regression,2,0.9287085350172528,999.3886,13218,75.6081555454683,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,electric-generating-plants,regression,0,0.7412266161247573,469.8672,8849,53.09833879534411,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,electric-generating-plants,regression,1,0.7782966977004273,469.2183,8849,53.02500847553396,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,electric-generating-plants,regression,2,0.7787680831282457,469.6796,8849,53.07713865973556,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,electric-retail-service-territories,regression,0,0.814793338274989,152.1766,2909,52.31234101065659,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,electric-retail-service-territories,regression,1,0.8391675763302021,151.6454,2909,52.129735304228255,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,electric-retail-service-territories,regression,2,0.8172066647757128,152.5426,2909,52.43815744242007,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,external-clinician-dashboard,regression,0,0.5507958068859706,288.1883,28399,10.147832670164444,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,external-clinician-dashboard,regression,1,0.555819046053319,293.249,28399,10.32603260678193,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,external-clinician-dashboard,regression,2,0.5449886062761866,291.4025,28399,10.2610127117152,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,0,0.2912653693755966,191.3785,16630,11.508027660853879,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,1,0.3074585170405417,195.4152,16630,11.750763680096211,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,2,0.2701162233390274,192.5209,16630,11.576722790138305,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,0,0.514453185083856,97.5814,12875,7.57913786407767,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,1,0.4949170416606323,96.1042,12875,7.464403883495146,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,2,0.545429775676661,95.6272,12875,7.427355339805825,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,0,0.625303333839602,304.4382,14750,20.639877966101697,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,1,0.6327940407316525,302.653,14750,20.51884745762712,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,2,0.6158620978043763,302.2712,14750,20.492962711864408,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-management,regression,0,0.9649840942201092,98.4742,15511,6.348668686738443,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-management,regression,1,0.975731480447431,97.3274,15511,6.2747340596995675,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,financial-management,regression,2,0.9580898585995326,97.3863,15511,6.278531364837858,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,first-time-nadac-rates,regression,0,0.8814453627539216,35.7929,1130,31.67513274336283,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,first-time-nadac-rates,regression,1,0.856280990308204,35.8638,1130,31.73787610619469,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,first-time-nadac-rates,regression,2,0.8979445481306253,35.4106,1130,31.336814159292036,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,food-prices_wide,regression,0,0.9316143301637044,337.4323,50443,6.68937810994588,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,food-prices_wide,regression,1,0.936166105429494,336.2265,50443,6.665473901235057,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,food-prices_wide,regression,2,0.9390086965236376,332.2747,50443,6.587132010387963,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,foreign-gift-and-contract,regression,0,0.5678605444238091,515.3161,75000,6.870881333333334,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,foreign-gift-and-contract,regression,1,0.5875447664638048,514.6747,75000,6.862329333333333,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,foreign-gift-and-contract,regression,2,0.5839014546880519,514.0496,75000,6.853994666666668,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,fts-funding,regression,0,0.8009118303065588,540.101,13153,41.06295141792747,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,fts-funding,regression,1,0.8077885989180081,540.4417,13153,41.08885425378241,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,fts-funding,regression,2,0.7946017170003059,540.5569,13153,41.09761271192884,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,fts-requirement-and-funding,regression,0,0.8710853359170374,53.7365,7009,7.66678556142103,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,fts-requirement-and-funding,regression,1,0.8888670420736338,54.5224,7009,7.7789128263661,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,fts-requirement-and-funding,regression,2,0.8949082029343725,53.6389,7009,7.652860607789984,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,gainful-employment,regression,0,0.8285449031411425,148.1508,8637,17.153039249739496,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,gainful-employment,regression,1,0.8368238093522313,147.2021,8637,17.04319786963066,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,gainful-employment,regression,2,0.8406619011480296,148.3804,8637,17.179622554127594,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,global-dams-database,regression,0,0.7970261885120787,198.6121,3978,49.927626948215185,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,global-dams-database,regression,1,0.8054808783686749,200.0999,3978,50.3016339869281,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,global-dams-database,regression,2,0.8355211312929192,200.6655,3978,50.44381598793364,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,global-power-plant,regression,0,0.7216149402819334,1295.6017,34936,37.08500400732768,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,global-power-plant,regression,1,0.7116851434663889,1295.6187,34936,37.08549061140371,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,global-power-plant,regression,2,0.7182554341514067,1295.4077,34936,37.07945099610717,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,grant,regression,0,0.9426648523928112,1872.2251,22424,83.49202194077775,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,grant,regression,1,0.9479797264426612,1872.6173,22424,83.50951212986085,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,grant,regression,2,0.950467817888829,1872.8114,22424,83.51816803424903,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,health-professional-shortage-areas,regression,0,0.7687565165173822,514.5046,9691,53.090971004024354,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,health-professional-shortage-areas,regression,1,0.7586458216091636,517.0894,9691,53.35769270457125,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,health-professional-shortage-areas,regression,2,0.7710070469500453,530.9175,9691,54.78459395315241,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,historic-perimeters-wildfires,regression,0,0.4231428248257766,1126.8397,23776,47.39399814939434,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,historic-perimeters-wildfires,regression,1,0.4230298452342952,1127.4455,23776,47.41947762449529,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,historic-perimeters-wildfires,regression,2,0.4277285533875768,1127.2575,23776,47.41157049125168,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,hospitals,regression,0,0.5730278455747113,543.3827,7883,68.93095268298872,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,hospitals,regression,1,0.6038927804945787,544.254,7883,69.0414816694152,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,hospitals,regression,2,0.5990033223654325,543.404,7883,68.93365469998731,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,0,0.6188538159125088,346.7642,9331,37.16259779230522,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,1,0.6617459601050495,345.3774,9331,37.013974922302005,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,2,0.6034434060113184,348.0241,9331,37.29762083377987,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,0,0.6046412808392899,293.2697,7766,37.76328869430853,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,1,0.6040089040948613,294.8163,7766,37.96243883595159,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,2,0.6165542232786776,296.5513,7766,38.18584857069276,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ifc-advisory-services-projects,regression,0,0.3951843259159691,86.2484,1885,45.75511936339523,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ifc-advisory-services-projects,regression,1,0.4034156673310183,84.909,1885,45.04456233421751,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ifc-advisory-services-projects,regression,2,0.3673778763720371,86.6352,1885,45.960318302387265,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ifc-investment-service-projects,regression,0,0.590434421659612,378.047,6328,59.74194058154236,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ifc-investment-service-projects,regression,1,0.6016345869381268,378.4654,6328,59.808059418457646,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,ifc-investment-service-projects,regression,2,0.6056746650162187,379.1194,6328,59.91140960809102,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,industry-payments-entity,regression,0,0.5315359161008983,1467.8997,31448,46.67704464512847,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,industry-payments-entity,regression,1,0.5662206354639683,1467.9155,31448,46.677547061816334,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,industry-payments-entity,regression,2,0.5446491203087759,1462.3176,31448,46.499542101246504,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,industry-payments-project,regression,0,0.5638056974632029,993.5911,32327,30.73564203297553,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,industry-payments-project,regression,1,0.5231412518208867,989.4031,32327,30.60609088378136,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,industry-payments-project,regression,2,0.5521512925710688,988.3294,32327,30.57287716150586,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,insurance-company-complaints,regression,0,0.580623581793931,180.0212,14509,12.40755393204218,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,insurance-company-complaints,regression,1,0.5430993932697472,181.4817,14509,12.508215590323246,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,insurance-company-complaints,regression,2,0.5797005008741645,179.0137,14509,12.33811427389896,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,journal-ranking_wide,regression,0,0.8521105410070912,2150.9194,31136,69.08142985611511,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,journal-ranking_wide,regression,1,0.8464078271258364,2154.6163,31136,69.2001637975334,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,journal-ranking_wide,regression,2,0.8533112317021949,2168.7187,31136,69.65309288283657,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,local-government-renewable-action,regression,0,0.7722276326852742,175.9812,1333,132.01890472618155,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,local-government-renewable-action,regression,1,0.7356239140109713,180.3581,1333,135.30240060015004,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,local-government-renewable-action,regression,2,0.7583439537396386,171.492,1333,128.65116279069767,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,local-law-enforcements,regression,0,0.7460046093020649,808.664,16159,50.044185902592986,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,local-law-enforcements,regression,1,0.7432600947653183,790.5042,16159,48.92036635930441,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,local-law-enforcements,regression,2,0.7520166672867851,788.6322,16159,48.80451760628752,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,managed-care-enrollment,regression,0,0.8389416197053162,103.2604,2726,37.87982391782832,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,managed-care-enrollment,regression,1,0.8576625886943794,103.4997,2726,37.967608217168014,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,managed-care-enrollment,regression,2,0.8457542457941833,101.5179,2726,37.24060895084372,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,media-ranking_wide,regression,0,0.4415675996541689,151.9179,6009,25.28172740888667,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,media-ranking_wide,regression,1,0.4194571352319738,148.9066,6009,24.780595773007153,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,media-ranking_wide,regression,2,0.4078507721759317,148.717,6009,24.749043102013648,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,medically-underserved-areas-populations,regression,0,0.543209895108645,221.1336,3882,56.96383307573416,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,medically-underserved-areas-populations,regression,1,0.5956286306308087,219.9036,3882,56.646986089644514,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,medically-underserved-areas-populations,regression,2,0.6372025208078224,218.7062,3882,56.338536836682124,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,mercari,regression,0,0.520538113842087,5130.9528,75000,68.412704,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,mercari,regression,1,0.5133169480888404,5029.3474,75000,67.05796533333333,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,mercari,regression,2,0.5121190971654667,4890.4064,75000,65.20541866666667,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,meta-critic_whisky,regression,0,0.590363958187017,39.3856,1812,21.73598233995585,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,meta-critic_whisky,regression,1,0.5577230846755449,38.8022,1812,21.41401766004415,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,meta-critic_whisky,regression,2,0.5567400229438287,38.1734,1812,21.06699779249448,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,miga-issued-projects,regression,0,0.4513908089095203,16.108,619,26.022617124394184,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,miga-issued-projects,regression,1,0.459215913553217,14.2828,619,23.07399030694669,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,miga-issued-projects,regression,2,0.6095383679628319,16.2642,619,26.274959612277865,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,mlr-summary-reports,regression,0,0.3312538775243853,72.9676,1665,43.82438438438439,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,mlr-summary-reports,regression,1,0.2715156696760518,72.9178,1665,43.79447447447448,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,mlr-summary-reports,regression,2,0.4462992594199317,72.6128,1665,43.61129129129129,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,museums,regression,0,0.571967324260549,2199.8152,20351,108.09371529654562,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,museums,regression,1,0.5767527959426026,2186.4754,20351,107.4382290796521,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,museums,regression,2,0.5681879263693821,2169.2347,20351,106.59106186428185,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,0,0.8944688340850102,154.9074,8947,17.313892925002794,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,1,0.9040934799838446,154.9213,8947,17.31544651838605,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,2,0.9095333391014084,153.4343,8947,17.14924555717,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,oil-natural-gas-platform,regression,0,0.8799444050299164,491.6735,7137,68.89078043996076,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,oil-natural-gas-platform,regression,1,0.9028302014446842,485.1855,7137,67.98171500630517,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,oil-natural-gas-platform,regression,2,0.8924968237952866,484.9349,7137,67.94660221381534,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,pol-terminal,regression,0,0.2267208223328204,293.833,2091,140.52271640363463,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,pol-terminal,regression,1,0.3735759299515165,275.4428,2091,131.7277857484457,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,pol-terminal,regression,2,0.3301943568605457,281.15,2091,134.4571975131516,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,power-plants,regression,0,0.8963409826703707,1241.9314,23093,53.779560905902215,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,power-plants,regression,1,0.8966859532925585,1434.7001,23093,62.12705581778028,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,power-plants,regression,2,0.8979991600660211,1425.4777,23093,61.7276967046291,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,prison-boundaries,regression,0,0.7945108718202911,296.2804,3755,78.90290279627163,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,prison-boundaries,regression,1,0.7755914667531436,296.5641,3755,78.97845539280958,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,prison-boundaries,regression,2,0.7915511485606568,295.8426,3755,78.78631158455393,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,0,0.5256382922244726,248.2261,7390,33.589458728010825,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,1,0.569353134255353,247.9992,7390,33.5587550744249,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,2,0.5540598793253908,248.874,7390,33.67713125845737,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,schools,regression,0,0.4021297364007469,5955.78,75000,79.4104,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,schools,regression,1,0.4182990489315636,5945.0321,75000,79.26709466666668,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,schools,regression,2,0.4308943323432955,5951.4376,75000,79.35250133333334,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,sf-building-permits,regression,0,0.8929035035668611,3957.1371,75000,52.761827999999994,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,sf-building-permits,regression,1,0.9094050626633532,3959.6816,75000,52.79575466666667,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,sf-building-permits,regression,2,0.9059975344797532,3950.3074,75000,52.670765333333335,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,summary-of-deposit_wide,regression,0,0.5186069850342989,341.2022,4546,75.05547734271887,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,summary-of-deposit_wide,regression,1,0.5122301806234549,343.3399,4546,75.5257149142103,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,summary-of-deposit_wide,regression,2,0.4993156933854367,340.5906,4546,74.92094148702155,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,tax-incentives,regression,0,0.9060734019636156,52.4232,908,57.73480176211454,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,tax-incentives,regression,1,0.8761728365655549,54.1261,908,59.6102422907489,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,tax-incentives,regression,2,0.9097161415070838,54.4649,908,59.98337004405287,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,terms-cc-plans,regression,0,0.8980995361890529,190.5161,9486,20.08392367699768,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,terms-cc-plans,regression,1,0.894545462053579,192.4357,9486,20.28628505165507,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,terms-cc-plans,regression,2,0.9106820635137892,190.148,9486,20.045119122917985,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,0,0.5706334777803194,175.0825,7826,22.371901354459496,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,1,0.5647877541785402,178.6111,7826,22.822783030922565,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,2,0.5904943989763485,175.5493,7826,22.431548683874265,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,transmission-towers,regression,0,0.5748815593025449,4774.5848,75000,63.661130666666665,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,transmission-towers,regression,1,0.5574593552916015,4774.0822,75000,63.65442933333333,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,transmission-towers,regression,2,0.5623624697208227,4772.5276,75000,63.633701333333335,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,us-school-bus-fleet,regression,0,0.9309965520487278,621.63,17011,36.54282523073305,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,us-school-bus-fleet,regression,1,0.9281143556277086,621.6398,17011,36.543401328552115,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,us-school-bus-fleet,regression,2,0.9340556981361128,622.0245,17011,36.56601610722473,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,vehicles,regression,0,0.9484650849024296,46.5698,1238,37.61696284329564,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,vehicles,regression,1,0.8999059855261284,46.4169,1238,37.49345718901454,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,vehicles,regression,2,0.949424100506608,47.4973,1238,38.36615508885299,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,wine-dataset,regression,0,0.7391107267874927,214.0648,1290,165.94170542635658,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,wine-dataset,regression,1,0.6979598008210495,220.4268,1290,170.87348837209302,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,wine-dataset,regression,2,0.7209593769649989,217.9238,1290,168.93317829457362,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,workforce-demographics-wide,regression,0,0.8903258426018053,23.21,1588,14.615869017632242,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,workforce-demographics-wide,regression,1,0.8896473844160964,21.802,1588,13.729219143576827,False,False
+llama-3.1-8b-first30+nori-30m,LLaMA-3.1-8B · first-30,Nori-30M,default,workforce-demographics-wide,regression,2,0.8654044601052892,21.4627,1588,13.515554156171286,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,0,0.6719200293474268,19.3952,1976,9.815384615384614,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,1,0.6774431425071631,19.169,1976,9.70091093117409,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,2,0.6650263631385682,18.4887,1976,9.356629554655871,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,0,0.641913285822546,39.0837,5672,6.890638222849083,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,1,0.6478478244392656,39.0626,5672,6.886918194640339,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,2,0.6298825362071274,37.5953,5672,6.628226375176305,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,antenna-structure-registration,regression,0,0.6745349550528354,185.6148,17633,10.526558157999206,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,antenna-structure-registration,regression,1,0.6559350920585323,185.9789,17633,10.547206941530087,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,antenna-structure-registration,regression,2,0.671453647265206,184.9573,17633,10.489270118527761,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,awarded-grants,regression,0,0.8212481304073329,374.1054,63815,5.862342709394342,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,awarded-grants,regression,1,0.8099622582880769,375.2844,63815,5.880817989500901,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,awarded-grants,regression,2,0.8153083002782184,375.8513,63815,5.889701480843061,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,beer-ratings,regression,0,0.6002292502330566,22.2581,3197,6.962183296840788,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,beer-ratings,regression,1,0.6090199307423181,21.0961,3197,6.59871754770097,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,beer-ratings,regression,2,0.6019003623467407,21.8735,3197,6.841883015326869,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,broadband-availability,regression,0,0.4409104795410073,19.6858,3219,6.115501708605157,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,broadband-availability,regression,1,0.4422035476127762,22.488,3219,6.986020503261883,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,broadband-availability,regression,2,0.4270974118996192,19.7176,3219,6.12538055296676,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,california-houses,regression,0,0.6722457428909011,329.0056,44913,7.32539799167279,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,california-houses,regression,1,0.7030736709524259,328.9098,44913,7.323264978959322,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,california-houses,regression,2,0.7754440262553381,329.2934,44913,7.331805935920558,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,child-adult-healthcare-quality,regression,0,0.9301797100197328,1044.1209,29367,35.55422412912453,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,child-adult-healthcare-quality,regression,1,0.9331309353167668,1065.1207,29367,36.269305683249904,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,child-adult-healthcare-quality,regression,2,0.9298178734732594,1055.5679,29367,35.94401539142575,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,china-overseas-finance-inventory,regression,0,0.6328585085910203,28.853,550,52.46,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,china-overseas-finance-inventory,regression,1,0.6646692442139639,22.644,550,41.17090909090909,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,china-overseas-finance-inventory,regression,2,0.6282106071455664,19.7919,550,35.98527272727273,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,clear-corpus,regression,0,0.6313644676866879,70.9483,4724,15.018691786621508,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,clear-corpus,regression,1,0.631552730282108,70.5816,4724,14.941066892464011,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,clear-corpus,regression,2,0.6427880043900893,70.7628,4724,14.979424216765453,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,college-creditcard-marketing,regression,0,0.6659495984852131,73.0236,6283,11.622409676905939,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,college-creditcard-marketing,regression,1,0.6719405496520011,75.6751,6283,12.044421454719084,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,college-creditcard-marketing,regression,2,0.6285133312569854,71.8211,6283,11.431020213273914,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,college-deposit-product-marketing,regression,0,0.4707257778456775,30.655,1359,22.557027225901397,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,college-deposit-product-marketing,regression,1,0.4070525063708934,32.4217,1359,23.857027225901398,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,college-deposit-product-marketing,regression,2,0.3838714096526455,30.4599,1359,22.41346578366446,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,colleges-and-universities,regression,0,0.3478629058675524,124.6479,6128,20.340714751958224,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,colleges-and-universities,regression,1,0.3735133642967574,126.2388,6128,20.60032637075718,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,colleges-and-universities,regression,2,0.372875323767083,133.3489,6128,21.760590731070494,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,commitments-in-trust-funds,regression,0,0.6488591841714181,1724.6537,41243,41.81688286497103,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,commitments-in-trust-funds,regression,1,0.6388119090957616,1678.6873,41243,40.702356763572,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,commitments-in-trust-funds,regression,2,0.6390918336844977,1669.2446,41243,40.47340397158305,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,community-banking_wide,regression,0,0.5443493734536502,68.8104,5253,13.099257567104512,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,community-banking_wide,regression,1,0.4775578953766491,67.5135,5253,12.85237007424329,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,community-banking_wide,regression,2,0.5372234681847559,68.2024,5253,12.983514182371977,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,conflict-events_wide,regression,0,0.8094072622688824,26.1759,1520,17.220986842105262,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,conflict-events_wide,regression,1,0.8169747902964182,25.713,1520,16.916447368421053,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,conflict-events_wide,regression,2,0.8193936289413115,25.3843,1520,16.700197368421055,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,contract-awards-investment-project-financing,regression,0,0.6586574054010766,425.7433,75000,5.6765773333333325,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,contract-awards-investment-project-financing,regression,1,0.6572845347223,426.7091,75000,5.689454666666666,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,contract-awards-investment-project-financing,regression,2,0.6610807077154186,429.4847,75000,5.7264626666666665,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,0,0.7288866393373579,31.9794,2990,10.69545150501672,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,1,0.7258087066062299,30.7208,2990,10.274515050167224,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,2,0.7340383440089209,33.4655,2990,11.19247491638796,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,corporate-procurement-contract-awards,regression,0,0.1314118680582002,40.7696,3295,12.373171471927161,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,corporate-procurement-contract-awards,regression,1,0.1457551172232092,40.407,3295,12.263125948406676,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,corporate-procurement-contract-awards,regression,2,0.1440798779838562,42.6868,3295,12.955022761760242,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,covid-clinical-trials,regression,0,0.6253861519930439,93.8536,4227,22.203359356517623,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,covid-clinical-trials,regression,1,0.627523126128982,95.7477,4227,22.651454932576296,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,covid-clinical-trials,regression,2,0.6186269983245991,98.1703,4227,23.224580080435295,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,disbursements-in-trust-funds,regression,0,0.5406787644885389,363.0028,75000,4.840037333333333,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,disbursements-in-trust-funds,regression,1,0.5050458582000242,364.3202,75000,4.857602666666666,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,disbursements-in-trust-funds,regression,2,0.5322307310748668,364.4335,75000,4.859113333333333,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,discretionary-grant,regression,0,0.9318068905915786,141.7882,13218,10.726902708427902,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,discretionary-grant,regression,1,0.9344795958861226,141.6889,13218,10.719390225450143,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,discretionary-grant,regression,2,0.9270270296715708,141.15,13218,10.678620063549705,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,electric-generating-plants,regression,0,0.7699472297116398,81.7569,8849,9.239111764041136,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,electric-generating-plants,regression,1,0.7982994301847771,80.2428,8849,9.068007684484124,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,electric-generating-plants,regression,2,0.7932960749394982,79.7158,8849,9.00845293253475,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,electric-retail-service-territories,regression,0,0.8196803927343543,50.1448,2909,17.23781368167755,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,electric-retail-service-territories,regression,1,0.8394430883412146,49.5084,2909,17.019044345135786,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,electric-retail-service-territories,regression,2,0.8336581909470122,49.0323,2909,16.855379855620487,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,external-clinician-dashboard,regression,0,0.5689204007154285,243.6911,28399,8.58097468220712,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,external-clinician-dashboard,regression,1,0.5746775601727507,249.0459,28399,8.769530617275256,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,external-clinician-dashboard,regression,2,0.5675304186260679,244.0498,28399,8.59360540864115,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,0,0.2893281303390227,187.9769,16630,11.303481659651233,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,1,0.2991416073385342,190.5924,16630,11.460757666867107,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,2,0.2677695300356101,188.0213,16630,11.30615153337342,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,0,0.5059823343477031,91.8257,12875,7.132093203883495,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,1,0.487370100210675,92.5874,12875,7.1912543689320385,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,2,0.5369534132388531,91.5142,12875,7.107899029126213,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,0,0.6185044781276399,298.4505,14750,20.23393220338983,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,1,0.627069216683232,303.4948,14750,20.575918644067798,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,2,0.6051421766885174,596.9711,14750,40.472616949152545,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-management,regression,0,0.9660770142752512,95.0192,15511,6.125923538134227,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-management,regression,1,0.9773625688960236,97.6173,15511,6.293424021662046,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,financial-management,regression,2,0.963350511735812,96.1004,15511,6.195628908516536,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,first-time-nadac-rates,regression,0,0.8633850615395195,11.7719,1130,10.417610619469027,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,first-time-nadac-rates,regression,1,0.8460836533287465,12.3906,1130,10.96513274336283,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,first-time-nadac-rates,regression,2,0.8967198138979711,12.3579,1130,10.936194690265486,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,food-prices_wide,regression,0,0.9360072829611408,294.3403,50443,5.835106952401722,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,food-prices_wide,regression,1,0.9396350613064598,294.2404,50443,5.833126499216939,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,food-prices_wide,regression,2,0.9406045123950878,298.0599,50443,5.90884562773824,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,foreign-gift-and-contract,regression,0,0.5813664069304354,369.0562,75000,4.920749333333333,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,foreign-gift-and-contract,regression,1,0.5900580793149313,365.9898,75000,4.879864,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,foreign-gift-and-contract,regression,2,0.5856225973062252,370.8099,75000,4.944132000000001,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,fts-funding,regression,0,0.7666245276638511,131.9874,13153,10.03477533642515,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,fts-funding,regression,1,0.7714726347876691,132.0774,13153,10.041617881852051,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,fts-funding,regression,2,0.7471362860969821,132.7394,13153,10.091948604881015,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,fts-requirement-and-funding,regression,0,0.8767125275465507,36.135,7009,5.155514338707376,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,fts-requirement-and-funding,regression,1,0.8900127405680711,36.6314,7009,5.226337565986588,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,fts-requirement-and-funding,regression,2,0.8972181091292997,37.7212,7009,5.381823369952918,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,gainful-employment,regression,0,0.8296323457151562,95.4241,8637,11.048292231098761,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,gainful-employment,regression,1,0.8344139982728852,99.6393,8637,11.536332059742968,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,gainful-employment,regression,2,0.8307540410167638,94.7882,8637,10.974667129790438,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,global-dams-database,regression,0,0.8394278662695072,113.4836,3978,28.52780291603821,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,global-dams-database,regression,1,0.8364406756877254,112.7517,3978,28.343815987933635,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,global-dams-database,regression,2,0.876658742933837,113.9942,3978,28.656158873805936,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,global-power-plant,regression,0,0.7369159991553571,278.9603,34936,7.9848952370048085,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,global-power-plant,regression,1,0.7309698741964894,279.5527,34936,8.001851957865812,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,global-power-plant,regression,2,0.723898872357766,279.5569,34936,8.00197217769636,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,grant,regression,0,0.9405919009511524,132.3097,22424,5.900361220121298,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,grant,regression,1,0.944789292601624,135.2136,22424,6.029860863360685,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,grant,regression,2,0.9478987224299444,134.8401,22424,6.013204602211916,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,health-professional-shortage-areas,regression,0,0.7805464568668298,100.9408,9691,10.415932308327314,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,health-professional-shortage-areas,regression,1,0.7869113091961857,100.2077,9691,10.340284800330203,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,health-professional-shortage-areas,regression,2,0.7915054021686772,99.7537,9691,10.293437209782272,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,historic-perimeters-wildfires,regression,0,0.4259971716837879,244.13,23776,10.267917227456259,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,historic-perimeters-wildfires,regression,1,0.4273608977728759,245.0307,23776,10.305799966352623,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,historic-perimeters-wildfires,regression,2,0.4261364794228168,244.533,23776,10.284867092866756,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,hospitals,regression,0,0.5830203109613585,71.1206,7883,9.022022072814918,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,hospitals,regression,1,0.6043820737920839,71.3567,7883,9.051972599264241,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,hospitals,regression,2,0.6148832000174755,71.5908,7883,9.081669415197261,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,0,0.6547866066153365,142.0141,9331,15.219601328903655,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,1,0.673955915915931,142.6597,9331,15.28879005465652,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,2,0.6325965775793851,141.0314,9331,15.114285714285714,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,0,0.6290380118049143,96.4688,7766,12.42194179757919,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,1,0.6166349535789255,94.949,7766,12.226242595930982,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,2,0.6413494308273202,94.5426,7766,12.17391192377028,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ifc-advisory-services-projects,regression,0,0.4057364617910155,18.752,1885,9.948010610079576,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ifc-advisory-services-projects,regression,1,0.4031953399687622,19.994,1885,10.606896551724137,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ifc-advisory-services-projects,regression,2,0.3791319402272523,17.3764,1885,9.218249336870025,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ifc-investment-service-projects,regression,0,0.577144417397212,94.9966,6328,15.012104930467762,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ifc-investment-service-projects,regression,1,0.5927181421614365,98.3835,6328,15.547329329962073,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,ifc-investment-service-projects,regression,2,0.6035562439628506,93.3574,6328,14.753065739570165,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,industry-payments-entity,regression,0,0.5115039618245858,371.2855,31448,11.806331086237599,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,industry-payments-entity,regression,1,0.5696578866201965,372.0272,31448,11.829916051895193,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,industry-payments-entity,regression,2,0.5534658043207102,371.4368,31448,11.811142203001781,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,industry-payments-project,regression,0,0.57061792474088,382.3857,32327,11.828678813375815,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,industry-payments-project,regression,1,0.5327387143387616,376.8381,32327,11.657069941534939,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,industry-payments-project,regression,2,0.5662491761602066,373.3465,32327,11.549061156308968,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,insurance-company-complaints,regression,0,0.5629199669772481,170.8415,14509,11.77486387759322,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,insurance-company-complaints,regression,1,0.5344627503087245,176.0424,14509,12.133324143634985,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,insurance-company-complaints,regression,2,0.5767270981356405,204.8034,14509,14.115611000068924,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,journal-ranking_wide,regression,0,0.8843383163959562,421.5913,31136,13.540316675231242,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,journal-ranking_wide,regression,1,0.8747354867808699,424.8469,31136,13.644877312435765,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,journal-ranking_wide,regression,2,0.8808247811660066,427.4411,31136,13.728195657759507,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,local-government-renewable-action,regression,0,0.7237130793701837,36.9868,1333,27.7470367591898,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,local-government-renewable-action,regression,1,0.751436811310683,35.3067,1333,26.486646661665414,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,local-government-renewable-action,regression,2,0.7629202573717139,35.4277,1333,26.57741935483871,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,local-law-enforcements,regression,0,0.7590596443145172,144.5461,16159,8.945237947892814,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,local-law-enforcements,regression,1,0.7638150092177418,144.4327,16159,8.938220186892753,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,local-law-enforcements,regression,2,0.7703678670673227,143.759,16159,8.896528250510551,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,managed-care-enrollment,regression,0,0.8293299035736202,19.4708,2726,7.142626559060895,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,managed-care-enrollment,regression,1,0.8537375207572572,18.4238,2726,6.75854732208364,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,managed-care-enrollment,regression,2,0.8086818320306887,19.4506,2726,7.135216434336025,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,media-ranking_wide,regression,0,0.3763403279735994,41.7082,6009,6.940955233815942,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,media-ranking_wide,regression,1,0.3648844914141798,41.1839,6009,6.853702779164586,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,media-ranking_wide,regression,2,0.330327025103024,41.4213,6009,6.893210184722916,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,medically-underserved-areas-populations,regression,0,0.632263424676282,118.9086,3882,30.63075734157651,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,medically-underserved-areas-populations,regression,1,0.5921435566499285,118.9588,3882,30.643688820195774,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,medically-underserved-areas-populations,regression,2,0.6648925252175885,122.4854,3882,31.55213807315817,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,mercari,regression,0,0.5471069785095999,1092.7807,75000,14.570409333333334,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,mercari,regression,1,0.5409771168012858,1086.9897,75000,14.493196000000001,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,mercari,regression,2,0.5433028763410529,1088.1594,75000,14.508792,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,meta-critic_whisky,regression,0,0.1224069829140803,15.8155,1812,8.728200883002208,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,meta-critic_whisky,regression,1,0.2667565295219671,16.0965,1812,8.883278145695364,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,meta-critic_whisky,regression,2,0.3504668187681365,15.73,1812,8.681015452538631,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,miga-issued-projects,regression,0,0.3321398038009439,9.6392,619,15.57221324717286,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,miga-issued-projects,regression,1,0.3322394609216871,9.5488,619,15.426171243941841,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,miga-issued-projects,regression,2,0.2073737071217999,4.472,619,7.224555735056543,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,mlr-summary-reports,regression,0,0.2768537269418178,22.847,1665,13.721921921921922,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,mlr-summary-reports,regression,1,0.3727397978892569,24.1227,1665,14.488108108108108,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,mlr-summary-reports,regression,2,0.4177461327112043,22.4817,1665,13.502522522522524,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,museums,regression,0,0.5736443139849425,890.76,20351,43.76983931993514,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,museums,regression,1,0.5819161275034687,891.8795,20351,43.82484890177387,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,museums,regression,2,0.5699147912478928,898.5028,20351,44.15030219645226,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,0,0.8954747245762112,58.4122,8947,6.528691181401587,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,1,0.9127890392883264,58.5036,8947,6.538906896166313,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,2,0.9159463835986216,57.1691,8947,6.38975075444283,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,oil-natural-gas-platform,regression,0,0.8864991416592339,153.8769,7137,21.5604455653636,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,oil-natural-gas-platform,regression,1,0.9115436198033602,153.596,7137,21.521087291579097,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,oil-natural-gas-platform,regression,2,0.8865166420340576,161.7251,7137,22.660095278128065,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,pol-terminal,regression,0,0.2562425631828475,94.8484,2091,45.36030607364897,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,pol-terminal,regression,1,0.3674612362419667,95.5059,2091,45.674748923959825,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,pol-terminal,regression,2,0.3294883467999486,96.0192,2091,45.92022955523672,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,power-plants,regression,0,0.9082802931662346,779.9163,23093,33.77284458493916,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,power-plants,regression,1,0.9094346396816364,958.3749,23093,41.500666868748105,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,power-plants,regression,2,0.9128678880158376,966.09,23093,41.83475512059932,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,prison-boundaries,regression,0,0.7439198840911744,62.4228,3755,16.623914780292946,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,prison-boundaries,regression,1,0.7356127935991277,65.5195,3755,17.44860186418109,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,prison-boundaries,regression,2,0.733033222689095,64.543,3755,17.18854860186418,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,0,0.5493213482520327,101.4989,7390,13.734627875507444,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,1,0.5987820439278708,99.216,7390,13.42571041948579,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,2,0.5752624326750813,94.8111,7390,12.829648173207037,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,schools,regression,0,0.4748670783270557,490.5259,75000,6.540345333333333,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,schools,regression,1,0.4899424781430194,491.2253,75000,6.549670666666667,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,schools,regression,2,0.5027361733643371,491.2099,75000,6.549465333333333,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,sf-building-permits,regression,0,0.964379582684232,444.1369,75000,5.9218253333333335,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,sf-building-permits,regression,1,0.9589726890029509,444.1773,75000,5.922364,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,sf-building-permits,regression,2,0.966289656930984,445.0939,75000,5.934585333333334,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,summary-of-deposit_wide,regression,0,0.5214382785163457,132.5577,4546,29.15919489661241,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,summary-of-deposit_wide,regression,1,0.529326478685016,131.7097,4546,28.972657281126263,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,summary-of-deposit_wide,regression,2,0.5398755005943155,131.2374,4546,28.8687637483502,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,tax-incentives,regression,0,0.8978527945916537,17.1244,908,18.85947136563877,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,tax-incentives,regression,1,0.8690990812412973,15.5914,908,17.17114537444934,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,tax-incentives,regression,2,0.9543212842058006,17.0241,908,18.749008810572686,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,terms-cc-plans,regression,0,0.9067808158927037,146.9644,9486,15.492768290111744,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,terms-cc-plans,regression,1,0.904904333194432,144.7702,9486,15.261458992199028,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,terms-cc-plans,regression,2,0.9133954921856224,142.6206,9486,15.034851359898799,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,0,0.574978918025383,71.0538,7826,9.079197546639406,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,1,0.5697668846441535,67.5844,7826,8.635880398671096,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,2,0.5942475887768547,66.7765,7826,8.532647584973166,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,transmission-towers,regression,0,0.6032070921167014,432.809,75000,5.770786666666667,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,transmission-towers,regression,1,0.5877697597776805,433.5853,75000,5.781137333333334,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,transmission-towers,regression,2,0.5912585832065705,432.7804,75000,5.770405333333334,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,us-school-bus-fleet,regression,0,0.8701129897680884,167.1119,17011,9.823755217212392,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,us-school-bus-fleet,regression,1,0.8599645069199892,166.8194,17011,9.806560460878254,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,us-school-bus-fleet,regression,2,0.8712570502143717,165.9159,17011,9.753447769090588,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,vehicles,regression,0,0.9270611395897536,31.7367,1238,25.63546042003231,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,vehicles,regression,1,0.9021499306126606,30.8924,1238,24.953473344103394,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,vehicles,regression,2,0.9518397923121692,32.664,1238,26.384491114701135,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,wine-dataset,regression,0,0.675278994705963,32.0007,1290,24.806744186046515,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,wine-dataset,regression,1,0.7070208888523324,30.9077,1290,23.959457364341084,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,wine-dataset,regression,2,0.6893520182381867,30.1927,1290,23.40519379844961,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,workforce-demographics-wide,regression,0,0.8951802407994861,11.3217,1588,7.129534005037783,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,workforce-demographics-wide,regression,1,0.8879075486033996,12.8197,1588,8.07285894206549,False,False
+minilm-l6-v2-pca30+nori-30m,MiniLM-L6-v2 · PCA-30,Nori-30M,default,workforce-demographics-wide,regression,2,0.8639725006448676,12.2273,1588,7.699811083123426,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,0,0.6999478699131636,58.7564,1976,29.73502024291498,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,1,0.7202055778522695,61.806,1976,31.278340080971663,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,aca-federal-upper-limits-wide,regression,2,0.6758140189735591,58.709,1976,29.71103238866397,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,0,0.6558197990611949,38.1233,5672,6.7213152327221435,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,1,0.6703619237917686,37.5328,5672,6.617207334273625,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,2,0.6614506191007394,39.7948,5672,7.016008462623414,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,antenna-structure-registration,regression,0,0.6639852649162128,1581.2075,17633,89.67319798105825,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,antenna-structure-registration,regression,1,0.6495020172027091,1582.0225,17633,89.71941813644871,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,antenna-structure-registration,regression,2,0.6551139176419012,1580.2937,17633,89.62137469517383,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,awarded-grants,regression,0,0.8142253484810257,1526.1229,63815,23.91479902844159,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,awarded-grants,regression,1,0.8076725528710273,1525.5215,63815,23.905374911854583,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,awarded-grants,regression,2,0.8114052318298038,1527.3831,63815,23.93454673666066,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,beer-ratings,regression,0,0.6120387920653003,291.4104,3197,91.15120425398811,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,beer-ratings,regression,1,0.6195830048395611,289.6499,3197,90.60053174851423,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,beer-ratings,regression,2,0.6212740065258502,288.89,3197,90.36284016265249,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,broadband-availability,regression,0,0.4427662913419428,110.4109,3219,34.29975147561355,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,broadband-availability,regression,1,0.4334401505126395,112.4045,3219,34.91907424666045,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,broadband-availability,regression,2,0.428809366592173,111.8063,3219,34.73324013668841,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,california-houses,regression,0,0.6701632861826144,8567.3295,44913,190.75389085565425,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,california-houses,regression,1,0.6983888065889418,8567.4697,44913,190.75701244628505,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,california-houses,regression,2,0.7813522466241988,8567.3555,44913,190.75446975263284,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,child-adult-healthcare-quality,regression,0,0.9346844953667262,1427.011,29367,48.59233152858651,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,child-adult-healthcare-quality,regression,1,0.937288255718384,1431.4625,29367,48.74391323594511,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,child-adult-healthcare-quality,regression,2,0.9384702575633832,1445.1567,29367,49.21022576361222,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,china-overseas-finance-inventory,regression,0,0.5967736747052048,57.4944,550,104.53527272727273,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,china-overseas-finance-inventory,regression,1,0.6282522000591544,59.2949,550,107.8089090909091,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,china-overseas-finance-inventory,regression,2,0.5985833584896949,55.6013,550,101.09327272727272,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,clear-corpus,regression,0,0.6406382561039002,1260.8046,4724,266.8934377646063,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,clear-corpus,regression,1,0.6311996872508556,1261.2244,4724,266.98230313293817,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,clear-corpus,regression,2,0.6467002159887938,1261.1259,4724,266.96145215918716,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,college-creditcard-marketing,regression,0,0.6800310573777284,103.5083,6283,16.474343466496897,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,college-creditcard-marketing,regression,1,0.6759822761990111,102.9494,6283,16.385389145312747,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,college-creditcard-marketing,regression,2,0.6291100868186594,103.3184,6283,16.44411905140856,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,college-deposit-product-marketing,regression,0,0.5939717029604572,84.5783,1359,62.23568800588668,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,college-deposit-product-marketing,regression,1,0.5207401919080897,88.8786,1359,65.4,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,college-deposit-product-marketing,regression,2,0.6603833526343621,86.6793,1359,63.78167770419425,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,colleges-and-universities,regression,0,0.4757870262113147,711.3077,6128,116.07501631853785,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,colleges-and-universities,regression,1,0.4656471317889505,710.8499,6128,116.00031005221933,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,colleges-and-universities,regression,2,0.4208559916169738,713.3346,6128,116.40577676240208,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,commitments-in-trust-funds,regression,0,0.6416003193281339,3007.9663,41243,72.93277162185097,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,commitments-in-trust-funds,regression,1,0.6380016317859762,3015.4692,41243,73.1146909778629,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,commitments-in-trust-funds,regression,2,0.6357449823199535,2974.3217,41243,72.11700652231893,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,community-banking_wide,regression,0,0.5350693586169996,338.5082,5253,64.4409289929564,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,community-banking_wide,regression,1,0.5652727149505,336.752,5253,64.10660574909575,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,community-banking_wide,regression,2,0.5537339408876671,340.1664,5253,64.7565962307253,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,conflict-events_wide,regression,0,0.8272636608204245,36.8421,1520,24.238223684210528,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,conflict-events_wide,regression,1,0.8395610141438697,37.8698,1520,24.914342105263156,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,conflict-events_wide,regression,2,0.8138502599113622,37.6397,1520,24.762960526315787,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,contract-awards-investment-project-financing,regression,0,0.666404887144249,6016.1064,75000,80.214752,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,contract-awards-investment-project-financing,regression,1,0.6623660428961704,6009.2804,75000,80.12373866666667,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,contract-awards-investment-project-financing,regression,2,0.666219637632459,6016.1959,75000,80.21594533333332,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,0,0.7312868508257433,31.3124,2990,10.4723745819398,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,1,0.7343265088612375,33.0086,2990,11.039665551839466,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,2,0.7454234315876378,33.052,2990,11.05418060200669,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,corporate-procurement-contract-awards,regression,0,0.1472032979374706,162.3958,3295,49.28552352048559,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,corporate-procurement-contract-awards,regression,1,0.1580877083906152,162.7205,3295,49.38406676783004,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,corporate-procurement-contract-awards,regression,2,0.1771838287981191,163.674,3295,49.67344461305008,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,covid-clinical-trials,regression,0,0.6316217601004015,1258.3431,4227,297.6917672107878,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,covid-clinical-trials,regression,1,0.6178321898063397,1252.4333,4227,296.293659806009,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,covid-clinical-trials,regression,2,0.6188427646339572,1254.5034,4227,296.783392476934,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,disbursements-in-trust-funds,regression,0,0.5514020571045442,1367.1056,75000,18.228074666666668,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,disbursements-in-trust-funds,regression,1,0.5338688396141942,1372.358,75000,18.298106666666666,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,disbursements-in-trust-funds,regression,2,0.5301499164646806,1377.1376,75000,18.361834666666667,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,discretionary-grant,regression,0,0.930019323888348,1165.1017,13218,88.1450824633076,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,discretionary-grant,regression,1,0.9358413471132808,1164.6063,13218,88.10760326827054,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,discretionary-grant,regression,2,0.930548585899986,1164.8667,13218,88.12730367680436,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,electric-generating-plants,regression,0,0.7673640690088276,543.6357,8849,61.43470448638265,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,electric-generating-plants,regression,1,0.8286447027205632,544.0551,8849,61.482099672279354,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,electric-generating-plants,regression,2,0.7963029159920667,542.9445,8849,61.35659396541981,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,electric-retail-service-territories,regression,0,0.8433826272868007,174.5378,2909,59.99924372636645,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,electric-retail-service-territories,regression,1,0.8839310707257816,174.2276,2909,59.892609144035745,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,electric-retail-service-territories,regression,2,0.8528612994118099,172.3918,2909,59.26153317291165,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,external-clinician-dashboard,regression,0,0.541545887339962,286.8395,28399,10.100338040071833,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,external-clinician-dashboard,regression,1,0.553208907417899,292.6306,28399,10.304257192154655,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,external-clinician-dashboard,regression,2,0.5436891810812815,297.2555,28399,10.467111518011198,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,0,0.288431811584285,193.1169,16630,11.612561635598317,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,1,0.3082055322170106,194.9265,16630,11.721377029464822,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,2,0.2694432283960037,191.5475,16630,11.51819001803969,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,0,0.5116793378975446,96.8896,12875,7.525405825242719,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,1,0.4933280801900497,97.4742,12875,7.570811650485436,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-commitments,regression,2,0.5417980224838885,95.274,12875,7.3999223300970876,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,0,0.6235311269921524,299.8943,14750,20.33181694915254,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,1,0.6309887046456426,302.5376,14750,20.51102372881356,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,2,0.6110851500392771,301.3704,14750,20.43189152542373,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-management,regression,0,0.9640027920462748,97.4064,15511,6.27982721939269,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-management,regression,1,0.97289533211444,96.9428,15511,6.2499387531429305,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,financial-management,regression,2,0.9600829278741662,99.0955,15511,6.388724131261686,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,first-time-nadac-rates,regression,0,0.8705494449809363,38.0693,1130,33.68964601769912,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,first-time-nadac-rates,regression,1,0.8515071575713364,35.8773,1130,31.749823008849557,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,first-time-nadac-rates,regression,2,0.8837187135346247,37.0321,1130,32.77176991150443,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,food-prices_wide,regression,0,0.9337379222180756,346.5365,50443,6.86986301369863,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,food-prices_wide,regression,1,0.9391817547861228,340.3035,50443,6.746297801478896,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,food-prices_wide,regression,2,0.9413244056744872,342.9439,50443,6.798642031600023,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,foreign-gift-and-contract,regression,0,0.5856309402991835,531.7433,75000,7.089910666666666,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,foreign-gift-and-contract,regression,1,0.5946477693389618,512.9157,75000,6.838876,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,foreign-gift-and-contract,regression,2,0.5946752923605223,530.7256,75000,7.076341333333333,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,fts-funding,regression,0,0.8247724075091382,622.6119,13153,47.33611343419752,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,fts-funding,regression,1,0.8334481138252077,623.2326,13153,47.38330418915837,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,fts-funding,regression,2,0.8098530561394429,622.9771,13153,47.36387896297422,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,fts-requirement-and-funding,regression,0,0.8736519205813275,54.7745,7009,7.814880867456128,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,fts-requirement-and-funding,regression,1,0.8890359197231944,55.578,7009,7.929519189613354,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,fts-requirement-and-funding,regression,2,0.8954059359806217,55.5127,7009,7.920202596661435,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,gainful-employment,regression,0,0.8304796337312661,143.632,8637,16.62984832696538,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,gainful-employment,regression,1,0.8400265651220576,148.6045,8637,17.205569063332177,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,gainful-employment,regression,2,0.8434273832326991,147.21,8637,17.044112539076067,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,global-dams-database,regression,0,0.8256555714126965,185.9421,3978,46.74260935143288,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,global-dams-database,regression,1,0.8447197885615543,186.1546,3978,46.79602815485168,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,global-dams-database,regression,2,0.8879873710723734,186.1533,3978,46.795701357466065,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,global-power-plant,regression,0,0.7395276422498775,1548.4302,34936,44.32190863292879,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,global-power-plant,regression,1,0.7327414383134787,1518.7607,34936,43.472655713304334,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,global-power-plant,regression,2,0.7349921091880973,1519.1294,34936,43.48320929700023,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,grant,regression,0,0.9406542096433048,1988.738,22424,88.68792365322868,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,grant,regression,1,0.9457700285432202,1989.4715,22424,88.72063414199073,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,grant,regression,2,0.9471813125208643,1988.5903,22424,88.68133696039958,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,health-professional-shortage-areas,regression,0,0.7979649229643715,634.3464,9691,65.45726963161697,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,health-professional-shortage-areas,regression,1,0.8083841571190082,634.8106,9691,65.50516974512433,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,health-professional-shortage-areas,regression,2,0.8104101897832212,634.4765,9691,65.47069445877618,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,historic-perimeters-wildfires,regression,0,0.4275800558597951,1369.7538,23776,57.61077557200538,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,historic-perimeters-wildfires,regression,1,0.4176078204163326,1369.4394,23776,57.597552153432034,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,historic-perimeters-wildfires,regression,2,0.4301479342132986,1369.9814,23776,57.62034825033647,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,hospitals,regression,0,0.5839495833754274,635.024,7883,80.55613345173157,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,hospitals,regression,1,0.6021970646253907,639.0748,7883,81.06999873144743,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,hospitals,regression,2,0.6101382093614565,635.1806,7883,80.57599898515794,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,0,0.6695568651147168,360.9097,9331,38.67856607008895,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,1,0.704248123331414,361.4273,9331,38.73403708069875,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ibrd-statement-loans-guarantees,regression,2,0.6579710654404812,361.8253,9331,38.77669060122174,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,0,0.6447135067811115,313.3194,7766,40.3450167396343,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,1,0.6436598882813059,315.5269,7766,40.62926860674737,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,2,0.662521008819317,316.3572,7766,40.73618336337883,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ifc-advisory-services-projects,regression,0,0.4102391692577698,91.4762,1885,48.52848806366048,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ifc-advisory-services-projects,regression,1,0.4058814961082433,95.4957,1885,50.66084880636605,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ifc-advisory-services-projects,regression,2,0.3875942150556195,94.7124,1885,50.2453050397878,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ifc-investment-service-projects,regression,0,0.612906565286363,404.799,6328,63.96950063211125,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ifc-investment-service-projects,regression,1,0.6056085110842018,403.9699,6328,63.838479772439946,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,ifc-investment-service-projects,regression,2,0.626676916776389,403.4504,6328,63.75638432364096,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,industry-payments-entity,regression,0,0.5359414601038821,1556.4799,31448,49.49376430933604,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,industry-payments-entity,regression,1,0.5713605126498303,1554.8696,31448,49.44255914525566,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,industry-payments-entity,regression,2,0.5565874616959992,1555.3211,31448,49.45691617908929,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,industry-payments-project,regression,0,0.5761383999206605,1031.5308,32327,31.90926470133325,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,industry-payments-project,regression,1,0.5308737318721104,1030.43,32327,31.875212670523094,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,industry-payments-project,regression,2,0.5626946644643132,1030.5678,32327,31.879475361153215,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,insurance-company-complaints,regression,0,0.5736980105399452,181.93,14509,12.539113653594322,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,insurance-company-complaints,regression,1,0.5438251699451083,10.2837,14509,0.7087807567716589,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,insurance-company-complaints,regression,2,0.5716764005715691,179.4252,14509,12.366475980425943,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,journal-ranking_wide,regression,0,0.8659859962769486,2535.5899,31136,81.43595516443987,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,journal-ranking_wide,regression,1,0.858376485310568,2536.9717,31136,81.48033466084276,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,journal-ranking_wide,regression,2,0.8601255461907331,2536.9128,31136,81.47844295991779,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,local-government-renewable-action,regression,0,0.7434735023740655,166.4213,1333,124.84718679669918,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,local-government-renewable-action,regression,1,0.7356322341598396,159.9085,1333,119.96136534133534,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,local-government-renewable-action,regression,2,0.7772288409957707,160.7863,1333,120.6198799699925,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,local-law-enforcements,regression,0,0.7682151490608102,917.9496,16159,56.807327186088244,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,local-law-enforcements,regression,1,0.7748152028697293,919.0498,16159,56.87541308249273,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,local-law-enforcements,regression,2,0.7782450371218984,918.4798,16159,56.84013862243951,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,managed-care-enrollment,regression,0,0.8588361959964362,151.1581,2726,55.45051357300073,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,managed-care-enrollment,regression,1,0.8646013019405994,149.5221,2726,54.85036683785766,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,managed-care-enrollment,regression,2,0.8447910943144971,151.1079,2726,55.432098312545854,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,media-ranking_wide,regression,0,0.4070509883924319,145.4464,6009,24.204759527375604,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,media-ranking_wide,regression,1,0.4062653566242704,147.6796,6009,24.576402063571308,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,media-ranking_wide,regression,2,0.3723171214045601,147.1572,6009,24.48946580129805,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,medically-underserved-areas-populations,regression,0,0.6583713298048001,219.9468,3882,56.658114374034,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,medically-underserved-areas-populations,regression,1,0.6431586081637963,218.6225,3882,56.316975785677485,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,medically-underserved-areas-populations,regression,2,0.7252996726322034,219.9346,3882,56.65497166409067,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,mercari,regression,0,0.542333183294351,5486.423,75000,73.15230666666666,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,mercari,regression,1,0.5393512513767543,5458.2465,75000,72.77662,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,mercari,regression,2,0.5329917062967571,5463.1008,75000,72.841344,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,meta-critic_whisky,regression,0,0.5698581298643758,41.7367,1812,23.033498896247238,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,meta-critic_whisky,regression,1,0.5607717406054676,42.3589,1812,23.37687637969095,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,meta-critic_whisky,regression,2,0.5532192467772737,45.0444,1812,24.858940397350995,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,miga-issued-projects,regression,0,0.4376850113002244,17.495,619,28.26332794830372,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,miga-issued-projects,regression,1,0.4665244811358842,15.7842,619,25.499515347334412,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,miga-issued-projects,regression,2,0.6118148215284499,18.4969,619,29.881906300484655,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,mlr-summary-reports,regression,0,0.2978118112906641,96.2358,1665,57.799279279279276,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,mlr-summary-reports,regression,1,0.3576162026401013,95.4101,1665,57.30336336336336,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,mlr-summary-reports,regression,2,0.4109424803096577,96.2701,1665,57.819879879879885,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,museums,regression,0,0.5761967054739499,2486.5011,20351,122.18078227114145,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,museums,regression,1,0.5742643235987464,2525.799,20351,124.11178811851997,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,museums,regression,2,0.5662400087490826,2569.6544,20351,126.26673873519728,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,0,0.8989362262555539,170.0695,8947,19.00855035207332,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,1,0.9065563112184818,171.9785,8947,19.22191796132782,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,national-average-drug-acquisition-cost,regression,2,0.9091144157527667,170.2114,8947,19.02441041689952,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,oil-natural-gas-platform,regression,0,0.8265177573972203,576.4128,7137,80.76401849516603,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,oil-natural-gas-platform,regression,1,0.8495883885740774,576.9443,7137,80.83848956144038,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,oil-natural-gas-platform,regression,2,0.8507543735757308,573.7145,7137,80.38594647611042,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,pol-terminal,regression,0,0.2266969132371078,316.5955,2091,151.40865614538498,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,pol-terminal,regression,1,0.398704258195517,318.6638,2091,152.39780009564802,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,pol-terminal,regression,2,0.3083841860500572,318.8463,2091,152.48507890961264,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,power-plants,regression,0,0.9102084526467864,1369.1216,23093,59.28729918157017,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,power-plants,regression,1,0.9098289228935524,1536.9326,23093,66.55404668081238,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,power-plants,regression,2,0.9144148147427976,1580.3192,23093,68.43282379941972,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,prison-boundaries,regression,0,0.819327067320599,340.2099,3755,90.60183754993342,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,prison-boundaries,regression,1,0.8054063957415092,340.119,3755,90.57762982689748,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,prison-boundaries,regression,2,0.8102320678836749,340.5584,3755,90.69464713715045,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,0,0.5536309629362604,275.6103,7390,37.295033829499324,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,1,0.5956171472283055,275.9949,7390,37.34707713125845,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,2,0.5716761225756375,276.2945,7390,37.387618403247636,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,schools,regression,0,0.4991775678706921,7882.2491,75000,105.09665466666667,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,schools,regression,1,0.512423088676575,7881.8778,75000,105.09170400000001,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,schools,regression,2,0.5195372328996644,7895.9134,75000,105.27884533333334,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,sf-building-permits,regression,0,0.9833636039789352,5621.5283,75000,74.95371066666667,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,sf-building-permits,regression,1,0.9825624552636446,5623.2429,75000,74.976572,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,sf-building-permits,regression,2,0.9832946269906138,5635.716,75000,75.14288,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,summary-of-deposit_wide,regression,0,0.5480061629515798,341.9738,4546,75.225208974923,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,summary-of-deposit_wide,regression,1,0.5482145142890218,341.2737,4546,75.07120545534536,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,summary-of-deposit_wide,regression,2,0.5326491638585985,340.4519,4546,74.89043114826221,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,tax-incentives,regression,0,0.9333400700363348,29.4029,908,32.382048458149775,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,tax-incentives,regression,1,0.9064038226358748,37.6907,908,41.509581497797356,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,tax-incentives,regression,2,0.9632412775818082,40.4639,908,44.563766519823794,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,terms-cc-plans,regression,0,0.9039721831882768,195.7163,9486,20.63212102045119,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,terms-cc-plans,regression,1,0.9003585514023436,199.0138,9486,20.9797385620915,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,terms-cc-plans,regression,2,0.9146985282035688,197.206,9486,20.789162977018766,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,0,0.5657155687027757,179.7568,7826,22.969179657551752,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,1,0.5659547548686044,181.6961,7826,23.21698185535395,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,2,0.5854441521724119,181.5742,7826,23.201405571173012,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,transmission-towers,regression,0,0.6022420308065035,5129.5132,75000,68.39350933333334,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,transmission-towers,regression,1,0.5941442208300484,5133.9025,75000,68.45203333333333,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,transmission-towers,regression,2,0.5929435891987522,5117.3716,75000,68.23162133333334,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,us-school-bus-fleet,regression,0,0.9357579731726084,820.2751,17011,48.22027511610134,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,us-school-bus-fleet,regression,1,0.9253179627330266,816.3713,17011,47.99078831344424,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,us-school-bus-fleet,regression,2,0.9336509778962366,872.9458,17011,51.31654811592499,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,vehicles,regression,0,0.9372902141650497,50.804,1238,41.03715670436187,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,vehicles,regression,1,0.9047422709809584,48.7205,1238,39.35420032310178,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,vehicles,regression,2,0.945541295563567,49.9939,1238,40.382794830371566,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,wine-dataset,regression,0,0.7179334794428771,228.164,1290,176.87131782945735,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,wine-dataset,regression,1,0.6990629337709924,226.5213,1290,175.59790697674418,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,wine-dataset,regression,2,0.7064959679956617,229.7152,1290,178.0737984496124,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,workforce-demographics-wide,regression,0,0.8926599314302803,22.1583,1588,13.953589420654913,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,workforce-demographics-wide,regression,1,0.8912255158411249,24.108,1588,15.181360201511335,False,False
+qwen-3-8b-first30+nori-30m,Qwen-3-8B · first-30,Nori-30M,default,workforce-demographics-wide,regression,2,0.8641826283670031,24.5553,1588,15.463035264483626,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,aca-federal-upper-limits-wide,regression,0,0.6852636969867723,12.5478,1976,6.350101214574899,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,aca-federal-upper-limits-wide,regression,1,0.7234240572286759,11.3664,1976,5.752226720647773,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,aca-federal-upper-limits-wide,regression,2,0.6609516050053496,11.6836,1976,5.912753036437247,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,0,0.6587790985765116,22.2689,5672,3.92611071932299,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,1,0.6712897029758694,20.8821,5672,3.681611424541608,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,aijob_ai-ml-ds-salaries,regression,2,0.6497521750390862,20.7544,5672,3.6590973201692525,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,antenna-structure-registration,regression,0,0.6586583511396926,139.6832,17633,7.9216922815176085,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,antenna-structure-registration,regression,1,0.6294045205742314,139.5884,17633,7.916315998412069,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,antenna-structure-registration,regression,2,0.6454148305450859,138.7928,17633,7.871196052855441,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,awarded-grants,regression,0,0.806222473786206,382.2294,63815,5.9896482018334245,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,awarded-grants,regression,1,0.8014678073938334,385.8456,63815,6.046315129671707,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,awarded-grants,regression,2,0.801712830813889,387.6723,63815,6.074940061114158,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,beer-ratings,regression,0,0.5934848258570751,20.3629,3197,6.369377541445105,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,beer-ratings,regression,1,0.6157224295189052,21.0634,3197,6.588489208633094,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,beer-ratings,regression,2,0.6058384466370278,22.0463,3197,6.8959336878323425,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,broadband-availability,regression,0,0.4446587981815236,21.3451,3219,6.630972351662007,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,broadband-availability,regression,1,0.4354511431877486,21.8771,3219,6.796241068654861,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,broadband-availability,regression,2,0.4197677415444452,20.6992,3219,6.430319975147562,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,california-houses,regression,0,0.6779864191313234,311.0655,44913,6.925956849909825,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,california-houses,regression,1,0.697774457168514,311.284,44913,6.930821811056932,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,california-houses,regression,2,0.7763445823060174,311.337,44913,6.932001870282546,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,child-adult-healthcare-quality,regression,0,0.9446559800803396,189.3035,29367,6.44613000987503,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,child-adult-healthcare-quality,regression,1,0.9438769647691218,187.2898,29367,6.377559846085743,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,child-adult-healthcare-quality,regression,2,0.9430768040694556,187.7083,29367,6.391810535635237,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,china-overseas-finance-inventory,regression,0,0.5704859484448536,11.4424,550,20.804363636363636,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,china-overseas-finance-inventory,regression,1,0.6185693872431279,10.034,550,18.243636363636366,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,china-overseas-finance-inventory,regression,2,0.6483586175525091,11.6649,550,21.208909090909092,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,clear-corpus,regression,0,0.6511353587691688,42.9569,4724,9.093331922099916,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,clear-corpus,regression,1,0.6298568529024283,43.6302,4724,9.235859441151568,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,clear-corpus,regression,2,0.6494603727205839,42.5289,4724,9.002730736663844,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,college-creditcard-marketing,regression,0,0.7019030396082466,53.8575,6283,8.571940155976446,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,college-creditcard-marketing,regression,1,0.7152971981021307,53.8305,6283,8.567642845774312,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,college-creditcard-marketing,regression,2,0.6776973662379897,53.9732,6283,8.590354925990768,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,college-deposit-product-marketing,regression,0,0.5207298408168322,16.673,1359,12.26857983811626,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,college-deposit-product-marketing,regression,1,0.4267929336392103,22.6685,1359,16.68027961736571,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,college-deposit-product-marketing,regression,2,0.5103748667630061,21.068,1359,15.502575423105226,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,colleges-and-universities,regression,0,0.3301877501298854,117.9124,6128,19.241579634464753,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,colleges-and-universities,regression,1,0.3543175158458027,118.9863,6128,19.416824412532637,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,colleges-and-universities,regression,2,0.3273711663333341,119.0176,6128,19.421932114882505,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,commitments-in-trust-funds,regression,0,0.7177003016424716,466.5291,41243,11.311715927551344,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,commitments-in-trust-funds,regression,1,0.7172184174745082,454.7119,41243,11.025189729166163,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,commitments-in-trust-funds,regression,2,0.7024886373343391,453.4466,41243,10.994510583614188,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,community-banking_wide,regression,0,0.5445030748578,57.5396,5253,10.953664572625167,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,community-banking_wide,regression,1,0.5477903552945516,58.723,5253,11.178945364553588,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,community-banking_wide,regression,2,0.5474421475729685,56.1122,5253,10.681934132876451,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,conflict-events_wide,regression,0,0.7815501199720039,12.9842,1520,8.542236842105263,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,conflict-events_wide,regression,1,0.8083160750711975,13.511,1520,8.888815789473684,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,conflict-events_wide,regression,2,0.7875896871135959,12.7077,1520,8.360328947368421,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,contract-awards-investment-project-financing,regression,0,0.6513281819927754,385.0285,75000,5.133713333333334,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,contract-awards-investment-project-financing,regression,1,0.6528602067478408,387.5125,75000,5.166833333333333,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,contract-awards-investment-project-financing,regression,2,0.6577277387986459,392.5174,75000,5.233565333333333,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,0,0.7354632295284561,11.3048,2990,3.780869565217391,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,1,0.7454450264948156,11.333,2990,3.7903010033444815,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,contributions-to-financial-intermediary-funds,regression,2,0.7375611696980662,11.3986,2990,3.8122408026755856,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,corporate-procurement-contract-awards,regression,0,0.1240613670195988,32.3835,3295,9.828072837632776,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,corporate-procurement-contract-awards,regression,1,0.1591784177615492,31.2633,3295,9.488103186646434,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,corporate-procurement-contract-awards,regression,2,0.1207805738332371,33.6682,3295,10.217966616084977,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,covid-clinical-trials,regression,0,0.6403153083870987,80.1783,4227,18.968133427963092,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,covid-clinical-trials,regression,1,0.62855430046123,78.2831,4227,18.51977762006151,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,covid-clinical-trials,regression,2,0.6196700071717569,79.7762,4227,18.87300686065768,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,disbursements-in-trust-funds,regression,0,0.572708428023875,379.2965,75000,5.057286666666666,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,disbursements-in-trust-funds,regression,1,0.5686502820693294,373.4902,75000,4.979869333333333,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,disbursements-in-trust-funds,regression,2,0.5712312509669684,374.2386,75000,4.989848,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,discretionary-grant,regression,0,0.92108757182453,130.2197,13218,9.851694658798607,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,discretionary-grant,regression,1,0.9249154365504269,131.5436,13218,9.951853533060977,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,discretionary-grant,regression,2,0.9203339180887944,131.568,13218,9.95369950068089,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,electric-generating-plants,regression,0,0.7665417706559987,74.9427,8849,8.469058650694993,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,electric-generating-plants,regression,1,0.7865550888603305,74.776,8849,8.450220363882924,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,electric-generating-plants,regression,2,0.7921225100634397,65.926,8849,7.450107356763477,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,electric-retail-service-territories,regression,0,0.818561515378702,36.9287,2909,12.694637332416638,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,electric-retail-service-territories,regression,1,0.8436364694601368,39.5585,2909,13.598659333104159,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,electric-retail-service-territories,regression,2,0.826500286825732,39.1318,2909,13.45197662426951,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,external-clinician-dashboard,regression,0,0.6597072139142747,800.783,28399,28.197577379485196,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,external-clinician-dashboard,regression,1,0.6545141756750988,841.1212,28399,29.61798654882214,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,external-clinician-dashboard,regression,2,0.6555702511330547,851.4164,28399,29.980506355857596,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,0,0.2862134766025708,50.8664,16630,3.058713168971738,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,1,0.3129373504973026,51.0673,16630,3.070793746241732,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-cash-transfers,regression,2,0.265339625372914,50.5043,16630,3.0369392663860495,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-commitments,regression,0,0.5171809283669739,36.3861,12875,2.826104854368932,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-commitments,regression,1,0.4920627187093159,36.5763,12875,2.840877669902913,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-commitments,regression,2,0.5455556987587054,37.9949,12875,2.9510601941747576,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,0,0.6229262391443076,76.1105,14750,5.160033898305085,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,1,0.6302779958568349,75.1388,14750,5.094155932203391,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-intermediary-funds-funding-decisions,regression,2,0.608293284381465,79.1954,14750,5.3691796610169495,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-management,regression,0,0.9620629166125184,78.0254,15511,5.030326864805622,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-management,regression,1,0.971969391401798,80.3993,15511,5.183373090065115,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,financial-management,regression,2,0.9566150234768492,79.7582,15511,5.1420411320998,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,first-time-nadac-rates,regression,0,0.8608431703832033,5.1668,1130,4.572389380530973,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,first-time-nadac-rates,regression,1,0.848753485926385,6.2101,1130,5.495663716814159,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,first-time-nadac-rates,regression,2,0.8834341582654074,3.2366,1130,2.8642477876106196,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,food-prices_wide,regression,0,0.9581959290287084,2710.7641,50443,53.739153103502964,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,food-prices_wide,regression,1,0.9611990891216008,2733.8628,50443,54.197069960153044,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,food-prices_wide,regression,2,0.9597022174578888,2759.7173,50443,54.70961877763019,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,foreign-gift-and-contract,regression,0,0.6268032417384828,341.5638,75000,4.554184,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,foreign-gift-and-contract,regression,1,0.6240862226303749,344.725,75000,4.596333333333333,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,foreign-gift-and-contract,regression,2,0.6333522327811788,345.7077,75000,4.609436,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,fts-funding,regression,0,0.7788698410407602,119.0016,13153,9.047487265262678,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,fts-funding,regression,1,0.7880191186267469,118.1661,13153,8.9839656352163,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,fts-funding,regression,2,0.7625378167579289,117.9279,13153,8.965855698319775,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,fts-requirement-and-funding,regression,0,0.8764036595149569,32.048,7009,4.572406905407334,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,fts-requirement-and-funding,regression,1,0.890967799775313,29.9719,7009,4.276202025966615,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,fts-requirement-and-funding,regression,2,0.8968925246632453,31.0025,7009,4.4232415465829655,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,gainful-employment,regression,0,0.8493667102031228,51.3211,8637,5.942005325923353,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,gainful-employment,regression,1,0.8622524945909754,50.621,8637,5.860947088109298,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,gainful-employment,regression,2,0.8564835918388124,51.1862,8637,5.926386476785921,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,global-dams-database,regression,0,0.8262748403800524,78.9581,3978,19.848692810457518,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,global-dams-database,regression,1,0.8160304196159819,80.9673,3978,20.353770739064856,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,global-dams-database,regression,2,0.8352334940706756,79.8371,3978,20.069658119658122,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,global-power-plant,regression,0,0.7490066456851739,267.6261,34936,7.6604677123883675,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,global-power-plant,regression,1,0.7434126928311391,275.9601,34936,7.899018204717197,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,global-power-plant,regression,2,0.74270934374981,269.5478,34936,7.715474009617586,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,grant,regression,0,0.9374511942315984,111.9357,22424,4.991781127363539,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,grant,regression,1,0.9414734689563748,107.5728,22424,4.797217267213699,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,grant,regression,2,0.9460226604251736,112.7618,22424,5.028621120228327,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,health-professional-shortage-areas,regression,0,0.7771590808945732,85.8809,9691,8.861923434114125,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,health-professional-shortage-areas,regression,1,0.7810936065387387,89.3075,9691,9.215509235373027,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,health-professional-shortage-areas,regression,2,0.786261039785619,86.7356,9691,8.950118666804252,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,historic-perimeters-wildfires,regression,0,0.4538890972274413,1901.5871,23776,79.97926901076715,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,historic-perimeters-wildfires,regression,1,0.4213146092559194,243.4148,23776,10.237836473755047,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,historic-perimeters-wildfires,regression,2,0.4131765115650346,243.3653,23776,10.235754542395693,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,hospitals,regression,0,0.5995769729050862,50.7707,7883,6.440530254979069,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,hospitals,regression,1,0.624372860030314,52.0476,7883,6.6025117341113795,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,hospitals,regression,2,0.6180895504757298,48.9912,7883,6.214791323100342,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ibrd-statement-loans-guarantees,regression,0,0.6368799030495631,113.9859,9331,12.21582895723931,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ibrd-statement-loans-guarantees,regression,1,0.6604338037128988,116.3399,9331,12.468106312292358,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ibrd-statement-loans-guarantees,regression,2,0.6168897006360483,118.4115,9331,12.690118958311007,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,0,0.658460950144389,69.0318,7766,8.888977594643318,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,1,0.648159134522994,71.4345,7766,9.198364666494978,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ida-statement-credits-grants-guarantees,regression,2,0.6673465499757861,69.2913,7766,8.922392480041205,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ifc-advisory-services-projects,regression,0,0.4039215519951077,14.7472,1885,7.823448275862069,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ifc-advisory-services-projects,regression,1,0.3930011048375179,13.3971,1885,7.1072148541114055,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ifc-advisory-services-projects,regression,2,0.3764863972936362,12.5068,1885,6.634907161803714,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ifc-investment-service-projects,regression,0,0.57212869675318,62.8896,6328,9.938305941845764,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ifc-investment-service-projects,regression,1,0.5943575765531967,63.3195,6328,10.006242098609356,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,ifc-investment-service-projects,regression,2,0.5979689489285607,64.8365,6328,10.245970290771176,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,industry-payments-entity,regression,0,0.5162921533949371,338.0582,31448,10.749751971508521,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,industry-payments-entity,regression,1,0.5519970205972498,334.6439,31448,10.64118226914271,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,industry-payments-entity,regression,2,0.5486618114003142,334.0365,31448,10.621867845331977,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,industry-payments-project,regression,0,0.5541324800303311,346.8025,32327,10.727951866860518,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,industry-payments-project,regression,1,0.5178431645765942,344.2872,32327,10.650143842608346,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,industry-payments-project,regression,2,0.5501579355353835,346.4149,32327,10.71596188944226,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,insurance-company-complaints,regression,0,0.5529841755714431,125.945,14509,8.680474188434765,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,insurance-company-complaints,regression,1,0.5265237280269911,126.2309,14509,8.70017919911779,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,insurance-company-complaints,regression,2,0.5556830473668009,124.7228,14509,8.596236818526432,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,journal-ranking_wide,regression,0,0.9006350267086097,395.1643,31136,12.691556397738953,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,journal-ranking_wide,regression,1,0.8974171719531743,395.6624,31136,12.707553956834532,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,journal-ranking_wide,regression,2,0.8958771020195375,396.5342,31136,12.735553699897226,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,local-government-renewable-action,regression,0,0.7759780757645668,26.0684,1333,19.556189047261814,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,local-government-renewable-action,regression,1,0.7542896368143145,27.355,1333,20.52138034508627,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,local-government-renewable-action,regression,2,0.7748157269085287,27.9302,1333,20.952888222055513,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,local-law-enforcements,regression,0,0.7580706542545382,106.8696,16159,6.6136270808837185,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,local-law-enforcements,regression,1,0.7591585543164487,108.2698,16159,6.7002784825793675,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,local-law-enforcements,regression,2,0.7681734963368012,106.0526,16159,6.563067021474101,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,managed-care-enrollment,regression,0,0.8538008241949682,14.7309,2726,5.403851797505503,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,managed-care-enrollment,regression,1,0.8717757399237246,16.3894,2726,6.012252384446074,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,managed-care-enrollment,regression,2,0.8551497379257891,16.7514,2726,6.145047688921497,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,media-ranking_wide,regression,0,0.3252683008759263,30.4835,6009,5.072973872524546,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,media-ranking_wide,regression,1,0.3303279853250356,29.9242,6009,4.979896821434514,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,media-ranking_wide,regression,2,0.3144693238385269,29.94,6009,4.982526210683974,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,medically-underserved-areas-populations,regression,0,0.6134518639373311,82.675,3882,21.297011849562082,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,medically-underserved-areas-populations,regression,1,0.6311239782193766,79.51,3882,20.481710458526532,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,medically-underserved-areas-populations,regression,2,0.6938999493964972,78.8091,3882,20.301159196290573,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,mercari,regression,0,0.5143902011548052,1065.5621,75000,14.207494666666667,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,mercari,regression,1,0.5078747275759683,1054.2052,75000,14.056069333333333,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,mercari,regression,2,0.5052418322329735,1067.4663,75000,14.232884000000002,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,meta-critic_whisky,regression,0,0.5579393029439217,2.5244,1812,1.3931567328918324,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,meta-critic_whisky,regression,1,0.5405818018608877,4.6649,1812,2.5744481236203094,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,meta-critic_whisky,regression,2,0.5377600508154293,5.108,1812,2.8189845474613686,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,miga-issued-projects,regression,0,0.4160642886412918,5.0285,619,8.123586429725364,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,miga-issued-projects,regression,1,0.4120386845476304,6.1986,619,10.01389337641357,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,miga-issued-projects,regression,2,0.6026141510462875,3.9578,619,6.393861066235865,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,mlr-summary-reports,regression,0,0.3064949712997534,15.2763,1665,9.174954954954956,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,mlr-summary-reports,regression,1,0.3325156978834729,15.0959,1665,9.066606606606607,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,mlr-summary-reports,regression,2,0.4352137280635779,15.5351,1665,9.330390390390392,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,museums,regression,0,0.5595575071065785,899.525,20351,44.20053068645275,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,museums,regression,1,0.565978711314834,883.582,20351,43.417129379391675,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,museums,regression,2,0.5513273789692186,891.3781,20351,43.80021129182841,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,national-average-drug-acquisition-cost,regression,0,0.89244411322734,21.8491,8947,2.4420587906560858,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,national-average-drug-acquisition-cost,regression,1,0.905623915468195,23.1854,8947,2.591416117134235,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,national-average-drug-acquisition-cost,regression,2,0.9065193766330572,21.4536,8947,2.397854029283559,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,oil-natural-gas-platform,regression,0,0.7234102566242688,96.3562,7137,13.50093876979123,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,oil-natural-gas-platform,regression,1,0.7561822529162914,96.1744,7137,13.475465882023261,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,oil-natural-gas-platform,regression,2,0.7507904500903823,92.7067,7137,12.989589463359955,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,pol-terminal,regression,0,0.2579658059614143,43.7091,2091,20.903443328550935,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,pol-terminal,regression,1,0.3510450792561319,44.8831,2091,21.46489717838355,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,pol-terminal,regression,2,0.3393985942577244,47.11,2091,22.529890004782402,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,power-plants,regression,0,0.8983254819187165,342.4794,23093,14.83044212531936,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,power-plants,regression,1,0.9002033982272455,565.8691,23093,24.503923266790803,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,power-plants,regression,2,0.9065878235522706,565.6751,23093,24.495522452691294,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,prison-boundaries,regression,0,0.8161264582526244,39.0346,3755,10.39536617842876,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,prison-boundaries,regression,1,0.7933374072636759,38.3046,3755,10.200958721704394,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,prison-boundaries,regression,2,0.8092517701060712,36.4293,3755,9.701544607190412,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,0,0.5449361557094183,88.5629,7390,11.984154262516915,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,1,0.5909363205753463,89.0939,7390,12.056008119079838,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,recipient-executed-grants-commitments-disbursements,regression,2,0.5623314249624254,87.7404,7390,11.872855209742895,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,schools,regression,0,0.4615753700447887,387.9364,75000,5.172485333333333,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,schools,regression,1,0.4757493570633339,388.5701,75000,5.180934666666667,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,schools,regression,2,0.4769104920417795,389.7417,75000,5.196556,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,sf-building-permits,regression,0,0.9422020069667576,375.3578,75000,5.0047706666666665,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,sf-building-permits,regression,1,0.9374279450318506,375.9413,75000,5.012550666666667,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,sf-building-permits,regression,2,0.938497570276798,379.1375,75000,5.055166666666667,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,summary-of-deposit_wide,regression,0,0.5194333671941571,96.9538,4546,21.327276726792785,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,summary-of-deposit_wide,regression,1,0.5162270632691428,100.5347,4546,22.114980202375715,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,summary-of-deposit_wide,regression,2,0.5277704664805046,97.1127,4546,21.36223053233612,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,tax-incentives,regression,0,0.9557350087948612,17.6083,908,19.39240088105727,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,tax-incentives,regression,1,0.9225117577356244,24.2797,908,26.739757709251098,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,tax-incentives,regression,2,0.9649531219264535,24.5153,908,26.99922907488987,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,terms-cc-plans,regression,0,0.9069951697546909,54.1207,9486,5.705323634830276,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,terms-cc-plans,regression,1,0.902337787893582,55.0778,9486,5.8062196921779465,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,terms-cc-plans,regression,2,0.9175411505256172,55.3315,9486,5.832964368543116,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,0,0.584748225997519,60.0296,7826,7.6705341170457455,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,1,0.5741597693896648,57.5193,7826,7.349769997444416,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,total-contributions-ibrd-ida-ifc,regression,2,0.5965616553116777,58.0006,7826,7.411270125223614,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,transmission-towers,regression,0,0.6008304528115034,357.4746,75000,4.766328000000001,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,transmission-towers,regression,1,0.5898535958252771,358.6277,75000,4.781702666666667,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,transmission-towers,regression,2,0.5874943852291061,356.3247,75000,4.750996000000001,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,us-school-bus-fleet,regression,0,0.9140006222167631,116.8222,17011,6.867450473223209,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,us-school-bus-fleet,regression,1,0.9059197071409328,118.0577,17011,6.940079948268767,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,us-school-bus-fleet,regression,2,0.9188048314362398,112.2984,17011,6.601516665686908,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,vehicles,regression,0,0.9322531392477822,15.7012,1238,12.682714054927303,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,vehicles,regression,1,0.8971193765765373,16.0855,1238,12.993134087237479,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,vehicles,regression,2,0.947236186901109,16.4755,1238,13.308158319870758,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,wine-dataset,regression,0,0.7105795534405199,18.5803,1290,14.403333333333334,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,wine-dataset,regression,1,0.6923336756311305,18.6053,1290,14.422713178294574,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,wine-dataset,regression,2,0.700169668572104,17.4616,1290,13.536124031007752,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,workforce-demographics-wide,regression,0,0.8750234904296811,11.6596,1588,7.342317380352644,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,workforce-demographics-wide,regression,1,0.8607149003360095,11.2313,1588,7.072607052896725,False,False
+tfidf+nori-30m,Tf-Idf,Nori-30M,default,workforce-demographics-wide,regression,2,0.8504164597544565,8.1362,1588,5.123551637279598,False,False
 llama-3.1-8b-pca30+realmlp,LLaMA-3.1-8B · PCA-30,RealMLP,default,aca-federal-upper-limits-wide,regression,0,0.6065901517868042,94.7203,1976,47.93537449392712,False,False
 llama-3.1-8b-pca30+realmlp,LLaMA-3.1-8B · PCA-30,RealMLP,default,aca-federal-upper-limits-wide,regression,1,0.6482282876968384,84.7236,1976,42.876315789473686,False,False
 llama-3.1-8b-pca30+realmlp,LLaMA-3.1-8B · PCA-30,RealMLP,default,aca-federal-upper-limits-wide,regression,2,0.5678857564926147,71.68130000000001,1976,36.275961538461544,False,False
