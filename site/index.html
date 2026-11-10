@@ -1144,6 +1144,7 @@ function render() {
   ['pareto', 'score', 'time'].forEach((k) => $('sort-' + k).setAttribute('aria-pressed', String(state.sort === k)));
   ['show', 'hide'].forEach((k) => $('overlap-' + k).setAttribute('aria-pressed', String(state.overlap === k)));
   $('ctl-overlap').hidden = !anyOverlap();  // no switch while no model is marked
+  $('ctl-overlap').title = OVERLAP_TIP;
   ['show', 'hide'].forEach((k) => $('api-' + k).setAttribute('aria-pressed', String(state.api === k)));
   $('ctl-api').hidden = !anyApi();  // no switch while the board has no API model
   $('legend-api').hidden = !list.some((d) => d.api);
