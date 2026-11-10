@@ -1,7 +1,11 @@
 {
- "version": "v0.1.15",
- "built": "2026-11-09",
+ "version": "v0.1.16",
+ "built": "2026-11-10",
  "history": [
+  {
+   "version": "v0.1.16",
+   "note": "Added Nori-30M 0.21.0 (30M)"
+  },
   {
    "version": "v0.1.15",
    "note": "ChakraTab (medium): time as reported by YHat Labs, plus encoding"
@@ -1441,6 +1445,74 @@
     96,
     0.8499
    ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+nori-30m",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "Nori-30M",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": null,
+   "reg": [
+    0.6498,
+    47.0358,
+    228,
+    228,
+    0.668
+   ],
+   "clf": null
+  },
+  {
+   "id": "minilm-l6-v2-pca30+nori-30m",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "Nori-30M",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": null,
+   "reg": [
+    0.6518,
+    11.248,
+    228,
+    228,
+    0.6632
+   ],
+   "clf": null
+  },
+  {
+   "id": "qwen-3-8b-first30+nori-30m",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "Nori-30M",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": null,
+   "reg": [
+    0.6609,
+    49.4497,
+    228,
+    228,
+    0.6814
+   ],
+   "clf": null
+  },
+  {
+   "id": "tfidf+nori-30m",
+   "enc": "Tf-Idf",
+   "lrn": "Nori-30M",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": null,
+   "reg": [
+    0.6587,
+    8.5811,
+    228,
+    228,
+    0.6731
+   ],
+   "clf": null
   },
   {
    "id": "llama-3.1-8b-pca30+realmlp",
