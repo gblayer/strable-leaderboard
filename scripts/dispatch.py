@@ -36,9 +36,9 @@ instead of publish it gathers and checks its results there and stops at step "te
 touches results/, the board or a results pull request.
 
 State lives in cache/dispatch/<model>.json. GitHub and git network calls are tried three times,
-with a growing wait. A failure stops the model (step "failed") and sends ONE repository_dispatch
-event (smoke-failed, run-failed, results-failed or runner-failed) that the Notify workflow turns
-into a comment mentioning @gblayer; absolute paths in its text are cut to the file name. The one
+with a growing wait. A failure stops the model (step "failed"), is written to
+cache/dispatch/failures.log and sends ONE repository_dispatch event, maintainer-follow-up, that says
+nothing about it: the Notify workflow turns it into a comment mentioning @gblayer. The one
 message on success is a comment on the model's pull request when its run starts: the number of
 tasks and a rough automatic estimate of when results will be ready. Delete the state file to retry. GitHub access, API and git, uses the
 fine-grained token in $STRABLE_GH_TOKEN_FILE (default ~/.config/strable/github_token, mode 0600;
@@ -323,13 +323,18 @@ class Dispatcher:
         return missing(self.cache, tables=tables)
 
     def notify(self, kind: str, st: dict, reason: str) -> None:
-        """One repository_dispatch event; the Notify workflow comments as github-actions[bot]."""
-        payload = {"pr": st.get("pr"), "model": st.get("model"), "reason": public(reason, 1500)}
+        """What happened goes to the private failures.log; the one repository_dispatch event says nothing
+        about it, and the Notify workflow comments as github-actions[bot]."""
+        self.state_dir.mkdir(parents=True, exist_ok=True)
+        entry = {"time": datetime.now().isoformat(timespec="seconds"), "kind": kind, "model": st.get("model"),
+                 "pr": st.get("pr"), "reason": reason}
+        with open(self.state_dir / "failures.log", "a") as failures:
+            failures.write(json.dumps(entry) + "\n")
         try:
-            self.gh.post("/dispatches", {"event_type": kind, "client_payload": payload})
+            self.gh.post("/dispatches", {"event_type": "maintainer-follow-up", "client_payload": {"pr": st.get("pr")}})
         except Exception as exc:  # never let a notification failure stop the pass
             log("notify failed:", type(exc).__name__)
-        log("notified", kind, payload["model"])
+        log("notified", kind, st.get("model"))
 
     def fail(self, name: str, st: dict, kind: str, reason: str) -> None:
         st.update(step="failed", failure=kind, reason=reason)
