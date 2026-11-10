@@ -692,7 +692,8 @@ const README = 'https://github.com/gblayer/strable-leaderboard#submit-a-model'; 
 const OVERLAP_NAME = 'possible pre-training overlap';
 const OVERLAP_TIP = "Possible overlap between this model's pre-training data and STRABLE tables.";
 const API_NAME = 'API model';
-const API_TIP = "Runs on its provider's servers, not on this leaderboard's. The leaderboard is a third party and cannot verify what the provider reports.";
+const API_TIP = "Runs on the provider's servers, not verified.";
+const API_PROVIDER = { 'ChakraTab (medium)': 'YHat Labs' };  // the name shown after "the provider" in the time's text
 const SITE = 'https://gblayer.github.io/strable-leaderboard/';
 const N_REG = 76, N_CLF = 32, N_ALL = N_REG + N_CLF;
 const N_PAPER = 75;  // the paper's Figure 4a pipelines, never replaced; every other pipeline was added since
@@ -753,7 +754,7 @@ function items(task) {
     rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, hw: d.hw,
       tuned: d.variant === 'tuned', incomplete: v.length > 3 && v[2] < v[3],
       overlap: overlap, evidence: overlap && isUrl(d.overlap_evidence) ? d.overlap_evidence : null,
-      api: api, apiVersion: api && typeof d.api_version === 'string' ? d.api_version : null, apiTimeReported: api && d.api_time_reported === true,
+      api: api, apiTimeReported: api && d.api_time_reported === true,
       note: typeof d.note === 'string' && d.note.trim() ? d.note : null,
       s: state.score === 'mean' ? v[4] : v[0], t: num(v[1]) });
   }
@@ -787,7 +788,7 @@ const tagEl = (cls, name) => el('span', 'tag ' + cls, name.toUpperCase());
    the button in the page so that Tab reaches it); Esc or a tap elsewhere closes it, and so does
    scrolling the button out of the table's view. In the plot's tooltip it is the plain box. */
 const markBox = (sym, cls) => { const s = el('span', cls, sym); s.setAttribute('aria-hidden', 'true'); return s; };
-const apiTip = (d) => API_TIP + (d.apiTimeReported ? " Time: the seconds the provider reports, plus this leaderboard's string-encoding time." : " Time: measured at this leaderboard's side, network included.") + (d.apiVersion ? ' Version ' + d.apiVersion + '.' : '');
+const apiTip = (d) => API_TIP + (d.apiTimeReported ? '' : " Time measured here, network included.");
 let ovlOpen = null, ovlTimer = null, ovlN = 0;
 /* Puts the open tooltip under its button (above when there is no room); false when the button is out of view. */
 function ovlPlace(box) {
@@ -841,7 +842,7 @@ document.addEventListener('pointerdown', (ev) => { if (ovlOpen && !ovlOpen.conta
 window.addEventListener('scroll', () => { if (ovlOpen && !ovlPlace(ovlOpen)) ovlHide(); }, true);
 window.addEventListener('resize', () => ovlHide());
 function pipeName(d) { return (d.kind === 'e2e' ? d.lrn : d.enc + ' + ' + d.lrn) + (d.tuned ? ' (tuned)' : ''); }
-function timeText(d) { return (d.apiTimeReported ? "time reported by the provider, plus this leaderboard's encoding, " : 'total run time ') + fmtT(d.t) + ' per 1K samples'; }
+function timeText(d) { return (d.apiTimeReported ? 'time reported from the provider' + (API_PROVIDER[d.lrn] ? ' (' + API_PROVIDER[d.lrn] + ')' : '') + ', plus leaderboard encoding, ' : 'total run time ') + fmtT(d.t) + ' per 1K samples'; }
 
 function starSvg() {
   const s = sv('svg', { class: 'star', viewBox: '0 0 11 11', 'aria-hidden': 'true' });
@@ -1009,7 +1010,7 @@ function showTip(id) {
   if (g.d.api) l1.appendChild(markBox('API', 'api-pill'));
   if (g.d.note) l1.appendChild(markBox('∗', 'ovl-mark'));
   tip.appendChild(l1);
-  tip.appendChild(el('div', null, timeText(g.d)));
+  tip.appendChild(el('div', g.d.apiTimeReported ? 'wrap' : null, timeText(g.d)));
   if (g.d.api) tip.appendChild(el('div', 'wrap', apiTip(g.d)));
   if (g.d.note) tip.appendChild(el('div', 'wrap', g.d.note));
   tip.appendChild(el('div', 'muted', (g.d.kind === 'e2e' ? 'End-to-end' : 'Modular') + (g.d.api ? '' : ' · ' + hwText(g.d)) + (g.d.incomplete ? ' · incomplete' : '') + (g.on ? ' · ★ Pareto Front' : ' · not on the Pareto Front')));
