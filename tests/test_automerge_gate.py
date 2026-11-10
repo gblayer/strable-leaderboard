@@ -115,7 +115,7 @@ def test_the_maintainer_label_blocks():
 
 
 def test_checks_must_pass_on_the_head():
-    assert gate(checks=run(conclusion="failure"))[0] == "needs"
+    assert gate(checks=run(conclusion="failure")) == ("needs", automerge_gate.FOLLOW_UP)
     assert gate(checks=run(status="in_progress"))[0] == "wait"
     assert gate(checks=run(sha="b" * 40))[0] == "wait"
 
@@ -193,3 +193,12 @@ def test_an_api_model_from_anyone_but_the_maintainer_waits_for_her():
     assert verdict == "needs" and "is an API model (hardware: api): only the maintainer adds those" in reason
     assert scope_problems(MODEL_FILES, MAINTAINER, {"ridge"}, api) == []
     assert decide(pr(author=MAINTAINER), MODEL_FILES, {"state": "success"}, run(), {"ridge"}, api) == ("merge", SHA)
+
+
+def test_the_follow_up_comment_says_nothing_else(monkeypatch):
+    bodies = []
+    monkeypatch.setattr(automerge_gate, "gh", lambda *args, check=True: "")
+    monkeypatch.setattr(automerge_gate, "comment_once", lambda number, body, marker: bodies.append(body))
+    automerge_gate.needs_maintainer(pr(), automerge_gate.FOLLOW_UP)
+    automerge_gate.needs_maintainer(pr(), "a reason")
+    assert bodies == [f"@{MAINTAINER} The maintainer will follow up.", f"@{MAINTAINER} your review is needed: a reason"]

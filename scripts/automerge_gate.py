@@ -33,6 +33,7 @@ from strable_leaderboard import REPO as DEFAULT_REPO  # noqa: E402
 BOTS = {"github-actions[bot]", "claude[bot]"}
 CHECKS_WORKFLOW = "checks.yml"
 REVIEW_CONTEXT = "Claude review"
+FOLLOW_UP = "The maintainer will follow up."  # the whole comment when Checks or the merge did not succeed
 ENV_INPUT = "env/requirements.in"  # a contributor may add packages here; the maintainer reviews every change
 # The sites the overlap pass may fetch, plus the hosts of the card's code and paper links.
 WEB = ("arxiv.org", "huggingface.co", "github.com", "raw.githubusercontent.com")
@@ -167,7 +168,7 @@ def decide(pr: dict, paths: list[str], status: dict | None, checks_run: dict | N
     if not checks_run or checks_run["head_sha"] != sha or checks_run["status"] != "completed":
         return "wait", "Checks on this commit have not finished"
     if checks_run["conclusion"] != "success":
-        return "needs", f"Checks ended with {checks_run['conclusion']} on {sha[:7]}"
+        return "needs", FOLLOW_UP
     if NEEDS in {label["name"] for label in pr["labels"]}:
         return "needs", f"the label {NEEDS} is set"
     return "merge", sha
@@ -223,7 +224,8 @@ def comment_once(number: int, body: str, marker: str) -> None:
 
 def needs_maintainer(pr: dict, reason: str, details: str = "") -> None:
     gh("pr", "edit", str(pr["number"]), "--repo", REPO, "--add-label", NEEDS)
-    body = f"@{MAINTAINER} your review is needed: {reason}" + (f"\n\n{details}" if details else "")
+    opening = reason if reason == FOLLOW_UP else f"your review is needed: {reason}"
+    body = f"@{MAINTAINER} {opening}" + (f"\n\n{details}" if details else "")
     comment_once(pr["number"], body[:60000], f"<!-- automerge-gate {pr['head']['sha']} -->")
 
 
@@ -252,7 +254,7 @@ def gate(pr: dict, details: str = "") -> str:
             if api(f"pulls/{pr['number']}").get("merged"):
                 print(f"#{pr['number']}: already merged")  # the other gate run got there first
                 return "merged"
-            needs_maintainer(pr, f"the merge failed: {merged.stderr.strip()[-300:]}")
+            needs_maintainer(pr, FOLLOW_UP)
             return "needs"
         if any(p.startswith("site/") for p in changed_paths(pr["number"])):
             # A merge by GITHUB_TOKEN starts no workflow: the page and its Hugging Face copy are started here.

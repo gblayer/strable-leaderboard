@@ -143,8 +143,9 @@ def test_smoke_failure_notifies_once(clone):
     d.run(fetch=False)
     assert state(d)["step"] == "failed"
     (path, data), = d.gh.posts
-    assert path == "/dispatches" and data["event_type"] == "smoke-failed"
-    assert data["client_payload"]["pr"] == 3 and "FAIL boom" in data["client_payload"]["reason"]
+    assert path == "/dispatches" and data == {"event_type": "maintainer-follow-up", "client_payload": {"pr": 3}}
+    entry = json.loads((d.state_dir / "failures.log").read_text())  # what happened stays private
+    assert entry["kind"] == "smoke-failed" and entry["pr"] == 3 and "FAIL boom" in entry["reason"]
 
 
 def test_run_is_resubmitted_once_then_fails(clone):
@@ -155,7 +156,8 @@ def test_run_is_resubmitted_once_then_fails(clone):
     d.run(fetch=False)  # tasks left: the second submission, not announced
     assert state(d)["step"] == "run" and state(d)["submissions"] == 2 and len(d.gh.posts) == 1
     d.run(fetch=False)
-    assert state(d)["step"] == "failed" and d.gh.posts[1][1]["event_type"] == "run-failed"
+    assert state(d)["step"] == "failed" and state(d)["failure"] == "run-failed"
+    assert d.gh.posts[1][1]["event_type"] == "maintainer-follow-up"
 
 
 def test_embeddings_come_first_and_are_shared(clone):
@@ -397,7 +399,8 @@ def test_a_failed_test_notifies(clone, monkeypatch):
     d.run(fetch=False)
     d.todo = []
     d.run(fetch=False)
-    assert state(d, name)["step"] == "failed" and d.gh.posts[-1][1]["event_type"] == "results-failed"
+    assert state(d, name)["step"] == "failed" and state(d, name)["failure"] == "results-failed"
+    assert d.gh.posts[-1][1]["event_type"] == "maintainer-follow-up"
 
 
 def test_test_tasks_are_fold_0_of_the_smoke_tables(tmp_path):
