@@ -27,7 +27,7 @@ def test_tile_selection():
                                                "kumo-tabular-medium", "kumo-tabular-small"))}
     assert all(p["variant"] == "default" for p in rows)
     held = {f"{p['encoder']}+{p['model']}" for p in rows if p.get("hold")}
-    assert held == {"tile+exaone-tabular", "tfidf+kumo-tabular-medium"}  # listed, not imported
+    assert held == {"tile+exaone-tabular"}  # listed, not imported
     assert {f"{p['encoder']}+{p['model']}" for ms in imported(SELECTION["pipelines"]).values() for p in ms.values()} == ids - held
     assert "tfidf" in ENCODERS  # Tf-Idf + Causilo: the id the runner gives models/causilo with its tfidf encoder
     windows = {p["model"]: p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}  # one per learner

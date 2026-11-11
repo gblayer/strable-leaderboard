@@ -69,4 +69,4 @@ pipelines:
   strable_tfidf.csv:  # the board's Tf-Idf encoder, run by the TILE authors
     num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09", hardware: NVIDIA H100 80GB HBM3}
     num-str_tabvec_kumo_small: {model: kumo-tabular-small, encoder: tfidf, variant: default}
-    num-str_tabvec_kumo_medium: {model: kumo-tabular-medium, encoder: tfidf, variant: default, hold: true}
+    num-str_tabvec_kumo_medium: {model: kumo-tabular-medium, encoder: tfidf, variant: default}
