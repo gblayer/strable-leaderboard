@@ -1,7 +1,11 @@
 {
- "version": "v0.1.16",
- "built": "2026-11-10",
+ "version": "v0.1.17",
+ "built": "2026-11-11",
  "history": [
+  {
+   "version": "v0.1.17",
+   "note": "Added Tf-Idf + Kumo Tabular (medium)"
+  },
   {
    "version": "v0.1.16",
    "note": "Added Nori-30M 0.21.0 (30M)"
@@ -1204,6 +1208,34 @@
     96,
     96,
     0.8796
+   ]
+  },
+  {
+   "id": "tfidf+kumo-tabular-medium",
+   "enc": "Tf-Idf",
+   "lrn": "Kumo Tabular (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "both": [
+    0.8031,
+    2.57,
+    324,
+    324,
+    0.7663
+   ],
+   "reg": [
+    0.7226,
+    2.5385,
+    228,
+    228,
+    0.7228
+   ],
+   "clf": [
+    0.8956,
+    2.6039,
+    96,
+    96,
+    0.8695
    ]
   },
   {
