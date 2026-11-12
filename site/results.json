@@ -1,7 +1,11 @@
 {
- "version": "v0.1.17",
- "built": "2026-11-11",
+ "version": "v0.1.18",
+ "built": "2026-11-12",
  "history": [
+  {
+   "version": "v0.1.18",
+   "note": "Added Xiaomi-TabLDM 0.1.0 (default)"
+  },
   {
    "version": "v0.1.17",
    "note": "Added Tf-Idf + Kumo Tabular (medium)"
@@ -3492,6 +3496,122 @@
     96,
     96,
     0.8501
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+xiaomi-tabldm",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "Xiaomi-TabLDM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7829,
+    67.5582,
+    324,
+    324,
+    0.7426
+   ],
+   "reg": [
+    0.6724,
+    63.6157,
+    228,
+    228,
+    0.6967
+   ],
+   "clf": [
+    0.877,
+    107.7943,
+    96,
+    96,
+    0.8517
+   ]
+  },
+  {
+   "id": "minilm-l6-v2-pca30+xiaomi-tabldm",
+   "enc": "MiniLM-L6-v2 · PCA-30",
+   "lrn": "Xiaomi-TabLDM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": [
+    0.7837,
+    27.7056,
+    324,
+    324,
+    0.7307
+   ],
+   "reg": [
+    0.6685,
+    30.9599,
+    228,
+    228,
+    0.6794
+   ],
+   "clf": [
+    0.8817,
+    21.734,
+    96,
+    96,
+    0.8524
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+xiaomi-tabldm",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "Xiaomi-TabLDM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": [
+    0.7847,
+    73.7957,
+    324,
+    324,
+    0.7442
+   ],
+   "reg": [
+    0.6754,
+    68.7359,
+    228,
+    228,
+    0.6977
+   ],
+   "clf": [
+    0.8808,
+    119.8036,
+    96,
+    96,
+    0.8544
+   ]
+  },
+  {
+   "id": "tfidf+xiaomi-tabldm",
+   "enc": "Tf-Idf",
+   "lrn": "Xiaomi-TabLDM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": [
+    0.7801,
+    22.2881,
+    324,
+    324,
+    0.7402
+   ],
+   "reg": [
+    0.6888,
+    24.5283,
+    228,
+    228,
+    0.6912
+   ],
+   "clf": [
+    0.8837,
+    16.0718,
+    96,
+    96,
+    0.8565
    ]
   }
  ]
