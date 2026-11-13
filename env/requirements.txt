@@ -52,6 +52,7 @@ kditransform==1.2.0
 kiwisolver==1.4.9
 lightgbm==4.7.0
 lightning-utilities==0.15.2
+limix @ git+https://github.com/limix-ldm-ai/LimiX@a917fa052eb637db98318b65712def280055ec34
 llvmlite==0.45.1
 loguru==0.7.3
 markdown-it-py==4.2.0
@@ -79,6 +80,7 @@ nvidia-nccl-cu13==2.29.7
 nvidia-nvjitlink==13.4.92
 nvidia-nvshmem-cu13==3.4.5
 nvidia-nvtx==13.0.85
+nvtx==0.2.17
 omegaconf==2.4.0
 packaging==25.0
 pandas==2.3.3

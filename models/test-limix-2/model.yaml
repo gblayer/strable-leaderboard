@@ -1,0 +1,18 @@
+name: LimiX-2 (test)
+version: "2.0.0"
+end_to_end: false
+tasks: [regression, binary, multiclass]
+variant: default
+hardware: gpu
+
+package: "LimiX @ git+https://github.com/limix-ldm-ai/LimiX@a917fa052eb637db98318b65712def280055ec34"  # not on PyPI under its name (PyPI's limix is an unrelated package): the code at one commit, as in env/requirements.in
+checkpoint:
+  repo: stable-ai/LimiX-2
+  revision: de07b679e74a41b50b9de18251a8fa245e537440
+  files: [LimiX-2.ckpt]
+licence: StableAI LimiX Non-Commercial License v1.0  # the weights: non-commercial, public results credited "Built with StableAI LimiX". The code: Stable AI Technology Co., Ltd. License 1.0 (Apache-2.0-derived)
+# Technical report, Sec. 1: "It is pretrained exclusively on synthetic datasets produced by an expanded generation engine based on structural causal models (SCMs)".
+pretraining_data: synthetic
+
+code: https://github.com/limix-ldm-ai/LimiX
+paper: https://arxiv.org/abs/2609.17488

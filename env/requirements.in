@@ -40,6 +40,7 @@ xiaomi-tabldm @ git+https://github.com/xiaomi-research/xiaomi-tabldm.git@e83da2b
 autogluon.tabular[mitra]==1.6.3  # Mitra-v2 (AutoGluon)
 ftfm @ git+https://github.com/machinelearningnuremberg/ftfm-official@7e5e237daa26ef20f0faec1650d000b04de5122e  # FTFM-1, not on PyPI
 tababax @ git+https://github.com/tababax-research/TabAbax@ef09729c767d7b333843303d60623b78dd42a911  # TabAbax (BaiRong), not on PyPI
+LimiX @ git+https://github.com/limix-ldm-ai/LimiX@a917fa052eb637db98318b65712def280055ec34  # LimiX-2 (Stable AI), not on PyPI under its name
 
 # dependencies the paper's freeze holds at versions the pins above cannot use
 click==8.5.0  # 8.3.0 in the paper; huggingface-hub 2.2.0 needs 8.4.2 or later
@@ -55,6 +56,12 @@ boto3==1.43.118  # not in the paper; a dependency of autogluon (Mitra-v2), held 
 botocore==1.43.118  # not in the paper; a dependency of boto3, held at the version locked and checked with it
 wadler-lindig==0.1.7  # not in the paper; a dependency of jaxtyping (TabFM), held at the version locked and checked with it
 frozendict==2.4.7  # not in the paper; a dependency of einx (AutoGluon, Mitra-v2), held at the version locked and checked with it
+annotated-doc==0.0.5  # not in the paper; a dependency of typer, held at the version locked and checked with it
+cuda-bindings==13.4.4  # not in the paper; a dependency of torch 2.13, held at the version locked and checked with it
+loguru==0.7.3  # not in the paper; a dependency of autogluon (Mitra-v2), held at the version locked and checked with it
+markdown-it-py==4.2.0  # not in the paper; a dependency of rich, held at the version locked and checked with it
+nvidia-nvjitlink==13.4.92  # not in the paper; a dependency of the CUDA libraries of torch 2.13, held at the version locked and checked with it
+typer==0.27.3  # not in the paper; a dependency of transformers, held at the version locked and checked with it
 
 # tests
 pytest==9.0.2
