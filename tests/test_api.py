@@ -154,6 +154,25 @@ def test_large_tables_are_uploaded_then_deleted_and_bodies_stay_under_the_limit(
         assert vendor.calls == calls
 
 
+def test_tables_are_uploaded_until_the_body_takes_the_direct_path(monkeypatch):
+    # Since 12 Nov 2026 a body over 4 MB takes YHat Labs' large-request path: the largest tables go by upload instead
+    rng = np.random.default_rng(0)
+    train = pd.DataFrame(rng.normal(size=(400, 20)), columns=[f"c{i}" for i in range(20)]).assign(t=rng.normal(size=400))
+    test = train.drop(columns="t").iloc[:100]
+    fields = {"target": "t", "model": "chakra-tab", "preset": "medium", "problem_type": "regression", "seed": 1}
+    with FakeVendor() as vendor:
+        endpoint(monkeypatch, vendor, "test-key")
+        monkeypatch.setattr(api, "LARGE_BODY", 100_000)  # about 160 KB inline: the train table's 88 KB go by upload
+        assert len(api.table_predict(train, test, **fields)["predictions"]) == 100
+        assert (vendor.seen[-1]["train_format"], vendor.seen[-1]["test_format"]) == ("table", "parquet_b64")
+        monkeypatch.setattr(api, "LARGE_BODY", 1)  # both
+        api.table_predict(train, test, **fields)
+        assert (vendor.seen[-1]["train_format"], vendor.seen[-1]["test_format"]) == ("table", "table")
+        monkeypatch.setattr(api, "LARGE_BODY", 10**9)  # neither
+        api.table_predict(train, test, **fields)
+        assert (vendor.seen[-1]["train_format"], vendor.seen[-1]["test_format"]) == ("parquet_b64", "parquet_b64")
+
+
 def test_calls_above_the_direct_size_or_running_long_are_jobs_waited_for(monkeypatch):
     import itertools
 
