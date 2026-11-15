@@ -8,7 +8,8 @@ imported; a listed pipeline without rows in its CSV is an error. The rows are
 made as the paper's (``convert`` of scripts/import_paper_results.py): ``total_s`` only, the source's
 ``run_time``, with ``hardware`` and ``package`` set to ``paper``; ``hardware`` is instead the GPU of the
 source row when its CSV records one (column ``gpu``), else the pipeline's own when the selection gives
-it (the GPU its job logs show). For TILE, ``run_time`` counts the
+it (the GPU its job logs show). A pipeline whose selection says ``hardware: api`` (a learner behind its
+provider's API) also gets the ``api_version`` its selection gives. For TILE, ``run_time`` counts the
 language-model extraction of the whole table, the reduction and the target encoding, then fit and
 predict, as the runner counts an encoder's extraction time. In each results file, rows of the same
 (encoder, variant, table, fold) are replaced and all others kept.
@@ -57,7 +58,8 @@ def hardware_of(df: pd.DataFrame, frames: dict, pipelines: dict) -> list[str]:
         if "gpu" in frames[csv]:
             for method, p in methods.items():
                 for r in frames[csv][frames[csv]["method"] == method].itertuples():
-                    gpus[(p["model"], p["encoder"], p["variant"], r.data_name, int(r.fold_index))] = r.gpu
+                    if pd.notna(r.gpu):  # a CPU row (an API learner) has none
+                        gpus[(p["model"], p["encoder"], p["variant"], r.data_name, int(r.fold_index))] = r.gpu
     keys = zip(df["model"], df["encoder"], df["variant"], df["table"], df["fold"])
     return [gpus.get(key, own[key[:3]]) for key in keys]
 
@@ -92,6 +94,10 @@ def main(argv=None) -> int:
              for methods in pipelines.values() for p in methods.values()}
     df["date"] = [dates[key] for key in zip(df["model"], df["encoder"], df["variant"])]
     df["hardware"] = hardware_of(df, frames, pipelines)
+    versions = {(p["model"], p["encoder"], p["variant"]): p["api_version"]
+                for methods in pipelines.values() for p in methods.values() if "api_version" in p}
+    if versions:
+        df["api_version"] = [versions.get(key) for key in zip(df["model"], df["encoder"], df["variant"])]
     args.out.mkdir(exist_ok=True)
     for model, rows in df.groupby("model"):
         out = args.out / f"{model}.csv"

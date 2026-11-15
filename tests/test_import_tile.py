@@ -22,6 +22,7 @@ def test_tile_selection():
     ids = {f"{p['encoder']}+{p['model']}" for p in rows}
     assert ids == {"tile+tabpfn-2.5", "tile+tabicl-v2", "tile+tabpfn-3", "tile+tabpfn-3.5", "tile+causilo", "tfidf+causilo",
                    "tile+exaone-tabular", "tile+kumo-tabular", "tile+kumo-tabular-medium", "tile+kumo-tabular-small",
+                   "tile+chakra-tab-medium", "tile-70b+chakra-tab-medium",
                    "tfidf+kumo-tabular-small", "tfidf+kumo-tabular-medium",
                    *(f"tile-70b+{m}" for m in ("tabpfn-2.5", "tabicl-v2", "tabpfn-3", "tabpfn-3.5", "causilo", "kumo-tabular",
                                                "kumo-tabular-medium", "kumo-tabular-small"))}
@@ -32,7 +33,9 @@ def test_tile_selection():
     assert "tfidf" in ENCODERS  # Tf-Idf + Causilo: the id the runner gives models/causilo with its tfidf encoder
     windows = {p["model"]: p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}  # one per learner
     assert windows["tabpfn-2.5"] == "200-400" and windows["exaone-tabular"] == "150-400"
-    assert {windows[k] for k in ("kumo-tabular", "kumo-tabular-medium", "kumo-tabular-small")} == {"200-600"}
+    assert {windows[k] for k in ("kumo-tabular", "kumo-tabular-medium", "kumo-tabular-small", "chakra-tab-medium")} == {"200-600"}
+    api = [p for p in rows if p.get("hardware") == "api"]  # an API learner: its version, no GPU
+    assert {p["model"] for p in api} == {"chakra-tab-medium"} and all(p.get("api_version") for p in api)
     assert [p.get("date") for p in rows if p["encoder"] == "tfidf"] == ["2026-09", None, None]  # Causilo: its own date
     tile = [p["where"] for p in rows if p["encoder"] == "tile"]
     assert all(w["model"] == "llama3_14_layers_v2|cell_meanpool|include_numbers|clean" and w["window_total"] for w in tile)
@@ -49,17 +52,21 @@ def test_tile_selection():
 
 def test_the_hardware_of_imported_rows():
     table = next(iter(TABLES))
-    pipelines = {"a.csv": {"m": dict(model="tabpfn-3.5", encoder="tile", variant="default")},
+    pipelines = {"a.csv": {"m": dict(model="tabpfn-3.5", encoder="tile", variant="default"),
+                           "n": dict(model="chakra-tab-medium", encoder="tile", variant="default", hardware="api")},
                  "b.csv": {"m": dict(model="kumo-tabular", encoder="tile", variant="default", hardware="NVIDIA A40")},
                  "c.csv": {"m": dict(model="causilo", encoder="tfidf", variant="default")}}
     frames = {"a.csv": pd.DataFrame([dict(method="m", data_name=table, fold_index=f, gpu=g) for f, g in
-                                     enumerate(["NVIDIA A40", "NVIDIA A100-PCIE-40GB", "NVIDIA A40"])]),
+                                     enumerate(["NVIDIA A40", "NVIDIA A100-PCIE-40GB", "NVIDIA A40"])]
+                                    + [dict(method="n", data_name=table, fold_index=0, gpu=None)]),
               "b.csv": pd.DataFrame([dict(method="m", data_name=table, fold_index=0)]),
               "c.csv": pd.DataFrame([dict(method="m", data_name=table, fold_index=0)])}
     df = pd.DataFrame([dict(model="tabpfn-3.5", encoder="tile", variant="default", table=table, fold=1),
                        dict(model="kumo-tabular", encoder="tile", variant="default", table=table, fold=0),
-                       dict(model="causilo", encoder="tfidf", variant="default", table=table, fold=0)])
-    assert hardware_of(df, frames, pipelines) == ["NVIDIA A100-PCIE-40GB", "NVIDIA A40", "paper"]
+                       dict(model="causilo", encoder="tfidf", variant="default", table=table, fold=0),
+                       dict(model="chakra-tab-medium", encoder="tile", variant="default", table=table, fold=0)])
+    # a row without a GPU (a CPU row) takes its pipeline's own hardware
+    assert hardware_of(df, frames, pipelines) == ["NVIDIA A100-PCIE-40GB", "NVIDIA A40", "paper", "api"]
 
 
 def test_import_tile_rows():

@@ -23,6 +23,11 @@ date: "2026-10"  # when the source rows were computed; a pipeline's own `date` o
 # hardware: the GPU of each source row when its CSV records one (column `gpu`), else the pipeline's own
 # `hardware`, else "paper" (not recorded)
 # Tf-Idf + Causilo: the GPU its job logs and launcher show; its CSV has no `gpu` column
+# TILE + ChakraTab (medium): ChakraTab runs on YHat Labs' API, called as the board calls it (models/chakra-tab-medium),
+# from TILE's code, 11-13 Nov 2026, with the feature window of its own search on the 27 probing tables (200-600).
+# Its time is the measured wall-clock time of the call, network included, plus TILE's encoding: no time reported by
+# the provider. TILE's code did not record the version per call; chakra-tab-2026-10 is the version YHat Labs
+# reported on the board's own ChakraTab calls (4-5 Nov) and on 13 Nov.
 
 learners:  # model folder -> display name, for learners without a models/ folder
   causilo: Causilo
@@ -57,6 +62,7 @@ pipelines:
     num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
     num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
     num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile, variant: default, where: {<<: *tile, feature_window: 200-600}}
+    num-str_latte_chakra_tab: {model: chakra-tab-medium, encoder: tile, variant: default, date: "2026-11", hardware: api, api_version: chakra-tab-2026-10, where: {<<: *tile, feature_window: 200-600}}
   strable_tile_70b.csv:  # TILE-70B, the same windows; EXAONE-Tabular was not run on it
     num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-400}}
     num-str_latte_tabicl: {model: tabicl-v2, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-800}}
@@ -66,6 +72,7 @@ pipelines:
     num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-600}}
     num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-600}}
     num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-600}}
+    num-str_latte_chakra_tab: {model: chakra-tab-medium, encoder: tile-70b, variant: default, date: "2026-11", hardware: api, api_version: chakra-tab-2026-10, where: {<<: *tile70b, feature_window: 200-600}}
   strable_tfidf.csv:  # the board's Tf-Idf encoder, run by the TILE authors
     num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09", hardware: NVIDIA H100 80GB HBM3}
     num-str_tabvec_kumo_small: {model: kumo-tabular-small, encoder: tfidf, variant: default}
