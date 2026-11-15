@@ -373,8 +373,6 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
         <a href="https://huggingface.co/datasets/inria-soda/STRABLE-benchmark">Datasets</a>
         <a href="https://github.com/soda-inria/strable">Benchmark code</a>
         <a href="https://arxiv.org/abs/2605.12292">Paper</a>
-        <!-- TODO: set href to the NeurIPS 2026 talk video once it is online, and remove title and aria-disabled. -->
-        <a class="demo-btn" id="talk-btn" href="#" title="Video coming soon" aria-disabled="true">Talk</a>
         <button type="button" class="demo-btn" id="demo-btn">▶ Demo</button>
       </nav>
       <div class="seg theme" role="group" aria-label="Theme">
@@ -1419,7 +1417,7 @@ setTheme(document.documentElement.getAttribute('data-theme') || 'auto', false);
 document.addEventListener('click', (ev) => {
   const a = ev.target.closest ? ev.target.closest('a[href^="#"]') : null;
   if (!a) return;
-  if (a.getAttribute('href') === '#') { ev.preventDefault(); return; }  // a link still to come, such as Talk
+  if (a.getAttribute('href') === '#') { ev.preventDefault(); return; }  // a link without a target, such as the tour link
   const t = document.getElementById(a.getAttribute('href').slice(1));
   if (!t) return;
   ev.preventDefault();
