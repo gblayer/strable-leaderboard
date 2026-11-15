@@ -24,7 +24,10 @@ fails at once. Its retry loop is ported from TabArena's Chakra-Tab client (autog
 
 ``table_predict`` is ``POST /v1/table/predict`` of YHat Labs' API: a table goes inline as base64
 Parquet, or, above ``INLINE_BYTES`` (8 MB, as their documentation says their client does), through
-``POST /v1/uploads`` and by reference; a body stays under ``MAX_BODY`` (64 MB). Each call uploads its
+``POST /v1/uploads`` and by reference. The largest tables are uploaded too until the body is at most
+``LARGE_BODY`` (4 MB): since 12 Nov 2026 a larger body takes the API's "large request" path, and a client of
+one's own should upload any table over about 4 MB (https://yhatlabs.com/models/docs/api/uploads.html); a body
+also stays under ``MAX_BODY`` (64 MB). Each call uploads its
 own copy of a table and deletes it afterwards, since a key may hold only 200 tables. A table above the
 preset's direct size (``GET /v1/limits``: 25,000 rows x 100 columns on medium) gets 413 ``async_required``
 and is sent again as a job (``"async": true``); a direct call that runs long (about 20 minutes) comes back as
@@ -52,7 +55,7 @@ URL, KEY, AUTH = "STRABLE_API_URL", "STRABLE_API_KEY", "STRABLE_API_AUTH"
 SCHEMES = ("Bearer", "Api-Key")
 ATTEMPTS, WAIT, MAX_WAIT = 4, 30.0, 600.0  # tries per request; the pause before try n: Retry-After, else WAIT * (n - 1)
 AGAIN = {408, 409, 429}  # and 5xx
-INLINE_BYTES, MAX_BODY = 8 * 2**20, 64 * 2**20
+INLINE_BYTES, LARGE_BODY, MAX_BODY = 8 * 2**20, 4_000_000, 64 * 2**20
 POLL, POLL_EVERY = (2, 3, 5, 8, 10), 15  # seconds between job checks: "every few seconds"
 JOB_WAIT = 12 * 3600.0  # a job not done after this is canceled
 JOB_DONE = ("succeeded", "failed", "canceled")
@@ -234,17 +237,20 @@ def wait_job(job: dict) -> dict:
 def table_predict(train, test, **fields) -> dict:
     """``POST /v1/table/predict``: fit on ``train`` (with its target column) and predict ``test`` in one
     call; ``fields`` are the other body fields (target, model, preset, problem_type, eval_metric, seed,
-    groups). A table above INLINE_BYTES is uploaded first and deleted after the call; a call above the
+    groups). A table above INLINE_BYTES, or needed to keep the body at most LARGE_BODY, is uploaded first and
+    deleted after the call; a call above the
     direct size, or one that runs long, is a job, waited for."""
-    uploaded, tables = [], {}
+    uploaded, frames = [], {"train": train, "test": test}
     try:
-        for name, df in (("train", train), ("test", test)):
-            data = parquet_bytes(df)
-            if len(data) > INLINE_BYTES:
-                uploaded.append(upload(df))
-                tables[name] = {"format": "table", "id": uploaded[-1]}
-            else:
-                tables[name] = {"format": "parquet_b64", "bytes": base64.b64encode(data).decode()}
+        data = {name: parquet_bytes(df) for name, df in frames.items()}
+        tables = {name: {"format": "parquet_b64", "bytes": base64.b64encode(b).decode()} for name, b in data.items()}
+        # A table above INLINE_BYTES goes by upload, then the largest ones until the body is at most LARGE_BODY
+        for name in sorted(data, key=lambda n: len(data[n]), reverse=True):
+            # counted with the "async" a 413 resend adds
+            if len(data[name]) <= INLINE_BYTES and len(json.dumps({**tables, **fields, "async": True})) <= LARGE_BODY:
+                break
+            uploaded.append(upload(frames[name]))
+            tables[name] = {"format": "table", "id": uploaded[-1]}
         body = {**tables, **fields}
         size = len(json.dumps(body))
         if size > MAX_BODY:
