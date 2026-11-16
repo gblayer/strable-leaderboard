@@ -1,7 +1,11 @@
 {
- "version": "v0.1.18",
- "built": "2026-11-12",
+ "version": "v0.1.19",
+ "built": "2026-11-15",
  "history": [
+  {
+   "version": "v0.1.19",
+   "note": "Added TILE + ChakraTab (medium) and TabAbax 1.0.0"
+  },
   {
    "version": "v0.1.18",
    "note": "Added Xiaomi-TabLDM 0.1.0 (default)"
@@ -436,6 +440,68 @@
     96,
     96,
     0.8695
+   ]
+  },
+  {
+   "id": "tile+chakra-tab-medium",
+   "enc": "TILE-8B",
+   "lrn": "ChakraTab (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "api",
+   "api": true,
+   "api_version": "chakra-tab-2026-10",
+   "both": [
+    0.8308,
+    29.0337,
+    324,
+    324,
+    0.7835
+   ],
+   "reg": [
+    0.7364,
+    28.0792,
+    228,
+    228,
+    0.7448
+   ],
+   "clf": [
+    0.9044,
+    30.655,
+    96,
+    96,
+    0.8753
+   ]
+  },
+  {
+   "id": "tile-70b+chakra-tab-medium",
+   "enc": "TILE-70B",
+   "lrn": "ChakraTab (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "api",
+   "api": true,
+   "api_version": "chakra-tab-2026-10",
+   "both": [
+    0.8334,
+    51.9883,
+    324,
+    324,
+    0.79
+   ],
+   "reg": [
+    0.754,
+    51.3117,
+    228,
+    228,
+    0.7526
+   ],
+   "clf": [
+    0.9089,
+    60.3396,
+    96,
+    96,
+    0.879
    ]
   },
   {
@@ -1912,6 +1978,93 @@
     96,
     96,
     0.8043
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-first30+tababax",
+   "enc": "LLaMA-3.1-8B · first-30",
+   "lrn": "TabAbax",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7921,
+    39.0723,
+    324,
+    324,
+    0.7534
+   ],
+   "reg": [
+    0.6959,
+    32.9071,
+    228,
+    228,
+    0.709
+   ],
+   "clf": [
+    0.8833,
+    90.4763,
+    96,
+    96,
+    0.8587
+   ]
+  },
+  {
+   "id": "qwen-3-8b-first30+tababax",
+   "enc": "Qwen-3-8B · first-30",
+   "lrn": "TabAbax",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7864,
+    46.5799,
+    324,
+    324,
+    0.7542
+   ],
+   "reg": [
+    0.6963,
+    40.4222,
+    228,
+    228,
+    0.7097
+   ],
+   "clf": [
+    0.8852,
+    106.8992,
+    96,
+    96,
+    0.8597
+   ]
+  },
+  {
+   "id": "tfidf+tababax",
+   "enc": "Tf-Idf",
+   "lrn": "TabAbax",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "both": [
+    0.7866,
+    2.7904,
+    324,
+    324,
+    0.751
+   ],
+   "reg": [
+    0.6993,
+    2.6737,
+    228,
+    228,
+    0.7048
+   ],
+   "clf": [
+    0.8862,
+    3.5194,
+    96,
+    96,
+    0.8609
    ]
   },
   {
