@@ -28,9 +28,11 @@ and the Parquet and per-fold files an ``api`` column (true or false). ``"api_tim
 that every row's time is the provider's own number plus the board's encoding time.
 
 Overlap flags: when site/flags.json sits next to the output (``{"<model>": {"overlap": true,
-"evidence": "<url>"}}``, set by the maintainer), every pipeline of a flagged model gets
-``"overlap": true`` and ``"overlap_evidence": "<url>"``, which the page shows as a ∩ mark, and the
-Parquet and per-fold files an ``overlap`` column (true or false).
+"evidence": "<url>"}}``, set by the maintainer; ``"encoder:<id>"`` in place of ``<model>`` flags an
+encoder), every pipeline of a flagged model, or else of a flagged encoder, gets ``"overlap": true`` and
+``"overlap_evidence": "<url>"``, which the page shows as a ∩ mark, and the Parquet and per-fold files
+an ``overlap`` column (true or false). A flag's optional ``"tip"``, the mark's hover text in place of
+the page's own, becomes ``"overlap_tip"``.
 ``--check`` validates flags.json's shape and that the JSON carries exactly its flags.
 
 results.parquet holds the same numbers for all views in long format, one row per pipeline and view,
@@ -70,8 +72,8 @@ COLUMNS = {
     "median_time_per_1k_s": "median over the same fold rows of the total run time (encoding, training, prediction) in s per 1,000 samples",
     "fold_rows": "fold rows present; fewer than fold_rows_expected means incomplete",
     "pareto_front": "the median score is strictly higher than that of every faster pipeline of the view",
-    "overlap": "true when the maintainer marked the model's pre-training data as possibly overlapping STRABLE's tables "
-               "(the page's ∩ mark; results.json links the evidence)",
+    "overlap": "true when the maintainer marked the pre-training data of the model, or of the encoder, as possibly "
+               "overlapping STRABLE's tables (the page's ∩ mark; results.json links the evidence)",
     "note": "the maintainer's note on the pipeline, e.g. a detail of how it was run; empty when none",
     "api": "true when the model runs on its provider's servers, behind an API. The leaderboard is a third party to "
            "that run: the time is the one the provider reports, when it reports one, plus the leaderboard's encoding "
@@ -104,7 +106,8 @@ def flags_path(json_path: Path) -> Path:
 
 
 def read_flags(path: Path) -> dict:
-    """Per model folder, {"overlap": true, "evidence": "<url>"}; empty when the file is absent."""
+    """Per model folder or "encoder:<id>", {"overlap": true, "evidence": "<url>"}, with an optional "tip";
+    empty when the file is absent."""
     return json.loads(path.read_text()) if path.exists() else {}
 
 
@@ -135,14 +138,17 @@ def note_problems(data: dict, notes: dict) -> list[str]:
 def flags_problems(flags) -> list[str]:
     """What is wrong with the shape of a flags.json."""
     if not isinstance(flags, dict):
-        return ["flags.json must map model folders to {\"overlap\": true, \"evidence\": \"<url>\"}"]
+        return ["flags.json must map model folders or \"encoder:<id>\" to {\"overlap\": true, \"evidence\": \"<url>\"}"]
     out = []
-    for model, flag in flags.items():
-        if not SLUG.match(model):
-            out.append(f"flags.json: {model!r} is not a model folder name")
-        if (not isinstance(flag, dict) or set(flag) != {"overlap", "evidence"} or flag["overlap"] is not True
-                or not isinstance(flag["evidence"], str) or not URL.match(flag["evidence"])):
-            out.append(f"flags.json: {model} must be {{\"overlap\": true, \"evidence\": \"<url>\"}}")
+    for key, flag in flags.items():
+        if not isinstance(key, str) or not SLUG.match(key.removeprefix("encoder:")):
+            out.append(f"flags.json: {key!r} is not a model folder name or encoder:<id>")
+        tip = flag.get("tip", "tip") if isinstance(flag, dict) else None
+        if (not isinstance(flag, dict) or set(flag) - {"tip"} != {"overlap", "evidence"} or flag["overlap"] is not True
+                or not isinstance(flag["evidence"], str) or not URL.match(flag["evidence"])
+                or not isinstance(tip, str) or not tip.strip()):
+            out.append(f"flags.json: {key} must be {{\"overlap\": true, \"evidence\": \"<url>\"}}, with an optional "
+                       "non-empty \"tip\"")
     return out
 
 
@@ -151,15 +157,25 @@ def model_of(pid: str) -> str:
     return pid.split(":")[0].split("+")[-1]
 
 
+def encoder_of(pid: str) -> str:
+    """The encoder id of a pipeline id; empty for an end-to-end model."""
+    head = pid.split(":")[0]
+    return head.split("+")[0] if "+" in head else ""
+
+
+def overlap_fields(flags: dict, pid: str) -> dict:
+    """A pipeline's overlap fields: from its model's flag, else from its encoder's; empty when neither is flagged."""
+    flag = flags.get(model_of(pid)) or flags.get(f"encoder:{encoder_of(pid)}")
+    if not flag:
+        return {}
+    return {"overlap": True, "overlap_evidence": flag["evidence"], **({"overlap_tip": flag["tip"]} if "tip" in flag else {})}
+
+
 def overlap_problems(data: dict, flags: dict) -> list[str]:
-    """The JSON must carry exactly the flags: overlap and overlap_evidence on every pipeline of a flagged model only."""
-    out = []
-    for p in data["pipelines"]:
-        flag = flags.get(model_of(p["id"]))
-        want = {"overlap": True, "overlap_evidence": flag["evidence"]} if flag else {}
-        if {k: p[k] for k in ("overlap", "overlap_evidence") if k in p} != want:
-            out.append(f"{p['id']}: overlap fields do not match flags.json")
-    return out
+    """The JSON must carry exactly the flags: the overlap fields on every pipeline of a flagged model or encoder only."""
+    keys = ("overlap", "overlap_evidence", "overlap_tip")
+    return [f"{p['id']}: overlap fields do not match flags.json" for p in data["pipelines"]
+            if {k: p[k] for k in keys if k in p} != overlap_fields(flags, p["id"])]
 
 
 def folds_expected() -> dict:
@@ -224,8 +240,7 @@ def build(results_dir: Path, out: Path = ROOT / "site" / "results.json", models=
                 record.update(api=True, **({"api_version": ", ".join(versions)} if versions else {}))
                 if "api_seconds" in rows and rows["api_seconds"].notna().all():
                     record["api_time_reported"] = True
-            if path.stem in flags:
-                record.update(overlap=True, overlap_evidence=flags[path.stem]["evidence"])
+            record.update(overlap_fields(flags, record["id"]))
             if record["id"] in notes:
                 record["note"] = notes[record["id"]]
             folds.append(per_fold(rows, record))
@@ -316,9 +331,11 @@ def problems(data: dict) -> list[str]:
     if len(set(ids)) != len(ids):
         out.append("duplicate pipeline ids")
     for p in data["pipelines"]:
-        if ("overlap" in p or "overlap_evidence" in p) and (p.get("overlap") is not True
-                                                            or not URL.match(str(p.get("overlap_evidence")))):
-            out.append(f"{p.get('id')}: overlap must be true with overlap_evidence, a URL")
+        tip = p.get("overlap_tip", "tip")
+        if ({"overlap", "overlap_evidence", "overlap_tip"} & set(p)) and (
+                p.get("overlap") is not True or not URL.match(str(p.get("overlap_evidence")))
+                or not isinstance(tip, str) or not tip.strip()):
+            out.append(f"{p.get('id')}: overlap must be true with overlap_evidence, a URL, and a non-empty overlap_tip if any")
         if ("api" in p or "api_version" in p) and (p.get("api") is not True or not isinstance(p.get("api_version", ""), str)):
             out.append(f"{p.get('id')}: api must be true, with api_version a string")
         if "note" in p and (not isinstance(p["note"], str) or not p["note"].strip()):

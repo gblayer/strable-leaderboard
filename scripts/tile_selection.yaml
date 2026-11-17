@@ -29,6 +29,16 @@ date: "2026-10"  # when the source rows were computed; a pipeline's own `date` o
 # the provider. TILE's code did not record the version per call; chakra-tab-2026-10 is the version YHat Labs
 # reported on the board's own ChakraTab calls (4-5 Nov) and on 13 Nov.
 
+# CASE + TILE's learners: CASE (SAP; https://arxiv.org/abs/2608.03565) is an encoder, run alone, with no other
+# encoder: SAP's CaseTransformer (github.com/SAP-samples/case at f0bbd5a, weights huggingface.co/SAP/CASE) at its
+# defaults, but the board's seed and the label's name "target"; its context reads the training rows and their labels
+# (class names for classification), a new context per fold. As in SAP's example, the learner gets CaseTransformer's
+# output, the table's columns plus CASE's 32; the dates as numbers, as TILE's runs give them; a string column of 50 or
+# more distinct training values only through CASE (raw_text_card: 50, TILE's cardinality threshold). The learners
+# are TILE's, called by TILE's code at their defaults, on the board's folds; run by the board's maintainer, Nov 2026.
+# Its time is CASE's encoding (weights already loaded) and the dates' conversion, plus fit and predict. `gpu` is the
+# learner's GPU (CASE encoded on an NVIDIA A40).
+
 learners:  # model folder -> display name, for learners without a models/ folder
   causilo: Causilo
   kumo-tabular-small: Kumo Tabular (small)
@@ -37,6 +47,7 @@ learners:  # model folder -> display name, for learners without a models/ folder
 encoders:  # encoder id -> display name
   tile: TILE-8B
   tile-70b: TILE-70B
+  case: CASE
 
 settings: &tile  # TILE's default settings, the same for every learner
   model: llama3_14_layers_v2|cell_meanpool|include_numbers|clean
@@ -77,3 +88,12 @@ pipelines:
     num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09", hardware: NVIDIA H100 80GB HBM3}
     num-str_tabvec_kumo_small: {model: kumo-tabular-small, encoder: tfidf, variant: default}
     num-str_tabvec_kumo_medium: {model: kumo-tabular-medium, encoder: tfidf, variant: default}
+  strable_case.csv:  # CASE + TILE's 8 learners
+    case_tabpfn: {model: tabpfn-2.5, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: 50}}
+    case_tabicl: {model: tabicl-v2, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: 50}}
+    case_tabpfn3: {model: tabpfn-3, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: 50}}
+    case_tabpfn3.5: {model: tabpfn-3.5, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: 50}}
+    case_causilo: {model: causilo, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: 50}}
+    case_kumo_large: {model: kumo-tabular, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: 50}}
+    case_kumo_medium: {model: kumo-tabular-medium, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: 50}}
+    case_kumo_small: {model: kumo-tabular-small, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: 50}}

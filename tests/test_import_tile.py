@@ -24,8 +24,9 @@ def test_tile_selection():
                    "tile+exaone-tabular", "tile+kumo-tabular", "tile+kumo-tabular-medium", "tile+kumo-tabular-small",
                    "tile+chakra-tab-medium", "tile-70b+chakra-tab-medium",
                    "tfidf+kumo-tabular-small", "tfidf+kumo-tabular-medium",
-                   *(f"tile-70b+{m}" for m in ("tabpfn-2.5", "tabicl-v2", "tabpfn-3", "tabpfn-3.5", "causilo", "kumo-tabular",
-                                               "kumo-tabular-medium", "kumo-tabular-small"))}
+                   *(f"{e}+{m}" for e in ("tile-70b", "case")
+                     for m in ("tabpfn-2.5", "tabicl-v2", "tabpfn-3", "tabpfn-3.5", "causilo", "kumo-tabular",
+                               "kumo-tabular-medium", "kumo-tabular-small"))}
     assert all(p["variant"] == "default" for p in rows)
     held = {f"{p['encoder']}+{p['model']}" for p in rows if p.get("hold")}
     assert held == {"tile+exaone-tabular"}  # listed, not imported
@@ -44,6 +45,9 @@ def test_tile_selection():
     assert {m: w["feature_window"] for m, w in tile70b.items()} == {m: w for m, w in windows.items() if m in tile70b}
     assert PAPER["encoders"]["tile"] == "TILE-8B" and PAPER["encoders"]["tile-70b"] == "TILE-70B"  # the board's names
     assert PAPER["learners"]["causilo"] == "Causilo"
+    case = [p for p in rows if p["encoder"] == "case"]  # CASE alone, at its pinned commit, string columns of < 50 values
+    assert PAPER["encoders"]["case"] == "CASE" and len(case) == 8
+    assert all(p["where"] == {"model": "case-f0bbd5a", "raw_text_card": 50} and p["date"] == "2026-11" for p in case)
     assert {m for m in SELECTION["learners"]} <= RESERVED  # learners without a folder: names only the maintainer adds
     paper = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())
     for key in ("learners", "encoders"):  # one display name per id
