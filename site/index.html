@@ -570,7 +570,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
             <li class="lg-default"><span class="sw sw-on"></span>On the Pareto Front</li>
             <li class="lg-default"><span class="sw sw-off"></span>Not on the Pareto Front</li>
             <li class="lg-encoder" hidden title="Learned on the table itself: TargetEncoder, Tf-Idf"><span class="sw sw-fit"></span>Fitted encoder</li>
-            <li class="lg-encoder" hidden title="A pre-trained model embeds the strings: FastText, MiniLM, E5, Jasper, Nemotron, LLaMA, Qwen, TILE, Tarte"><span class="sw sw-pre"></span>Pre-trained encoder</li>
+            <li class="lg-encoder" hidden title="A pre-trained model embeds the strings: FastText, MiniLM, E5, Jasper, Nemotron, LLaMA, Qwen, TILE, Tarte, CASE"><span class="sw sw-pre"></span>Pre-trained encoder</li>
             <li class="lg-encoder" hidden title="One model reads the raw table"><span class="sw sw-e2e"></span>End-to-end</li>
             <li><span class="sw sw-line"></span>Pareto Front</li>
             <li id="legend-api" hidden><span class="sw sw-api"></span>API model</li>
@@ -681,8 +681,9 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
    total s per 1K samples, fold rows, fold rows expected, mean score] or null. kind: "modular" or "e2e" (reads raw
    strings itself), variant: "default" or "tuned", hw: what it ran on when recorded, shown in the
    tooltip and in the Compute dropdown (hwOf). note: the maintainer's note on the pipeline, from
-   site/notes.json, shown when it is hovered. overlap: true when the maintainer marked the model's pre-training data as possibly
-   overlapping STRABLE's tables, with overlap_evidence, a URL. api: true when the model runs on its
+   site/notes.json, shown when it is hovered. overlap: true when the maintainer marked the model's (or the encoder's) pre-training
+   data as possibly overlapping STRABLE's tables, with overlap_evidence, a URL, and overlap_tip, the mark's text when it is
+   not OVERLAP_TIP. api: true when the model runs on its
    provider's servers (hardware "api"), with api_version, the version the provider reported. Empty
    until the file has loaded. */
 let DATA = [], HISTORY = [], VERSION = '', BUILT = '', LOADED = false, LOADS = 0;  // HISTORY: results/versions.yaml; LOADS: successful loads
@@ -752,6 +753,7 @@ function items(task) {
     rows.push({ id: d.id, enc: d.enc, lrn: d.lrn, kind: d.kind, hw: d.hw,
       tuned: d.variant === 'tuned', incomplete: v.length > 3 && v[2] < v[3],
       overlap: overlap, evidence: overlap && isUrl(d.overlap_evidence) ? d.overlap_evidence : null,
+      overlapTip: typeof d.overlap_tip === 'string' && d.overlap_tip.trim() ? d.overlap_tip : OVERLAP_TIP,
       api: api, apiTimeReported: api && d.api_time_reported === true,
       note: typeof d.note === 'string' && d.note.trim() ? d.note : null,
       s: state.score === 'mean' ? v[4] : v[0], t: num(v[1]) });
@@ -833,7 +835,7 @@ function tipMark(sym, cls, label, text, href) {
   box.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && ovlOpen === box) { ev.stopPropagation(); b.focus(); ovlHide(); } });
   return box;
 }
-const overlapMark = (d) => tipMark('∩', 'ovl-mark', 'Possible pre-training overlap', OVERLAP_TIP, d.evidence);
+const overlapMark = (d) => tipMark('∩', 'ovl-mark', 'Possible pre-training overlap', d.overlapTip, d.evidence);
 const apiMark = (d) => tipMark('API', 'api-pill', API_NAME, apiTip(d), null);
 const noteMark = (d) => tipMark('∗', 'ovl-mark', 'Note', d.note, null);
 document.addEventListener('pointerdown', (ev) => { if (ovlOpen && !ovlOpen.contains(ev.target)) ovlHide(); });

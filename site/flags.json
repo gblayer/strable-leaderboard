@@ -2,5 +2,10 @@
  "contexttab": {
   "evidence": "https://arxiv.org/html/2605.12292#A4.SS1.SSS0.Px3",
   "overlap": true
+ },
+ "encoder:case": {
+  "evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+  "overlap": true,
+  "tip": "Trained on T4, which may overlap STRABLE."
  }
 }

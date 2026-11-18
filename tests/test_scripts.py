@@ -134,7 +134,28 @@ def test_build_site_data_overlap_flags(tmp_path):
     with pytest.raises(SystemExit):  # a malformed flag stops the build
         build(results, tmp_path / "results.json")
     tabpfn["overlap_evidence"] = "not a url"
-    assert problems(data) == ["tfidf+tabpfn-2.5: overlap must be true with overlap_evidence, a URL"]
+    assert problems(data) == ["tfidf+tabpfn-2.5: overlap must be true with overlap_evidence, a URL, and a non-empty overlap_tip if any"]
+
+
+def test_an_encoder_flag_marks_its_pipelines_with_its_tip(tmp_path):
+    results = tmp_path / "results"; results.mkdir()
+    pd.concat([_complete_results(), _complete_results(encoder="case")]).to_csv(results / "ridge.csv", index=False)
+    (results / "versions.yaml").write_text("- version: v0.1.1\n  date: 2026-11-20\n  note: Added CASE\n")
+    url, tip = "https://arxiv.org/html/2608.03565#S3.SS1", "Trained on T4, which may overlap STRABLE."
+    flags = {"encoder:case": {"overlap": True, "evidence": url, "tip": tip}}
+    (tmp_path / "flags.json").write_text(json.dumps(flags))
+    data = build(results, tmp_path / "results.json")
+    case, tfidf = data["pipelines"]
+    assert case["id"] == "case+ridge" and case["overlap"] is True and case["overlap_evidence"] == url and case["overlap_tip"] == tip
+    assert not {"overlap", "overlap_evidence", "overlap_tip"} & set(tfidf)  # the same learner with another encoder
+    assert problems(data) == [] and flags_problems(flags) == [] and overlap_problems(data, flags) == []
+    model_flag = {"ridge": {"overlap": True, "evidence": "https://example.org/ridge"}}
+    assert len(overlap_problems(data, {**flags, **model_flag})) == 2  # a model's flag comes before its encoder's
+    for bad in [{"overlap": True, "evidence": url, "tip": ""}, {"overlap": True, "evidence": url, "tip": 3}]:
+        assert flags_problems({"encoder:case": bad}), bad
+    assert flags_problems({"encoder:Bad Name": flags["encoder:case"]})
+    case["overlap_tip"] = " "
+    assert problems(data) == ["case+ridge: overlap must be true with overlap_evidence, a URL, and a non-empty overlap_tip if any"]
 
 
 def test_api_pipelines_are_marked(tmp_path):
