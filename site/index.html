@@ -294,6 +294,7 @@ button.api-pill:hover, .ovl.open button.api-pill { filter: brightness(1.15); }
 /* Highlight: the pipelines of one encoder or one learner, clicked in the table; the others fade, none is removed */
 #plot.has-hl .pt { opacity: 0.15; }
 #plot.has-hl .pt.hl, #plot.has-hl .pt.hot { opacity: 1; stroke: var(--ink); stroke-width: 1.5; }
+#plot.has-hl:not(.by-encoder) .pt.hl:not(.on), .sw-hl { fill: var(--ink-2); background: var(--ink-2); }  /* highlighted, off the front */
 .hl-name { appearance: none; background: none; border: 0; padding: 0; margin: 0; font: inherit; cursor: pointer; text-decoration: underline dotted transparent; text-underline-offset: 3px; }
 .hl-name:hover, .hl-name:focus-visible { text-decoration-color: currentColor; }
 .hl-name.is-hl { text-decoration: underline solid var(--mark); text-decoration-thickness: 2px; }
@@ -597,6 +598,7 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
             <li class="lg-encoder" hidden title="One model reads the raw table"><span class="sw sw-e2e"></span>End-to-end</li>
             <li><span class="sw sw-line"></span>Pareto Front</li>
             <li id="legend-api" hidden><span class="sw sw-api"></span>API model</li>
+            <li id="legend-hl" hidden><span class="sw sw-hl"></span><span id="legend-hl-text"></span></li>
           </ul>
           </div>
         </div>
@@ -917,9 +919,13 @@ function renderTable(list, front, rows) {
 }
 
 /* Highlight: clicking an encoder or learner name in the table marks, on the plot as drawn, every pipeline with
-   that encoder (end-to-end models have none) or that learner, and fades the others; nothing is filtered and the
-   plot is not redrawn. The chip above the plot names it; clicking the chip, the same name again, or Esc clears it. */
+   that encoder (end-to-end models have none) or that learner, and fades the others, which stay hoverable; nothing
+   is filtered and the points do not move. The plot then names the highlighted pipelines only, by their other part
+   (the learner for an encoder, the encoder for a learner), and in the Default colours those off the Pareto Front
+   take the text colour (--ink-2; legend). The chip above the plot names the highlight; the chip, the same name again or Esc
+   clears it. */
 const hlMatch = (d) => !!state.hl && (state.hl.f === 'enc' ? d.kind !== 'e2e' && d.enc === state.hl.name : d.lrn === state.hl.name);
+const hlLabel = (d) => (state.hl.f === 'enc' || d.kind === 'e2e' ? d.lrn : d.enc) + (d.tuned ? ' (tuned)' : '');
 function hlButton(f, name) {
   const b = el('button', (f === 'enc' ? 'enc' : 'lrn') + ' hl-name', name);
   b.type = 'button'; b.dataset.f = f; b.dataset.name = name;
@@ -931,10 +937,17 @@ function setHl(hl) { state.hl = hl; applyHl(); }
 function applyHl() {
   const on = !!state.hl;
   $('plot').classList.toggle('has-hl', on);
-  if (plotGeom) plotGeom.geo.forEach((g) => {
-    const m = hlMatch(g.d); g.node.classList.toggle('hl', m);
-    if (m) g.node.parentNode.appendChild(g.node);  // drawn on top of the faded points
-  });
+  if (plotGeom) {
+    plotGeom.geo.forEach((g) => {
+      const m = hlMatch(g.d); g.node.classList.toggle('hl', m);
+      if (m) g.node.parentNode.appendChild(g.node);  // drawn on top of the faded points
+    });
+    const shown = plotGeom.svg.querySelector('g.labels');
+    const want = on ? plotGeom.placeLabels(plotGeom.geo.filter((g) => hlMatch(g.d)).map((g) => g.d), hlLabel) : plotGeom.frontLabels;
+    if (shown && shown !== want) shown.replaceWith(want);
+  }
+  $('legend-hl').hidden = !on || state.colour !== 'default';
+  $('legend-hl-text').textContent = on ? state.hl.name + ', not on the Pareto Front' : '';
   document.querySelectorAll('#rows tr.row').forEach((tr) => {
     const d = DATA.find((x) => x.id === tr.dataset.id); tr.classList.toggle('is-hl', !!d && hlMatch(d));
   });
@@ -1000,7 +1013,6 @@ function renderPlot(list, front) {
   const tipX = m.l + 12, tipY = m.t + 10, tailX = m.l + 62, tailY = m.t + 52;
   svg.appendChild(sv('line', { class: 'better', x1: tailX, y1: tailY, x2: tipX, y2: tipY, 'marker-end': 'url(#better-head)' }));
   const bt = sv('text', { class: 'better-t', x: tailX + 5, y: tailY + 13 }); bt.textContent = 'Better'; svg.appendChild(bt);
-  const boxes = [{ x: m.l, y: m.t, w: 140, h: 76 }];
 
   if (fr.length) {
     let d = 'M' + X(fr[0].t) + ' ' + (H - m.b) + ' V' + Y(fr[0].s);  // from the x axis up to the fastest point
@@ -1021,10 +1033,13 @@ function renderPlot(list, front) {
   }
   svg.appendChild(pts);
 
-  const labels = sv('g', {});
+  /* Names next to points, best score first, each where it overlaps no point, no other name and not the arrow:
+     the Pareto Front's pipelines, or while a highlight is on, the highlighted ones (applyHl). */
   const charW = 8.2;
-  [...fr].sort((a, b) => b.s - a.s).forEach((d) => {
-    const txt = pipeName(d), w = txt.length * charW, h = 16;
+  const placeLabels = (pts, name) => {
+    const labels = sv('g', { class: 'labels' }), boxes = [{ x: m.l, y: m.t, w: 140, h: 76 }];
+    [...pts].sort((a, b) => b.s - a.s).forEach((d) => {
+    const txt = name(d), w = txt.length * charW, h = 16;
     const cx = X(d.t), cy = Y(d.s);
     const cands = [[cx + 9, cy + 16, 'start'], [cx - 9, cy - 9, 'end'], [cx + 9, cy - 9, 'start'], [cx - 9, cy + 16, 'end']];
     for (const [lx, ly, anchor] of cands) {
@@ -1037,11 +1052,14 @@ function renderPlot(list, front) {
       const t = sv('text', { class: 'plabel', x: lx, y: ly, 'text-anchor': anchor }); t.textContent = txt;
       labels.appendChild(t); break;
     }
-  });
-  svg.appendChild(labels);
+    });
+    return labels;
+  };
+  const frontLabels = placeLabels(fr, pipeName);
+  svg.appendChild(frontLabels);
   host.appendChild(svg);
   const tip = el('div', 'tip'); tip.hidden = true; tip.id = 'tip'; host.appendChild(tip);
-  plotGeom = { geo, W, H, front };
+  plotGeom = { geo, W, H, front, svg, placeLabels, frontLabels };
 
   svg.addEventListener('pointermove', (ev) => {
     const rect = svg.getBoundingClientRect(), k = W / rect.width;
@@ -1319,7 +1337,7 @@ function loadLib(name) {
   }));
 }
 const PLOT_KINDS = ['svg', 'png', 'jpeg', 'pdf'];  // the plot follows the Task, Score, Encoders, Learners, Compute, Overlap and API only, the ranking also the Sort
-const viewKey = (plot) => state.task + (state.score === 'mean' ? '-mean' : '') + (state.enc ? '-enc-' + filterKey('enc') : '') + (state.lrn ? '-lrn-' + filterKey('lrn') : '') + (state.hw ? '-compute-' + filterKey('hw') : '') + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '') + (hidingApi() ? '-no-api' : '');
+const viewKey = (plot) => state.task + (state.score === 'mean' ? '-mean' : '') + (state.enc ? '-enc-' + filterKey('enc') : '') + (state.lrn ? '-lrn-' + filterKey('lrn') : '') + (state.hw ? '-compute-' + filterKey('hw') : '') + (plot || state.sort === 'pareto' ? '' : '-by-' + state.sort) + (hidingOverlap() ? '-no-overlap' : '') + (hidingApi() ? '-no-api' : '') + (plot && state.hl ? '-highlight-' + slug(state.hl.name) : '');
 const fileName = (ext, plot, tag = '') => 'strable-leaderboard_' + VERSION + '_' + BUILT + '_' + viewKey(plot) + tag + '.' + ext;
 function saveFile(name, blob) {
   const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name;
@@ -1404,6 +1422,11 @@ function exportSvg() {
   if (byEnc) {  // as on the page: the encoder colours, the points off the Pareto Front faded
     set('.pt', { 'fill-opacity': 0.55 }); set('.pt.on', { 'fill-opacity': 1 });
     for (const [, k] of ENC) set('.pt.k-' + k, { fill: c[k] });
+  }
+  if (state.hl) {  // as on the page: the highlighted pipelines in full, outlined, the others faded
+    set('.pt', { 'fill-opacity': 0.15 });
+    set('.pt.hl', { 'fill-opacity': 1, stroke: c.ink, 'stroke-width': 1.5 });
+    if (!byEnc) set('.pt.hl:not(.on)', { fill: c.ink2 });
   }
   set('.better', { fill: 'none', stroke: c.ink3, 'stroke-width': 1.5 });
   set('.better-head', { fill: c.ink3 });
@@ -1503,6 +1526,8 @@ const TOUR = [
     text: 'Sort. Pareto first, or by score or time. The top three rows of the order get a red frame; the plot stays the same.' },
   { sel: '#ctl-enc', block: 'center', enc: ['Tf-Idf', 'TILE-8B'],
     text: 'Encoders. Choose the encoders to compare, for a lighter table and plot. All, the default, keeps every pipeline; the Pareto Front is drawn again for the pipelines shown.' },
+  { sel: '#ctl-lrn', block: 'center', lrn: ['TabPFN-2.5', 'Causilo'],
+    text: 'Learners. The same for the learners: choose the ones to compare, and the Pareto Front is drawn again for the pipelines shown. All, the default, keeps every pipeline.' },
   { sel: '#ctl-hw', block: 'center', hw: ['A40'],
     text: 'Compute. Keep the pipelines that ran on the same kind of machine, so that their run times compare fairly: the GPU type changes the time, not the score. All, the default, keeps every pipeline.' },
   { sel: '#ctl-overlap', block: 'center',
@@ -1513,6 +1538,8 @@ const TOUR = [
     text: 'The table holds every pipeline ever run: scroll inside it. Tags mark end-to-end, tuned and incomplete rows, ∩ marks models whose pre-training may overlap STRABLE, API those that run on their provider\'s servers, a star marks the Pareto Front, and hovering a row lights its point in the plot.' },
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
     text: 'The plot: the score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
+  { sel: '#plot-card', block: 'center', hl: { f: 'enc', name: 'TILE-8B' },
+    text: 'Highlight. Click an encoder or a learner name in the table, here TILE-8B: its pipelines stay in full on the plot, with their names, and the others fade but stay on the plot, hoverable. Nothing is filtered. To clear it, click the chip above the plot or the same name again, or press Esc.' },
   { sel: '#refresh', block: 'center',
     text: 'Refresh fetches the latest results without reloading the page.' },
   { sel: '#history', block: 'center',
@@ -1534,7 +1561,7 @@ function startBar() {
 }
 function applyStep(s) {
   state.task = s.task || 'both'; state.score = s.score || 'median'; state.sort = s.sort || 'pareto'; state.enc = s.enc ? new Set(s.enc) : null; state.lrn = s.lrn ? new Set(s.lrn) : null; state.hw = s.hw ? new Set(s.hw) : null; state.overlap = 'show'; state.api = 'show';
-  state.hot = s.hot || null;
+  state.hot = s.hot || null; state.hl = s.hl || null;
   render();
 }
 function showStep() {
@@ -1561,7 +1588,7 @@ function nextStep() { if (!tour) return; if (tour.i < tour.steps.length - 1) { t
 function prevStep() { if (tour && tour.i > 0) { tour.i--; showStep(); } }
 function startTour() {
   if (tour) return;
-  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, score: state.score, sort: state.sort, enc: state.enc, lrn: state.lrn, hw: state.hw, overlap: state.overlap, api: state.api } };
+  tour = { i: 0, steps: tourSteps(), playing: true, timer: null, saved: { task: state.task, score: state.score, sort: state.sort, enc: state.enc, lrn: state.lrn, hw: state.hw, overlap: state.overlap, api: state.api, hl: state.hl } };
   $('tour').hidden = false; $('tour-play').textContent = 'Pause';
   showStep();
 }
@@ -1570,7 +1597,7 @@ function endTour() {
   clearTimeout(tour.timer); clearFocus();
   const s0 = tour.saved; tour = null;
   $('tour').hidden = true;
-  state.task = s0.task; state.score = s0.score; state.sort = s0.sort; state.enc = s0.enc; state.lrn = s0.lrn; state.hw = s0.hw; state.overlap = s0.overlap; state.api = s0.api; state.hot = null; render();
+  state.task = s0.task; state.score = s0.score; state.sort = s0.sort; state.enc = s0.enc; state.lrn = s0.lrn; state.hw = s0.hw; state.overlap = s0.overlap; state.api = s0.api; state.hot = null; state.hl = s0.hl; render();
 }
 $('demo-btn').addEventListener('click', startTour);
 $('tour-next').addEventListener('click', nextStep);
