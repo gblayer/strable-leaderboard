@@ -1042,8 +1042,8 @@ function renderPlot(list, front) {
   }
   svg.appendChild(pts);
 
-  /* Names next to points, best score first, each where it overlaps no point, no other name and not the arrow:
-     the Pareto Front's pipelines, or while a highlight is on, the highlighted ones (applyHl). */
+  /* The Pareto Front's names next to their points, best score first, each where it overlaps no point, no other
+     name and not the arrow. While a highlight is on, applyHl shows no names. */
   const charW = 8.2;
   const placeLabels = (pts, name) => {
     const labels = sv('g', { class: 'labels' }), boxes = [{ x: m.l, y: m.t, w: 140, h: 76 }];
@@ -1068,7 +1068,7 @@ function renderPlot(list, front) {
   svg.appendChild(frontLabels);
   host.appendChild(svg);
   const tip = el('div', 'tip'); tip.hidden = true; tip.id = 'tip'; host.appendChild(tip);
-  plotGeom = { geo, W, H, front, svg, placeLabels, frontLabels };
+  plotGeom = { geo, W, H, front, svg, frontLabels };
 
   svg.addEventListener('pointermove', (ev) => {
     const rect = svg.getBoundingClientRect(), k = W / rect.width;
