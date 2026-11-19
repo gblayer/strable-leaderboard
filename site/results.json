@@ -1,7 +1,11 @@
 {
- "version": "v0.1.19",
- "built": "2026-11-15",
+ "version": "v0.1.20",
+ "built": "2026-11-19",
  "history": [
+  {
+   "version": "v0.1.20",
+   "note": "Added CASE as an encoder, with 8 learners"
+  },
   {
    "version": "v0.1.19",
    "note": "Added TILE + ChakraTab (medium) and TabAbax 1.0.0"
@@ -138,6 +142,38 @@
     96,
     96,
     0.8196
+   ]
+  },
+  {
+   "id": "case+causilo",
+   "enc": "CASE",
+   "lrn": "Causilo",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+   "overlap_tip": "Trained on T4, which may overlap STRABLE.",
+   "both": [
+    0.7966,
+    118.0092,
+    324,
+    324,
+    0.7591
+   ],
+   "reg": [
+    0.7187,
+    105.1802,
+    228,
+    228,
+    0.7142
+   ],
+   "clf": [
+    0.8943,
+    133.153,
+    96,
+    96,
+    0.8656
    ]
   },
   {
@@ -1107,6 +1143,38 @@
    ]
   },
   {
+   "id": "case+kumo-tabular",
+   "enc": "CASE",
+   "lrn": "Kumo Tabular",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+   "overlap_tip": "Trained on T4, which may overlap STRABLE.",
+   "both": [
+    0.7997,
+    118.7568,
+    324,
+    324,
+    0.7539
+   ],
+   "reg": [
+    0.7128,
+    105.7558,
+    228,
+    228,
+    0.7078
+   ],
+   "clf": [
+    0.889,
+    133.6693,
+    96,
+    96,
+    0.8635
+   ]
+  },
+  {
    "id": "llama-3.1-8b-first30+kumo-tabular",
    "enc": "LLaMA-3.1-8B · first-30",
    "lrn": "Kumo Tabular",
@@ -1281,6 +1349,38 @@
    ]
   },
   {
+   "id": "case+kumo-tabular-medium",
+   "enc": "CASE",
+   "lrn": "Kumo Tabular (medium)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+   "overlap_tip": "Trained on T4, which may overlap STRABLE.",
+   "both": [
+    0.803,
+    118.2832,
+    324,
+    324,
+    0.7499
+   ],
+   "reg": [
+    0.7168,
+    105.2096,
+    228,
+    228,
+    0.7027
+   ],
+   "clf": [
+    0.8876,
+    133.1471,
+    96,
+    96,
+    0.8622
+   ]
+  },
+  {
    "id": "tfidf+kumo-tabular-medium",
    "enc": "Tf-Idf",
    "lrn": "Kumo Tabular (medium)",
@@ -1364,6 +1464,38 @@
     96,
     96,
     0.8787
+   ]
+  },
+  {
+   "id": "case+kumo-tabular-small",
+   "enc": "CASE",
+   "lrn": "Kumo Tabular (small)",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+   "overlap_tip": "Trained on T4, which may overlap STRABLE.",
+   "both": [
+    0.7935,
+    118.2832,
+    324,
+    324,
+    0.7488
+   ],
+   "reg": [
+    0.6941,
+    105.2363,
+    228,
+    228,
+    0.7021
+   ],
+   "clf": [
+    0.8825,
+    133.1345,
+    96,
+    96,
+    0.8596
    ]
   },
   {
@@ -2068,6 +2200,38 @@
    ]
   },
   {
+   "id": "case+tabicl-v2",
+   "enc": "CASE",
+   "lrn": "TabICLv2",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+   "overlap_tip": "Trained on T4, which may overlap STRABLE.",
+   "both": [
+    0.7536,
+    118.3192,
+    324,
+    324,
+    0.6766
+   ],
+   "reg": [
+    0.6552,
+    105.2359,
+    228,
+    228,
+    0.6035
+   ],
+   "clf": [
+    0.8761,
+    133.4115,
+    96,
+    96,
+    0.8502
+   ]
+  },
+  {
    "id": "llama-3.1-8b-pca30+tabicl-v2",
    "enc": "LLaMA-3.1-8B · PCA-30",
    "lrn": "TabICLv2",
@@ -2375,6 +2539,38 @@
     96,
     96,
     0.8369
+   ]
+  },
+  {
+   "id": "case+tabpfn-2.5",
+   "enc": "CASE",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+   "overlap_tip": "Trained on T4, which may overlap STRABLE.",
+   "both": [
+    0.7598,
+    124.3254,
+    324,
+    324,
+    0.7095
+   ],
+   "reg": [
+    0.6596,
+    107.6254,
+    228,
+    228,
+    0.6493
+   ],
+   "clf": [
+    0.8804,
+    135.6644,
+    96,
+    96,
+    0.8524
    ]
   },
   {
@@ -2772,6 +2968,38 @@
    ]
   },
   {
+   "id": "case+tabpfn-3",
+   "enc": "CASE",
+   "lrn": "TabPFN-3",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+   "overlap_tip": "Trained on T4, which may overlap STRABLE.",
+   "both": [
+    0.7622,
+    118.5903,
+    324,
+    324,
+    0.6935
+   ],
+   "reg": [
+    0.6599,
+    106.1238,
+    228,
+    228,
+    0.6267
+   ],
+   "clf": [
+    0.8789,
+    133.8553,
+    96,
+    96,
+    0.8522
+   ]
+  },
+  {
    "id": "llama-3.1-8b-first30+tabpfn-3",
    "enc": "LLaMA-3.1-8B · first-30",
    "lrn": "TabPFN-3",
@@ -2943,6 +3171,38 @@
     96,
     96,
     0.8675
+   ]
+  },
+  {
+   "id": "case+tabpfn-3.5",
+   "enc": "CASE",
+   "lrn": "TabPFN-3.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40",
+   "overlap": true,
+   "overlap_evidence": "https://arxiv.org/html/2608.03565#S3.SS1",
+   "overlap_tip": "Trained on T4, which may overlap STRABLE.",
+   "both": [
+    0.7978,
+    119.2213,
+    324,
+    324,
+    0.7585
+   ],
+   "reg": [
+    0.7155,
+    106.6063,
+    228,
+    228,
+    0.7129
+   ],
+   "clf": [
+    0.8976,
+    135.3911,
+    96,
+    96,
+    0.8668
    ]
   },
   {
