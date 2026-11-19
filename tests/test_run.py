@@ -13,6 +13,7 @@ import pytest
 
 from strable_leaderboard import run as run_module
 from strable_leaderboard.encoders import encode
+from strable_leaderboard import fit_predict as fit_predict_module
 from strable_leaderboard.fit_predict import THREAD_VARS
 from strable_leaderboard.metrics import checked_score, fold_score
 from strable_leaderboard.model import load_model_class
@@ -68,3 +69,33 @@ def test_threads_are_capped_to_n_jobs():
     env = {k: v for k, v in os.environ.items() if k not in THREAD_VARS}
     out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True, cwd=ROOT, env=env)
     assert out.stdout.split() == ["2", "2"]
+
+
+def test_torch_is_seeded_before_the_fit(tmp_path, monkeypatch):
+    """A model drawing from PyTorch's global generator (TabPFN-3 does on large tables) predicts the same on every run."""
+    torch = pytest.importorskip("torch")
+
+    class Draws:
+        end_to_end = False
+
+        def __init__(self, task, seed, device, n_jobs, weights_dir):
+            pass
+
+        def fit(self, X, y):
+            self.r = float(torch.rand(1))
+
+        def predict(self, X):
+            return np.full(len(X), self.r)
+
+    monkeypatch.setattr(fit_predict_module, "load_model_class", lambda folder: Draws)
+    inputs = tmp_path / "in"; inputs.mkdir()
+    pd.DataFrame({"x": [0.0, 1.0, 2.0]}).to_parquet(inputs / "X_train.parquet")
+    pd.DataFrame({"x": [3.0]}).to_parquet(inputs / "X_test.parquet")
+    np.save(inputs / "y_train.npy", np.array([0.0, 1.0, 2.0]))
+    preds = []
+    for run in range(2):
+        torch.rand(5)  # whatever the generator's state before the run
+        out = tmp_path / f"out{run}"; out.mkdir()
+        assert fit_predict_module.main([str(tmp_path), str(inputs), str(out), "--task", "regression"]) == 0
+        preds.append(np.load(out / "pred.npy"))
+    assert preds[0] == preds[1]

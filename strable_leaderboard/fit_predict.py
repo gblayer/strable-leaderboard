@@ -8,7 +8,9 @@ sandbox) and writes ``pred.npy`` (regression) or ``proba.npy`` and ``classes.npy
 neither times nor scores itself: the parent does both. ``--warm-up`` fits on a few rows, at least
 one per class, predicts eight, and writes nothing, so that the parent can measure the start-up
 overhead: imports, CUDA start-up, weight loading. BLAS, OpenMP and torch threads are capped to
-``--n-jobs`` before the model is built (``limit_threads``).
+``--n-jobs`` before the model is built (``limit_threads``), and PyTorch's global random generators are
+seeded with the board's seed (``seed_torch``): some models draw from them whatever their own seed, and
+would otherwise give other predictions on each run (TabPFN-3 on large training sets).
 
 ``--api``: the model runs on its provider's servers (``hardware: api``). The warm-up only builds it and
 sends nothing, so the measured time keeps the request, the network and the provider's work. A model that sets
@@ -50,6 +52,15 @@ def limit_threads(n_jobs: int) -> None:
         sys.modules["torch"].set_num_threads(n_jobs)
 
 
+def seed_torch(seed: int) -> None:
+    """Seed PyTorch's global generators, on every device, when PyTorch is installed."""
+    try:
+        import torch
+    except ImportError:
+        return
+    torch.manual_seed(seed)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("folder", type=Path)
@@ -66,7 +77,8 @@ def main(argv=None) -> int:
     cls = load_model_class(args.folder)
     if cls.end_to_end != args.strings:
         sys.exit("end_to_end differs between model.yaml and model.py")
-    limit_threads(args.n_jobs)
+    seed_torch(SEED)
+    limit_threads(args.n_jobs)  # after seed_torch, which imports PyTorch: its threads are capped too
     X_train, X_test = pd.read_parquet(args.inputs / "X_train.parquet"), pd.read_parquet(args.inputs / "X_test.parquet")
     y_train = np.load(args.inputs / "y_train.npy")
     model = cls(task=args.task, seed=SEED, device=args.device, n_jobs=args.n_jobs, weights_dir=args.weights_dir)
