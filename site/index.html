@@ -291,6 +291,15 @@ button.api-pill:hover, .ovl.open button.api-pill { filter: brightness(1.15); }
 .pt.on { fill: var(--mark); }
 .pt.hot { stroke: var(--ink); stroke-width: 2.5; }
 .by-encoder .pt { opacity: 0.55; } .by-encoder .pt.on, .by-encoder .pt.hot { opacity: 1; }
+/* Highlight: the pipelines of one encoder or one learner, clicked in the table; the others fade, none is removed */
+#plot.has-hl .pt { opacity: 0.15; }
+#plot.has-hl .pt.hl, #plot.has-hl .pt.hot { opacity: 1; stroke: var(--ink); stroke-width: 1.5; }
+.hl-name { appearance: none; background: none; border: 0; padding: 0; margin: 0; font: inherit; cursor: pointer; text-decoration: underline dotted transparent; text-underline-offset: 3px; }
+.hl-name:hover, .hl-name:focus-visible { text-decoration-color: currentColor; }
+.hl-name.is-hl { text-decoration: underline solid var(--mark); text-decoration-thickness: 2px; }
+.hs tr.row.is-hl td { background: color-mix(in srgb, var(--mark) 7%, transparent); }
+.hl-chip { appearance: none; border: 1px solid var(--mark); background: var(--bg); color: var(--ink); font: 500 13px/1 var(--f-mono); padding: 7px 12px; border-radius: 999px; cursor: pointer; }
+.hl-chip:hover { background: var(--surface-2); }
 .pt.k-fit, .sw-fit { fill: var(--c-fit); background: var(--c-fit); }
 .pt.k-pre, .sw-pre { fill: var(--c-pre); background: var(--c-pre); }
 .pt.k-e2e, .sw-e2e { fill: var(--c-e2e); background: var(--c-e2e); }
@@ -577,8 +586,9 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
           <div class="plot-tools">
           <div class="seg" role="group" aria-label="Point colours">
             <button type="button" id="colour-default" data-colour="default" aria-pressed="true">Default</button>
-            <button type="button" id="colour-encoder" data-colour="encoder" aria-pressed="false" title="Fitted encoder, pre-trained encoder or end-to-end">By encoder</button>
+            <button type="button" id="colour-encoder" data-colour="encoder" aria-pressed="false" title="Fitted encoder, pre-trained encoder or end-to-end">By encoder family</button>
           </div>
+          <button type="button" class="hl-chip" id="hl-chip" hidden></button>
           <ul class="legend">
             <li class="lg-default"><span class="sw sw-on"></span>On the Pareto Front</li>
             <li class="lg-default"><span class="sw sw-off"></span>Not on the Pareto Front</li>
@@ -726,7 +736,7 @@ function viewLabels() {
   return { metric: t.metric, colSub: t.colSub + w, axis: W + ' ' + t.axis, sub: W + ' ' + t.over + TIME_SUB };
 }
 const TIME_AXIS = 'Total run time per 1K samples (s), log scale';
-const state = { colour: 'default', task: 'both', score: 'median', sort: 'pareto', enc: null, lrn: null, hw: null, overlap: 'show', api: 'show', hot: null };  // colour: the plot's points, default (on or off the Pareto Front) or by encoder type; score: median or mean; enc, lrn, hw: null (all) or the Set of entries shown; overlap, api: show or hide the models marked ∩, API
+const state = { colour: 'default', task: 'both', score: 'median', sort: 'pareto', enc: null, lrn: null, hw: null, overlap: 'show', api: 'show', hot: null, hl: null };  // hl: null or { f: 'enc' or 'lrn', name }, the encoder or learner highlighted on the plot; colour: the plot's points, default (on or off the Pareto Front) or by encoder family; score: median or mean; enc, lrn, hw: null (all) or the Set of entries shown; overlap, api: show or hide the models marked ∩, API
 /* The encoder type of a pipeline, as in the paper's figure: fitted on the table (TargetEncoder, Tf-Idf),
    pre-trained (every language model, FastText, TILE, Tarte), or none, end-to-end. */
 const FITTED = new Set(['Tf-Idf', 'TargetEncoder']);
@@ -886,8 +896,8 @@ function renderTable(list, front, rows) {
     tr.setAttribute('aria-label', ordinal(i + 1) + ', ' + pipeName(d) + (d.kind === 'e2e' ? ', end-to-end' : ', modular') + ', ' + T.metric + ' ' + fmtS(d.s) + ', ' + timeText(d) + (d.api ? '' : ', ' + hwText(d)) + (d.note ? ', note: ' + d.note : '') + (d.incomplete ? ', incomplete' : '') + (d.overlap ? ', ' + OVERLAP_NAME : '') + (d.api ? ", runs on the provider's servers" : '') + (front.has(d.id) ? ', on the Pareto Front' : ', not on the Pareto Front'));
     tr.appendChild(el('td', 'rank', ordinal(i + 1)));
     const td = el('td'); const p = el('div', 'pipe');
-    if (d.kind !== 'e2e') { p.appendChild(el('span', 'enc', d.enc)); p.appendChild(el('span', 'join', '+')); }
-    p.appendChild(el('span', 'lrn', d.lrn));
+    if (d.kind !== 'e2e') { p.appendChild(hlButton('enc', d.enc)); p.appendChild(el('span', 'join', '+')); }
+    p.appendChild(hlButton('lrn', d.lrn));
     if (d.overlap) p.appendChild(overlapMark(d));
     if (d.api) p.appendChild(apiMark(d));
     if (d.note) p.appendChild(noteMark(d));
@@ -903,7 +913,38 @@ function renderTable(list, front, rows) {
     tr.addEventListener('blur', () => setHot(null));
     tbody.appendChild(tr);
   });
+  applyHl();
 }
+
+/* Highlight: clicking an encoder or learner name in the table marks, on the plot as drawn, every pipeline with
+   that encoder (end-to-end models have none) or that learner, and fades the others; nothing is filtered and the
+   plot is not redrawn. The chip above the plot names it; clicking the chip, the same name again, or Esc clears it. */
+const hlMatch = (d) => !!state.hl && (state.hl.f === 'enc' ? d.kind !== 'e2e' && d.enc === state.hl.name : d.lrn === state.hl.name);
+function hlButton(f, name) {
+  const b = el('button', (f === 'enc' ? 'enc' : 'lrn') + ' hl-name', name);
+  b.type = 'button'; b.dataset.f = f; b.dataset.name = name;
+  b.title = 'Highlight every pipeline with ' + name + ' on the plot';
+  b.addEventListener('click', (e) => { e.stopPropagation(); setHl(state.hl && state.hl.f === f && state.hl.name === name ? null : { f, name }); });
+  return b;
+}
+function setHl(hl) { state.hl = hl; applyHl(); }
+function applyHl() {
+  const on = !!state.hl;
+  $('plot').classList.toggle('has-hl', on);
+  if (plotGeom) plotGeom.geo.forEach((g) => {
+    const m = hlMatch(g.d); g.node.classList.toggle('hl', m);
+    if (m) g.node.parentNode.appendChild(g.node);  // drawn on top of the faded points
+  });
+  document.querySelectorAll('#rows tr.row').forEach((tr) => {
+    const d = DATA.find((x) => x.id === tr.dataset.id); tr.classList.toggle('is-hl', !!d && hlMatch(d));
+  });
+  document.querySelectorAll('#rows .hl-name').forEach((b) => b.classList.toggle('is-hl', on && b.dataset.f === state.hl.f && b.dataset.name === state.hl.name));
+  const chip = $('hl-chip'); chip.hidden = !on;
+  chip.textContent = on ? 'Highlight: ' + state.hl.name + '  ×' : '';
+  chip.setAttribute('aria-label', on ? 'Clear the highlight of ' + state.hl.name : '');
+}
+$('hl-chip').addEventListener('click', () => setHl(null));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.hl && !document.querySelector('details.dd[open]')) setHl(null); });
 
 let plotGeom = null;
 function niceStep(range) {
@@ -1011,6 +1052,7 @@ function renderPlot(list, front) {
   });
   svg.addEventListener('pointerleave', () => setHot(null));
   if (state.hot) setHot(state.hot);
+  applyHl();
 }
 
 function showTip(id) {
