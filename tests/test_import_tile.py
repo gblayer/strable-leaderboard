@@ -45,9 +45,9 @@ def test_tile_selection():
     assert {m: w["feature_window"] for m, w in tile70b.items()} == {m: w for m, w in windows.items() if m in tile70b}
     assert PAPER["encoders"]["tile"] == "TILE-8B" and PAPER["encoders"]["tile-70b"] == "TILE-70B"  # the board's names
     assert PAPER["learners"]["causilo"] == "Causilo"
-    case = [p for p in rows if p["encoder"] == "case"]  # CASE alone, at its pinned commit, string columns of < 50 values
+    case = [p for p in rows if p["encoder"] == "case"]  # CASE alone, at its pinned commit, every column raw
     assert PAPER["encoders"]["case"] == "CASE" and len(case) == 8
-    assert all(p["where"] == {"model": "case-f0bbd5a", "raw_text_card": 50} and p["date"] == "2026-11" for p in case)
+    assert all(p["where"] == {"model": "case-f0bbd5a", "raw_text_card": "all"} and p["date"] == "2026-11" for p in case)
     assert {m for m in SELECTION["learners"]} <= RESERVED  # learners without a folder: names only the maintainer adds
     paper = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())
     for key in ("learners", "encoders"):  # one display name per id
