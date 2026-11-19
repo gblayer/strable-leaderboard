@@ -349,6 +349,12 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
 .bib { margin: 0; padding: 12px 14px; overflow-x: auto; font: 12.5px/1.55 var(--f-mono); white-space: pre; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
 
 /* ---------- demo tour ---------- */
+/* First visit only: a small card offering the demo; closing it does nothing else, and it never shows again */
+.demo-hint { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: flex; align-items: center; gap: 12px; max-width: calc(100% - 32px); background: var(--ink); color: var(--bg); border-radius: 14px; box-shadow: 0 0 0 3px var(--mark); padding: 12px 10px 12px 16px; font-size: 15px; }
+.demo-hint p { margin: 0; }
+.demo-hint .linkbtn { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+.demo-hint-x { appearance: none; border: 0; background: none; color: var(--bg); font: 500 20px/1 var(--f-body); padding: 6px 8px; cursor: pointer; border-radius: 8px; }
+.demo-hint-x:hover, .demo-hint-x:focus-visible { background: color-mix(in srgb, var(--bg) 16%, transparent); }
 .tour { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(660px, calc(100% - 32px)); z-index: 60; background: var(--ink); color: var(--bg); border-radius: 14px; box-shadow: 0 0 0 3px var(--mark); padding: 14px 16px 12px; display: grid; gap: 10px; }
 .tour-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .tour-count { font: 600 11px/1 var(--f-mono); letter-spacing: 0.14em; text-transform: uppercase; }
@@ -686,6 +692,11 @@ a.linkbtn { display: inline-flex; align-items: center; text-decoration: none; }
   </div>
 </div>
 
+<div class="demo-hint" id="demo-hint" role="dialog" aria-label="Page demo" hidden>
+  <p>New here? A short demo shows how the board works.</p>
+  <button type="button" class="linkbtn" id="demo-hint-start">Start the demo</button>
+  <button type="button" class="demo-hint-x" id="demo-hint-x" aria-label="Close, no demo">×</button>
+</div>
 <div class="tour" id="tour" role="dialog" aria-live="polite" aria-label="Demo tour" hidden>
   <div class="tour-top">
     <span class="tour-count" id="tour-count">Demo 1/10</span>
@@ -920,12 +931,10 @@ function renderTable(list, front, rows) {
 
 /* Highlight: clicking an encoder or learner name in the table marks, on the plot as drawn, every pipeline with
    that encoder (end-to-end models have none) or that learner, and fades the others, which stay hoverable; nothing
-   is filtered and the points do not move. The plot then names the highlighted pipelines only, by their other part
-   (the learner for an encoder, the encoder for a learner), and in the Default colours those off the Pareto Front
-   take the text colour (--ink-2; legend). The chip above the plot names the highlight; the chip, the same name again or Esc
-   clears it. */
+   is filtered and the points do not move. The plot then shows no names (hovering a point gives its name), and in
+   the Default colours the highlighted pipelines off the Pareto Front take the text colour (--ink-2; legend). The
+   chip above the plot names the highlight; the chip, the same name again or Esc clears it. */
 const hlMatch = (d) => !!state.hl && (state.hl.f === 'enc' ? d.kind !== 'e2e' && d.enc === state.hl.name : d.lrn === state.hl.name);
-const hlLabel = (d) => (state.hl.f === 'enc' || d.kind === 'e2e' ? d.lrn : d.enc) + (d.tuned ? ' (tuned)' : '');
 function hlButton(f, name) {
   const b = el('button', (f === 'enc' ? 'enc' : 'lrn') + ' hl-name', name);
   b.type = 'button'; b.dataset.f = f; b.dataset.name = name;
@@ -943,7 +952,7 @@ function applyHl() {
       if (m) g.node.parentNode.appendChild(g.node);  // drawn on top of the faded points
     });
     const shown = plotGeom.svg.querySelector('g.labels');
-    const want = on ? plotGeom.placeLabels(plotGeom.geo.filter((g) => hlMatch(g.d)).map((g) => g.d), hlLabel) : plotGeom.frontLabels;
+    const want = on ? sv('g', { class: 'labels' }) : plotGeom.frontLabels;  // highlighting: no names, hover tells
     if (shown && shown !== want) shown.replaceWith(want);
   }
   $('legend-hl').hidden = !on || state.colour !== 'default';
@@ -1539,7 +1548,7 @@ const TOUR = [
   { sel: '#plot-card', block: 'center', hot: 'tfidf+tabpfn-2.5',
     text: 'The plot: the score against total run time per 1K samples, log scale. The line is the Pareto Front and the arrow points to the ideal corner. Hover a point for its numbers.' },
   { sel: '#plot-card', block: 'center', hl: { f: 'enc', name: 'TILE-8B' },
-    text: 'Highlight. Click an encoder or a learner name in the table, here TILE-8B: its pipelines stay in full on the plot, with their names, and the others fade but stay on the plot, hoverable. Nothing is filtered. To clear it, click the chip above the plot or the same name again, or press Esc.' },
+    text: 'Highlight. Click an encoder or a learner name in the table, here TILE-8B: its pipelines stay in full on the plot and the others fade, still there and hoverable. Nothing is filtered and the Pareto Front stays the same. To clear it, click the chip above the plot or the same name again, or press Esc.' },
   { sel: '#refresh', block: 'center',
     text: 'Refresh fetches the latest results without reloading the page.' },
   { sel: '#history', block: 'center',
@@ -1599,7 +1608,13 @@ function endTour() {
   $('tour').hidden = true;
   state.task = s0.task; state.score = s0.score; state.sort = s0.sort; state.enc = s0.enc; state.lrn = s0.lrn; state.hw = s0.hw; state.overlap = s0.overlap; state.api = s0.api; state.hot = null; state.hl = s0.hl; render();
 }
-$('demo-btn').addEventListener('click', startTour);
+/* The first-visit card: shown once per browser (remembered in localStorage when the browser allows it). Start the
+   demo starts the tour; × only closes the card. Either way, and on the Demo button, it does not come back. */
+const HINT_KEY = 'strable-demo-hint-seen';
+function hintSeen() { try { localStorage.setItem(HINT_KEY, '1'); } catch (e) {} $('demo-hint').hidden = true; }
+$('demo-hint-start').addEventListener('click', () => { hintSeen(); startTour(); });
+$('demo-hint-x').addEventListener('click', hintSeen);
+$('demo-btn').addEventListener('click', () => { hintSeen(); startTour(); });
 $('tour-next').addEventListener('click', nextStep);
 $('tour-prev').addEventListener('click', prevStep);
 $('tour-exit').addEventListener('click', endTour);
@@ -1628,7 +1643,8 @@ document.addEventListener('keydown', (e) => {
   if (toks.indexOf('no-overlap') >= 0) state.overlap = 'hide';
   if (toks.indexOf('no-api') >= 0) state.api = 'hide';
   refresh(false);
-  if (toks.indexOf('demo') >= 0) setTimeout(startTour, 600);
+  if (toks.indexOf('demo') >= 0) { hintSeen(); setTimeout(startTour, 600); }
+  else { let seen = false; try { seen = !!localStorage.getItem(HINT_KEY); } catch (e) {} $('demo-hint').hidden = seen; }
 })();
 let rz = null;
 new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const list = items(state.task); if (list.length) renderPlot(list, paretoSet(list)); }); }).observe($('plot'));
