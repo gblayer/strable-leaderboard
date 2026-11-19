@@ -88,12 +88,12 @@ pipelines:
     num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09", hardware: NVIDIA H100 80GB HBM3}
     num-str_tabvec_kumo_small: {model: kumo-tabular-small, encoder: tfidf, variant: default}
     num-str_tabvec_kumo_medium: {model: kumo-tabular-medium, encoder: tfidf, variant: default}
-  strable_case.csv:  # CASE + TILE's 8 learners
-    case_tabpfn: {model: tabpfn-2.5, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: all}}
-    case_tabicl: {model: tabicl-v2, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: all}}
-    case_tabpfn3: {model: tabpfn-3, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: all}}
-    case_tabpfn3.5: {model: tabpfn-3.5, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: all}}
-    case_causilo: {model: causilo, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: all}}
-    case_kumo_large: {model: kumo-tabular, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: all}}
-    case_kumo_medium: {model: kumo-tabular-medium, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: all}}
-    case_kumo_small: {model: kumo-tabular-small, encoder: case, variant: default, date: "2026-11", where: {model: case-f0bbd5a, raw_text_card: all}}
+  strable_case.csv:  # CASE + TILE's 8 learners; held: not on the board
+    case_tabpfn: {model: tabpfn-2.5, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
+    case_tabicl: {model: tabicl-v2, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
+    case_tabpfn3: {model: tabpfn-3, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
+    case_tabpfn3.5: {model: tabpfn-3.5, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
+    case_causilo: {model: causilo, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
+    case_kumo_large: {model: kumo-tabular, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
+    case_kumo_medium: {model: kumo-tabular-medium, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
+    case_kumo_small: {model: kumo-tabular-small, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
