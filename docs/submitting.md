@@ -46,7 +46,7 @@ Every model implements the class `StrableModel` of `strable_leaderboard/model.py
 - `fit(X, y)` trains on the training rows of one fold. `X` is a pandas DataFrame: numbers only for a numeric-only model (missing cells stay NaN), the raw table for an end-to-end one. `y` is a NumPy array. Classification targets are integers 0..K-1; the model sets `self.classes_`.
 - `predict(X)` returns values or labels. `predict_proba(X)` returns one column per class, in the order of `self.classes_`.
 - **The board's folds are used for everything.** Never split, cross-validate or search hyperparameters yourself. Early stopping may only use `fit_idx, val_idx = self.validation_split(y)`; turn off a package's own validation split. Optional: a model whose own validation can hold out given groups of rows may take the board's 8 inner folds instead, `self.inner_folds(y)`, the inner fold (0 to 7) of each training row.
-- **No seed of your own.** Pass `self.seed` wherever a seed goes, never a number.
+- **No seed of your own.** Pass `self.seed` wherever a seed goes, never a number. The runner also seeds PyTorch's global generators with it before your model is built.
 - `self.device` and `self.n_jobs` are given; the runner already caps threads to `self.n_jobs`.
 - Use the package's default settings; options that only lift size limits (such as TabPFN's `ignore_pretraining_limits`) are fine. Never read the tables, the split files or the test rows yourself.
 
