@@ -1,7 +1,11 @@
 {
- "version": "v0.1.21",
- "built": "2026-11-19",
+ "version": "v0.1.22",
+ "built": "2026-11-23",
  "history": [
+  {
+   "version": "v0.1.22",
+   "note": "Added TabFM 1.0.0 with Tf-Idf"
+  },
   {
    "version": "v0.1.21",
    "note": "Removed CASE"
@@ -2073,6 +2077,35 @@
     96,
     96,
     0.8609
+   ]
+  },
+  {
+   "id": "tfidf+tabfm",
+   "enc": "Tf-Idf",
+   "lrn": "TabFM",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A40, NVIDIA H100 NVL",
+   "both": [
+    0.795,
+    26.9979,
+    324,
+    324,
+    0.7555
+   ],
+   "reg": [
+    0.7078,
+    27.5821,
+    228,
+    228,
+    0.7073
+   ],
+   "clf": [
+    0.8958,
+    24.392,
+    96,
+    96,
+    0.8698
    ]
   },
   {
