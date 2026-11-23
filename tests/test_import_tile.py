@@ -40,14 +40,14 @@ def test_tile_selection():
     assert [p.get("date") for p in rows if p["encoder"] == "tfidf"] == ["2026-09", None, None]  # Causilo: its own date
     tile = [p["where"] for p in rows if p["encoder"] == "tile"]
     assert all(w["model"] == "llama3_14_layers_v2|cell_meanpool|include_numbers|clean" and w["window_total"] for w in tile)
-    tile70b = {p["model"]: p["where"] for p in rows if p["encoder"] == "tile-70b"}  # TILE-Llama3-70B: the same windows
+    tile70b = {p["model"]: p["where"] for p in rows if p["encoder"] == "tile-70b"}  # TILE-Llama3.1-70B: the same windows
     assert all(w["model"] == "llama-3.1-70b_32_layers_v2|cell_meanpool|include_numbers|clean" for w in tile70b.values())
     assert {m: w["feature_window"] for m, w in tile70b.items()} == {m: w for m, w in windows.items() if m in tile70b}
     gemma = {p["model"]: p["where"] for p in rows if p["encoder"] == "tile-gemma-12b"}  # TILE-Gemma3-12B: the same windows
     assert all(w["model"] == "gemma-3-12b_21_layers_v2|cell_meanpool|include_numbers|clean" for w in gemma.values())
     assert {m: w["feature_window"] for m, w in gemma.items()} == {m: w for m, w in windows.items() if m in gemma}
     assert (PAPER["encoders"]["tile"], PAPER["encoders"]["tile-70b"], PAPER["encoders"]["tile-gemma-12b"]) == (
-        "TILE-Llama3-8B", "TILE-Llama3-70B", "TILE-Gemma3-12B")  # the board's names
+        "TILE-Llama3.1-8B", "TILE-Llama3.1-70B", "TILE-Gemma3-12B")  # the board's names
     assert PAPER["learners"]["causilo"] == "Causilo"
     case = [p for p in rows if p["encoder"] == "case"]  # CASE alone, at its pinned commit, every column raw
     assert PAPER["encoders"]["case"] == "CASE" and len(case) == 8
