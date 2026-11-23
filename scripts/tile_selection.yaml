@@ -46,8 +46,8 @@ date: "2026-10"  # when the source rows were computed; a pipeline's own `date` o
 # and middle layers, fitted on the training rows and their labels; the other columns go to the learner as they are,
 # the date columns it leaves turned into numbers by skrub's TableVectorizer, fitted on the training rows. No other
 # encoder is used. The learners are the 8 of the TILE pipelines above, with the same settings, on the board's folds;
-# run by the board's maintainer on NVIDIA A40, Nov 2026. Its time is LightTAR's encoding (model already loaded) and the dates'
-# conversion, plus fit and predict.
+# run by the board's maintainer on NVIDIA A40, Nov 2026. Its time is LightTAR's encoding (model already loaded) and
+# the dates' conversion, plus fit and predict.
 
 learners:  # model folder -> display name, for learners without a models/ folder
   causilo: Causilo
