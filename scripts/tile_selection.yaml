@@ -39,6 +39,16 @@ date: "2026-10"  # when the source rows were computed; a pipeline's own `date` o
 # Its time is CASE's encoding (weights already loaded) and the dates' conversion, plus fit and predict. `gpu` is the
 # learner's GPU (CASE encoded on an NVIDIA A40).
 
+# LightTAR + TILE's learners: LightTAR (https://arxiv.org/abs/2611.17600; package lighttar 0.1.0) is an encoder, run
+# alone, at its defaults, as in its example make_pipeline(LightTAR(...), learner): every column it detects as text
+# (by its rule: a string column with at least 100 distinct values or 80% distinct, date strings included) becomes up
+# to 30 principal components of the frozen e5-small-v2's last layer and up to 5 target-aware directions of its last
+# and middle layers, fitted on the training rows and their labels; the other columns go to the learner as they are,
+# the date columns it leaves turned into numbers by skrub's TableVectorizer, fitted on the training rows. No other
+# encoder is used. The learners are the 8 of the TILE pipelines above, with the same settings, on the board's folds;
+# run by the board's maintainer on NVIDIA A40, Nov 2026. Its time is LightTAR's encoding (model already loaded) and
+# the dates' conversion, plus fit and predict.
+
 learners:  # model folder -> display name, for learners without a models/ folder
   causilo: Causilo
   kumo-tabular-small: Kumo Tabular (small)
@@ -48,6 +58,7 @@ encoders:  # encoder id -> display name
   tile: TILE-8B
   tile-70b: TILE-70B
   case: CASE
+  lighttar: LightTAR
 
 settings: &tile  # TILE's default settings, the same for every learner
   model: llama3_14_layers_v2|cell_meanpool|include_numbers|clean
@@ -97,3 +108,13 @@ pipelines:
     case_kumo_large: {model: kumo-tabular, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
     case_kumo_medium: {model: kumo-tabular-medium, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
     case_kumo_small: {model: kumo-tabular-small, encoder: case, variant: default, date: "2026-11", hold: true, where: {model: case-f0bbd5a, raw_text_card: all}}
+
+  strable_lighttar.csv:  # LightTAR + TILE's 8 learners
+    lighttar_tabpfn: {model: tabpfn-2.5, encoder: lighttar, variant: default, date: "2026-11", where: {model: lighttar-0.1.0}}
+    lighttar_tabicl: {model: tabicl-v2, encoder: lighttar, variant: default, date: "2026-11", where: {model: lighttar-0.1.0}}
+    lighttar_tabpfn3: {model: tabpfn-3, encoder: lighttar, variant: default, date: "2026-11", where: {model: lighttar-0.1.0}}
+    lighttar_tabpfn3.5: {model: tabpfn-3.5, encoder: lighttar, variant: default, date: "2026-11", where: {model: lighttar-0.1.0}}
+    lighttar_causilo: {model: causilo, encoder: lighttar, variant: default, date: "2026-11", where: {model: lighttar-0.1.0}}
+    lighttar_kumo_large: {model: kumo-tabular, encoder: lighttar, variant: default, date: "2026-11", where: {model: lighttar-0.1.0}}
+    lighttar_kumo_medium: {model: kumo-tabular-medium, encoder: lighttar, variant: default, date: "2026-11", where: {model: lighttar-0.1.0}}
+    lighttar_kumo_small: {model: kumo-tabular-small, encoder: lighttar, variant: default, date: "2026-11", where: {model: lighttar-0.1.0}}

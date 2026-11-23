@@ -24,7 +24,7 @@ def test_tile_selection():
                    "tile+exaone-tabular", "tile+kumo-tabular", "tile+kumo-tabular-medium", "tile+kumo-tabular-small",
                    "tile+chakra-tab-medium", "tile-70b+chakra-tab-medium",
                    "tfidf+kumo-tabular-small", "tfidf+kumo-tabular-medium",
-                   *(f"{e}+{m}" for e in ("tile-70b", "case")
+                   *(f"{e}+{m}" for e in ("tile-70b", "case", "lighttar")
                      for m in ("tabpfn-2.5", "tabicl-v2", "tabpfn-3", "tabpfn-3.5", "causilo", "kumo-tabular",
                                "kumo-tabular-medium", "kumo-tabular-small"))}
     assert all(p["variant"] == "default" for p in rows)
@@ -48,6 +48,9 @@ def test_tile_selection():
     case = [p for p in rows if p["encoder"] == "case"]  # CASE alone, at its pinned commit, every column raw
     assert PAPER["encoders"]["case"] == "CASE" and len(case) == 8
     assert all(p["where"] == {"model": "case-f0bbd5a", "raw_text_card": "all"} and p["date"] == "2026-11" for p in case)
+    lighttar = [p for p in rows if p["encoder"] == "lighttar"]  # LightTAR alone, at its package defaults
+    assert PAPER["encoders"]["lighttar"] == "LightTAR" and len(lighttar) == 8 and not any(p.get("hold") for p in lighttar)
+    assert all(p["where"] == {"model": "lighttar-0.1.0"} and p["date"] == "2026-11" for p in lighttar)
     assert {m for m in SELECTION["learners"]} <= RESERVED  # learners without a folder: names only the maintainer adds
     paper = yaml.safe_load((ROOT / "scripts" / "paper_selection.yaml").read_text())
     for key in ("learners", "encoders"):  # one display name per id
