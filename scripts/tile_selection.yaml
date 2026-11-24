@@ -23,6 +23,8 @@
 date: "2026-10"  # when the source rows were computed; a pipeline's own `date` overrides it
 # hardware: the GPU of each source row when its CSV records one (column `gpu`), else the pipeline's own
 # `hardware`, else "paper" (not recorded)
+# encoder_gpu: the source column of the GPU the encoder ran on, when not the learner's (CASE: case_gpu); the rows
+# then record both GPUs, the encoder's first
 # Tf-Idf + Causilo: the GPU its job logs and launcher show; its CSV has no `gpu` column
 # TILE + ChakraTab (medium): ChakraTab runs on YHat Labs' API, called as the board calls it (models/chakra-tab-medium),
 # from TILE's code, 11-13 Nov 2026, with the feature window of its own search on the 27 probing tables (200-600).
