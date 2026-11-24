@@ -100,8 +100,8 @@ pipelines:
     num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-600}}
     num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile-70b, variant: default, where: {<<: *tile70b, feature_window: 200-600}}
     num-str_latte_chakra_tab: {model: chakra-tab-medium, encoder: tile-70b, variant: default, date: "2026-11", hardware: api, api_version: chakra-tab-2026-10, where: {<<: *tile70b, feature_window: 200-600}}
-  strable_tile_gemma12b.csv:  # TILE-Gemma3-12B, the same windows; TabPFN-2.5 next
-    num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile-gemma-12b, variant: default, date: "2026-11", hold: true, where: {<<: *tilegemma, feature_window: 200-400}}
+  strable_tile_gemma12b.csv:  # TILE-Gemma3-12B, the same windows
+    num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile-gemma-12b, variant: default, date: "2026-11", where: {<<: *tilegemma, feature_window: 200-400}}
     num-str_latte_tabicl: {model: tabicl-v2, encoder: tile-gemma-12b, variant: default, date: "2026-11", where: {<<: *tilegemma, feature_window: 200-800}}
     num-str_latte_tabpfn3: {model: tabpfn-3, encoder: tile-gemma-12b, variant: default, date: "2026-11", where: {<<: *tilegemma, feature_window: 150-400}}
     num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile-gemma-12b, variant: default, date: "2026-11", where: {<<: *tilegemma, feature_window: 200-800}}
