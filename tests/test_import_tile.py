@@ -80,6 +80,19 @@ def test_the_hardware_of_imported_rows():
     assert hardware_of(df, frames, pipelines) == ["NVIDIA A100-PCIE-40GB", "NVIDIA A40", "paper", "api"]
 
 
+def test_the_hardware_of_rows_whose_encoder_ran_on_another_gpu():
+    table = next(iter(TABLES))
+    pipelines = {"a.csv": {"m": dict(model="tabpfn-3.5", encoder="case", variant="default", encoder_gpu="case_gpu"),
+                           "n": dict(model="causilo", encoder="tile", variant="default")}}
+    frames = {"a.csv": pd.DataFrame([dict(method="m", data_name=table, fold_index=0, gpu="NVIDIA A40", case_gpu="NVIDIA H100 NVL"),
+                                     dict(method="m", data_name=table, fold_index=1, gpu="NVIDIA A40", case_gpu="NVIDIA A40"),
+                                     dict(method="n", data_name=table, fold_index=0, gpu="NVIDIA A40", case_gpu="NVIDIA H100 NVL")])}
+    df = pd.DataFrame([dict(model="tabpfn-3.5", encoder="case", variant="default", table=table, fold=k) for k in (0, 1)]
+                      + [dict(model="causilo", encoder="tile", variant="default", table=table, fold=0)])
+    # the encoder's GPU first, once when both are the same; a pipeline without encoder_gpu keeps the learner's only
+    assert hardware_of(df, frames, pipelines) == ["NVIDIA H100 NVL, NVIDIA A40", "NVIDIA A40", "NVIDIA A40"]
+
+
 def test_import_tile_rows():
     table = next(iter(TABLES))
     settings = {"pca": 150, "feature_window": "100-300", "standard_scaling": True}

@@ -8,7 +8,7 @@ imported; a listed pipeline without rows in its CSV is an error. The rows are
 made as the paper's (``convert`` of scripts/import_paper_results.py): ``total_s`` only, the source's
 ``run_time``, with ``hardware`` and ``package`` set to ``paper``; ``hardware`` is instead the GPU of the
 source row when its CSV records one (column ``gpu``), else the pipeline's own when the selection gives
-it (the GPU its job logs show). A pipeline whose selection says ``hardware: api`` (a learner behind its
+it (the GPU its job logs show); with ``encoder_gpu``, also the encoder's GPU when it ran on another one. A pipeline whose selection says ``hardware: api`` (a learner behind its
 provider's API) also gets the ``api_version`` its selection gives. For TILE, ``run_time`` counts the
 language-model extraction of the whole table, the reduction and the target encoding, then fit and
 predict, as the runner counts an encoder's extraction time. In each results file, rows of the same
@@ -50,16 +50,20 @@ def select(frame: pd.DataFrame, methods: dict) -> pd.DataFrame:
 
 def hardware_of(df: pd.DataFrame, frames: dict, pipelines: dict) -> list[str]:
     """Each converted row's hardware: the GPU its source row records (column ``gpu``), else its
-    pipeline's own ``hardware``, else ``paper``."""
+    pipeline's own ``hardware``, else ``paper``. A pipeline whose selection names ``encoder_gpu``, the
+    source column of the GPU its encoder ran on, records that GPU too when it differs from the learner's:
+    "<encoder's>, <learner's>"."""
     own = {(p["model"], p["encoder"], p["variant"]): p.get("hardware", "paper")
            for methods in pipelines.values() for p in methods.values()}
     gpus = {}
     for csv, methods in pipelines.items():
         if "gpu" in frames[csv]:
             for method, p in methods.items():
-                for r in frames[csv][frames[csv]["method"] == method].itertuples():
-                    if pd.notna(r.gpu):  # a CPU row (an API learner) has none
-                        gpus[(p["model"], p["encoder"], p["variant"], r.data_name, int(r.fold_index))] = r.gpu
+                for r in frames[csv][frames[csv]["method"] == method].to_dict("records"):
+                    names = [r.get(p["encoder_gpu"]) if "encoder_gpu" in p else None, r["gpu"]]
+                    names = list(dict.fromkeys(n for n in names if pd.notna(n)))  # a CPU row (an API learner) has none
+                    if names:
+                        gpus[(p["model"], p["encoder"], p["variant"], r["data_name"], int(r["fold_index"]))] = ", ".join(names)
     keys = zip(df["model"], df["encoder"], df["variant"], df["table"], df["fold"])
     return [gpus.get(key, own[key[:3]]) for key in keys]
 
