@@ -1,7 +1,11 @@
 {
- "version": "v0.1.23",
- "built": "2026-11-23",
+ "version": "v0.1.24",
+ "built": "2026-11-24",
  "history": [
+  {
+   "version": "v0.1.24",
+   "note": "Added TILE-Gemma3-12B + TabPFN-2.5"
+  },
   {
    "version": "v0.1.23",
    "note": "Added LightTAR and TILE-Gemma3-12B; TILE-8B and TILE-70B renamed TILE-Llama3.1-8B and TILE-Llama3.1-70B"
@@ -3133,6 +3137,35 @@
     96,
     96,
     0.8705
+   ]
+  },
+  {
+   "id": "tile-gemma-12b+tabpfn-2.5",
+   "enc": "TILE-Gemma3-12B",
+   "lrn": "TabPFN-2.5",
+   "kind": "modular",
+   "variant": "default",
+   "hw": "NVIDIA A100-PCIE-40GB, NVIDIA A40",
+   "both": [
+    0.8196,
+    39.3111,
+    324,
+    324,
+    0.7713
+   ],
+   "reg": [
+    0.7164,
+    36.967,
+    228,
+    228,
+    0.7312
+   ],
+   "clf": [
+    0.8933,
+    57.8775,
+    96,
+    96,
+    0.8664
    ]
   },
   {
