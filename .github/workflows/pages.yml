@@ -19,17 +19,23 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+# Two jobs, as GitHub's Pages starter workflows: build uploads site/, deploy publishes it once build has ended.
+# Re-running the failed jobs of a run re-runs deploy alone, on the page build uploaded.
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
