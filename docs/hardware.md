@@ -9,7 +9,7 @@ Each result row records the hardware it ran on, in its `hardware` column; `site/
 | Shared cluster | the STRABLE paper's pipelines | `paper`: no GPU per row. As the paper's Appendix D.1 says, its jobs were scheduled across NVIDIA V100, A100 and A40 GPUs with AMD EPYC and Intel Xeon CPUs (32 cores and one GPU per job), not pinned to one GPU type |
 | API | models that run on their provider's servers. The board is a third party to these runs and cannot verify them: it shows the time and hardware the provider reports. ChakraTab: YHat Labs states an NVIDIA RTX PRO 6000 GPU and 12 vCPUs | `api` |
 
-For a pipeline with a language-model encoder, the GPU shown is the one the learner ran on. The encoder's extraction, measured once per table, may have run on another GPU (almost always an A100 or an A40). When the encoder's GPU is recorded and differs from the learner's, each row records both, so the pipeline appears under both names (an encoder on an H100 and a learner on an A40: A40 + H100).
+For a pipeline with a language-model encoder, the GPU shown is the one the learner ran on, unless the encoder's GPU is recorded too. The encoder's extraction, measured once per table, may have run on another GPU (almost always an A100 or an A40). When the encoder's GPU is recorded and differs from the learner's, each row records both, and the pipeline's Compute entry names both GPUs (an encoder on an H100 and a learner on an A40: A40 + H100).
 
 ## Does the GPU type change the results?
 

@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -91,6 +92,13 @@ def test_the_hardware_of_rows_whose_encoder_ran_on_another_gpu():
                       + [dict(model="causilo", encoder="tile", variant="default", table=table, fold=0)])
     # the encoder's GPU first, once when both are the same; a pipeline without encoder_gpu keeps the learner's only
     assert hardware_of(df, frames, pipelines) == ["NVIDIA H100 NVL, NVIDIA A40", "NVIDIA A40", "NVIDIA A40"]
+    # a row without a learner GPU (an API learner) keeps its pipeline's own hardware, not the encoder's GPU
+    api = {"a.csv": {"m": dict(model="chakra-tab-medium", encoder="case", variant="default", hardware="api", encoder_gpu="case_gpu")}}
+    rows = pd.DataFrame([dict(method="m", data_name=table, fold_index=0, gpu=None, case_gpu="NVIDIA H100 NVL")])
+    one = pd.DataFrame([dict(model="chakra-tab-medium", encoder="case", variant="default", table=table, fold=0)])
+    assert hardware_of(one, {"a.csv": rows}, api) == ["api"]
+    with pytest.raises(ValueError, match="encoder_gpu"):  # a named column the CSV lacks is an error
+        hardware_of(one, {"a.csv": rows.drop(columns="case_gpu")}, api)
 
 
 def test_import_tile_rows():
