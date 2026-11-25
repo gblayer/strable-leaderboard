@@ -25,12 +25,12 @@ def test_tile_selection():
                    "tile+exaone-tabular", "tile+kumo-tabular", "tile+kumo-tabular-medium", "tile+kumo-tabular-small",
                    "tile+chakra-tab-medium", "tile-70b+chakra-tab-medium",
                    "tfidf+kumo-tabular-small", "tfidf+kumo-tabular-medium",
-                   *(f"{e}+{m}" for e in ("tile-70b", "case", "lighttar", "tile-gemma-12b")
+                   *(f"{e}+{m}" for e in ("tile-70b", "case", "lighttar", "tile-gemma-12b", "tile-1b", "tile-gemma-1b")
                      for m in ("tabpfn-2.5", "tabicl-v2", "tabpfn-3", "tabpfn-3.5", "causilo", "kumo-tabular",
                                "kumo-tabular-medium", "kumo-tabular-small"))}
     assert all(p["variant"] == "default" for p in rows)
     held = {f"{p['encoder']}+{p['model']}" for p in rows if p.get("hold")}
-    assert held == {"tile+exaone-tabular"} | {i for i in ids if i.startswith("case+")}  # listed, not imported
+    assert held == {"tile+exaone-tabular", "tile-gemma-1b+tabpfn-2.5"} | {i for i in ids if i.startswith("case+")}  # listed, not imported
     assert {f"{p['encoder']}+{p['model']}" for ms in imported(SELECTION["pipelines"]).values() for p in ms.values()} == ids - held
     assert "tfidf" in ENCODERS  # Tf-Idf + Causilo: the id the runner gives models/causilo with its tfidf encoder
     windows = {p["model"]: p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}  # one per learner
@@ -47,8 +47,12 @@ def test_tile_selection():
     gemma = {p["model"]: p["where"] for p in rows if p["encoder"] == "tile-gemma-12b"}  # TILE-Gemma3-12B: the same windows
     assert all(w["model"] == "gemma-3-12b_21_layers_v2|cell_meanpool|include_numbers|clean" for w in gemma.values())
     assert {m: w["feature_window"] for m, w in gemma.items()} == {m: w for m, w in windows.items() if m in gemma}
-    assert (PAPER["encoders"]["tile"], PAPER["encoders"]["tile-70b"], PAPER["encoders"]["tile-gemma-12b"]) == (
-        "TILE-Llama3.1-8B", "TILE-Llama3.1-70B", "TILE-Gemma3-12B")  # the board's names
+    for enc, model in [("tile-1b", "llama-3.2-1b_10_layers_v2"), ("tile-gemma-1b", "gemma-3-1b_9_layers_v2")]:  # the same windows
+        small = {p["model"]: p["where"] for p in rows if p["encoder"] == enc}
+        assert len(small) == 8 and all(w["model"] == model + "|cell_meanpool|include_numbers|clean" for w in small.values())
+        assert {m: w["feature_window"] for m, w in small.items()} == {m: w for m, w in windows.items() if m in small}
+    assert tuple(PAPER["encoders"][e] for e in ("tile", "tile-70b", "tile-gemma-12b", "tile-1b", "tile-gemma-1b")) == (
+        "TILE-Llama3.1-8B", "TILE-Llama3.1-70B", "TILE-Gemma3-12B", "TILE-Llama3.2-1B", "TILE-Gemma3-1B")  # the board's names
     assert PAPER["learners"]["causilo"] == "Causilo"
     case = [p for p in rows if p["encoder"] == "case"]  # CASE alone, at its pinned commit, every column raw
     assert PAPER["encoders"]["case"] == "CASE" and len(case) == 8

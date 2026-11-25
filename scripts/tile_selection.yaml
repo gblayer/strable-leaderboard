@@ -6,8 +6,9 @@
 # TILE (named latte in its authors' code, hence the method tokens) is an encoder. Every row is written
 # as one sentence, "The <column> is <value>." per cell, numbers included, and goes through the first
 # 14 blocks of LLaMA-3.1-8B (TILE-Llama3.1-8B), the first 32 of the 80 blocks of LLaMA-3.1-70B
-# (TILE-Llama3.1-70B) or the first 21 of the 48 blocks of Gemma-3-12B (TILE-Gemma3-12B); the token states of
-# each cell are averaged into one embedding per cell.
+# (TILE-Llama3.1-70B), the first 21 of the 48 blocks of Gemma-3-12B (TILE-Gemma3-12B), the first 10 of the 16
+# blocks of LLaMA-3.2-1B (TILE-Llama3.2-1B) or the first 9 blocks of Gemma-3-1B (TILE-Gemma3-1B); the token
+# states of each cell are averaged into one embedding per cell.
 # Only the string columns' embeddings are kept, standardized on the training rows and reduced by one
 # PCA per column to 30 components, the counts rescaled into the learner's feature window, which bounds
 # its whole input (numerical columns, categories and target encoding included). The learner gets them
@@ -61,6 +62,8 @@ encoders:  # encoder id -> display name
   tile: TILE-Llama3.1-8B
   tile-70b: TILE-Llama3.1-70B
   tile-gemma-12b: TILE-Gemma3-12B
+  tile-1b: TILE-Llama3.2-1B
+  tile-gemma-1b: TILE-Gemma3-1B
   case: CASE
   lighttar: LightTAR
 
@@ -79,6 +82,12 @@ settings_70b: &tile70b  # the same, with the embeddings of LLaMA-3.1-70B
 settings_gemma: &tilegemma  # the same, with the embeddings of Gemma-3-12B
   <<: *tile
   model: gemma-3-12b_21_layers_v2|cell_meanpool|include_numbers|clean
+settings_1b: &tile1b  # the same, with the embeddings of LLaMA-3.2-1B
+  <<: *tile
+  model: llama-3.2-1b_10_layers_v2|cell_meanpool|include_numbers|clean
+settings_gemma_1b: &tilegemma1b  # the same, with the embeddings of Gemma-3-1B
+  <<: *tile
+  model: gemma-3-1b_9_layers_v2|cell_meanpool|include_numbers|clean
 
 pipelines:
   strable_tile.csv:  # one feature window per learner, chosen by the TILE authors
@@ -111,6 +120,24 @@ pipelines:
     num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile-gemma-12b, variant: default, date: "2026-11", where: {<<: *tilegemma, feature_window: 200-600}}
     num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile-gemma-12b, variant: default, date: "2026-11", where: {<<: *tilegemma, feature_window: 200-600}}
     num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile-gemma-12b, variant: default, date: "2026-11", where: {<<: *tilegemma, feature_window: 200-600}}
+  strable_tile_1b.csv:  # TILE-Llama3.2-1B, the same windows
+    num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile-1b, variant: default, date: "2026-11", where: {<<: *tile1b, feature_window: 200-400}}
+    num-str_latte_tabicl: {model: tabicl-v2, encoder: tile-1b, variant: default, date: "2026-11", where: {<<: *tile1b, feature_window: 200-800}}
+    num-str_latte_tabpfn3: {model: tabpfn-3, encoder: tile-1b, variant: default, date: "2026-11", where: {<<: *tile1b, feature_window: 150-400}}
+    num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile-1b, variant: default, date: "2026-11", where: {<<: *tile1b, feature_window: 200-800}}
+    num-str_latte_causilo: {model: causilo, encoder: tile-1b, variant: default, date: "2026-11", where: {<<: *tile1b, feature_window: 200-800}}
+    num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile-1b, variant: default, date: "2026-11", where: {<<: *tile1b, feature_window: 200-600}}
+    num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile-1b, variant: default, date: "2026-11", where: {<<: *tile1b, feature_window: 200-600}}
+    num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile-1b, variant: default, date: "2026-11", where: {<<: *tile1b, feature_window: 200-600}}
+  strable_tile_gemma1b.csv:  # TILE-Gemma3-1B, the same windows; TabPFN-2.5 next
+    num-str_latte_tabpfn: {model: tabpfn-2.5, encoder: tile-gemma-1b, variant: default, date: "2026-11", hold: true, where: {<<: *tilegemma1b, feature_window: 200-400}}
+    num-str_latte_tabicl: {model: tabicl-v2, encoder: tile-gemma-1b, variant: default, date: "2026-11", where: {<<: *tilegemma1b, feature_window: 200-800}}
+    num-str_latte_tabpfn3: {model: tabpfn-3, encoder: tile-gemma-1b, variant: default, date: "2026-11", where: {<<: *tilegemma1b, feature_window: 150-400}}
+    num-str_latte_tabpfn3.5: {model: tabpfn-3.5, encoder: tile-gemma-1b, variant: default, date: "2026-11", where: {<<: *tilegemma1b, feature_window: 200-800}}
+    num-str_latte_causilo: {model: causilo, encoder: tile-gemma-1b, variant: default, date: "2026-11", where: {<<: *tilegemma1b, feature_window: 200-800}}
+    num-str_latte_kumo_large: {model: kumo-tabular, encoder: tile-gemma-1b, variant: default, date: "2026-11", where: {<<: *tilegemma1b, feature_window: 200-600}}
+    num-str_latte_kumo_medium: {model: kumo-tabular-medium, encoder: tile-gemma-1b, variant: default, date: "2026-11", where: {<<: *tilegemma1b, feature_window: 200-600}}
+    num-str_latte_kumo_small: {model: kumo-tabular-small, encoder: tile-gemma-1b, variant: default, date: "2026-11", where: {<<: *tilegemma1b, feature_window: 200-600}}
   strable_tfidf.csv:  # the board's Tf-Idf encoder, run by the TILE authors
     num-str_tabvec_causilo: {model: causilo, encoder: tfidf, variant: default, date: "2026-09", hardware: NVIDIA H100 80GB HBM3}
     num-str_tabvec_kumo_small: {model: kumo-tabular-small, encoder: tfidf, variant: default}
