@@ -5,11 +5,12 @@ Each result row records the hardware it ran on, in its `hardware` column; `site/
 | Entry | Pipelines | What the rows record |
 |---|---|---|
 | A40, A100, H100, … | run by the board, or imported with their GPU | the GPU's name, e.g. `NVIDIA A40` |
-| A100 + A40 | rows spread over two GPU types, or rows whose encoder and learner ran on two GPU types | both names |
+| A100 + A40 | rows spread over two GPU types | both names |
+| H100 embedding + A40 learners | an encoder run on one GPU type and its learners on another (CASE: the encoder on an H100, the learners on A40) | both names with their roles, e.g. `NVIDIA H100 NVL embedding, NVIDIA A40 learners` |
 | Shared cluster | the STRABLE paper's pipelines | `paper`: no GPU per row. As the paper's Appendix D.1 says, its jobs were scheduled across NVIDIA V100, A100 and A40 GPUs with AMD EPYC and Intel Xeon CPUs (32 cores and one GPU per job), not pinned to one GPU type |
 | API | models that run on their provider's servers. The board is a third party to these runs and cannot verify them: it shows the time and hardware the provider reports. ChakraTab: YHat Labs states an NVIDIA RTX PRO 6000 GPU and 12 vCPUs | `api` |
 
-For a pipeline with a language-model encoder, the GPU shown is the one the learner ran on, unless the encoder's GPU is recorded too. The encoder's extraction, measured once per table, may have run on another GPU (almost always an A100 or an A40). When the encoder's GPU is recorded and differs from the learner's, each row records both, and the pipeline's Compute entry names both GPUs (an encoder on an H100 and a learner on an A40: A40 + H100).
+For a pipeline with a language-model encoder, the GPU shown is the one the learner ran on, unless the encoder's GPU is recorded too. The encoder's extraction, measured once per table, may have run on another GPU (almost always an A100 or an A40). When the encoder's GPU is recorded and differs from the learner's, each row records both with their roles, and the pipeline's Compute entry names both (an encoder on an H100 and learners on A40: H100 embedding + A40 learners).
 
 ## Does the GPU type change the results?
 

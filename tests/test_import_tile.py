@@ -30,7 +30,7 @@ def test_tile_selection():
                                "kumo-tabular-medium", "kumo-tabular-small"))}
     assert all(p["variant"] == "default" for p in rows)
     held = {f"{p['encoder']}+{p['model']}" for p in rows if p.get("hold")}
-    assert held == {"tile+exaone-tabular"} | {i for i in ids if i.startswith("case+")}  # listed, not imported
+    assert held == {"tile+exaone-tabular"}  # listed, not imported
     assert {f"{p['encoder']}+{p['model']}" for ms in imported(SELECTION["pipelines"]).values() for p in ms.values()} == ids - held
     assert "tfidf" in ENCODERS  # Tf-Idf + Causilo: the id the runner gives models/causilo with its tfidf encoder
     windows = {p["model"]: p["where"]["feature_window"] for p in rows if p["encoder"] == "tile"}  # one per learner
@@ -56,7 +56,8 @@ def test_tile_selection():
     assert PAPER["learners"]["causilo"] == "Causilo"
     case = [p for p in rows if p["encoder"] == "case"]  # CASE alone, at its pinned commit, every column raw
     assert PAPER["encoders"]["case"] == "CASE" and len(case) == 8
-    assert all(p["where"] == {"model": "case-f0bbd5a", "raw_text_card": "all"} and p["date"] == "2026-11" for p in case)
+    assert all(p["where"] == {"model": "case-f0bbd5a-h100", "raw_text_card": "all"} and p["date"] == "2026-11"
+               and p["encoder_gpu"] == "case_gpu" for p in case)  # CASE on an H100, its learners on A40
     lighttar = [p for p in rows if p["encoder"] == "lighttar"]  # LightTAR alone, at its package defaults
     assert PAPER["encoders"]["lighttar"] == "LightTAR" and len(lighttar) == 8 and not any(p.get("hold") for p in lighttar)
     assert all(p["where"] == {"model": "lighttar-0.1.0"} and p["date"] == "2026-11" for p in lighttar)
@@ -94,8 +95,9 @@ def test_the_hardware_of_rows_whose_encoder_ran_on_another_gpu():
                                      dict(method="n", data_name=table, fold_index=0, gpu="NVIDIA A40", case_gpu="NVIDIA H100 NVL")])}
     df = pd.DataFrame([dict(model="tabpfn-3.5", encoder="case", variant="default", table=table, fold=k) for k in (0, 1)]
                       + [dict(model="causilo", encoder="tile", variant="default", table=table, fold=0)])
-    # the encoder's GPU first, once when both are the same; a pipeline without encoder_gpu keeps the learner's only
-    assert hardware_of(df, frames, pipelines) == ["NVIDIA H100 NVL, NVIDIA A40", "NVIDIA A40", "NVIDIA A40"]
+    # the encoder's GPU first, both with their roles; once when both are the same; a pipeline without encoder_gpu
+    # keeps the learner's only
+    assert hardware_of(df, frames, pipelines) == ["NVIDIA H100 NVL embedding, NVIDIA A40 learners", "NVIDIA A40", "NVIDIA A40"]
     # a row without a learner GPU (an API learner) keeps its pipeline's own hardware, not the encoder's GPU
     api = {"a.csv": {"m": dict(model="chakra-tab-medium", encoder="case", variant="default", hardware="api", encoder_gpu="case_gpu")}}
     rows = pd.DataFrame([dict(method="m", data_name=table, fold_index=0, gpu=None, case_gpu="NVIDIA H100 NVL")])

@@ -53,7 +53,7 @@ def hardware_of(df: pd.DataFrame, frames: dict, pipelines: dict) -> list[str]:
     """Each converted row's hardware: the GPU its source row records (column ``gpu``), else its
     pipeline's own ``hardware``, else ``paper``. A pipeline whose selection names ``encoder_gpu``, the
     source column of the GPU its encoder ran on, records that GPU too when it differs from the learner's:
-    "<encoder's>, <learner's>"."""
+    "<encoder's> embedding, <learner's> learners", which the page shows as "H100 embedding + A40 learners"."""
     own = {(p["model"], p["encoder"], p["variant"]): p.get("hardware", "paper")
            for methods in pipelines.values() for p in methods.values()}
     gpus = {}
@@ -67,8 +67,9 @@ def hardware_of(df: pd.DataFrame, frames: dict, pipelines: dict) -> list[str]:
                     if pd.isna(r["gpu"]):  # a CPU row (an API learner) has none: its pipeline's own hardware
                         continue
                     encoder = r[p["encoder_gpu"]] if "encoder_gpu" in p else None
-                    names = dict.fromkeys(n for n in (encoder, r["gpu"]) if pd.notna(n))
-                    gpus[(p["model"], p["encoder"], p["variant"], r["data_name"], int(r["fold_index"]))] = ", ".join(names)
+                    both = pd.notna(encoder) and encoder != r["gpu"]
+                    gpus[(p["model"], p["encoder"], p["variant"], r["data_name"], int(r["fold_index"]))] = (
+                        f"{encoder} embedding, {r['gpu']} learners" if both else r["gpu"])
     keys = zip(df["model"], df["encoder"], df["variant"], df["table"], df["fold"])
     return [gpus.get(key, own[key[:3]]) for key in keys]
 

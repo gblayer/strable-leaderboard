@@ -772,13 +772,14 @@ const anyApi = () => DATA.some((d) => d.api === true);
 const hidingApi = () => state.api === 'hide' && anyApi();
 const encOf = (d) => (d.kind === 'e2e' ? E2E : d.enc);
 /* The Compute entry of a pipeline: the GPUs its rows ran on, short (NVIDIA A100-PCIE-40GB: A100) and
-   joined with + when there are several; API for a model on its provider's servers; the shared cluster
-   when its rows record none (the paper's pipelines, scheduled across its nodes). */
+   joined with + when there are several; an encoder and its learners on two GPU types keep their roles, in
+   that order (H100 embedding + A40 learners); API for a model on its provider's servers; the shared
+   cluster when its rows record none (the paper's pipelines, scheduled across its nodes). */
 function hwOf(d) {
   if (d.api) return 'API';
   if (!d.hw) return SHARED;
-  const names = d.hw.split(',').map((h) => h.trim().replace(/^NVIDIA\s+/i, '').replace(/^([A-Z]\d+)\b.*$/, '$1').replace(/^cpu$/i, 'CPU'));
-  return [...new Set(names)].sort().join(' + ');
+  const names = d.hw.split(',').map((h) => h.trim().replace(/^NVIDIA\s+/i, '').replace(/^([A-Z]\d+)\b.*?((?: embedding| learners)?)$/, '$1$2').replace(/^cpu$/i, 'CPU'));
+  return names.some((n) => / (embedding|learners)$/.test(n)) ? names.join(' + ') : [...new Set(names)].sort().join(' + ');
 }
 const hwText = (d) => (d.api ? '' : hwOf(d) === SHARED ? 'shared cluster' : 'runs on ' + hwOf(d));
 function items(task) {
